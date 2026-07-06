@@ -10,9 +10,22 @@ feito com **Canvas 2D puro** (HTML + JavaScript, sem instalação e sem dependê
 | Arquivo | O que é |
 |---------|---------|
 | `index.html`   | Página inicial (hub) com links pra tudo |
-| `editor.html`  | **Editor de Casa** — desenhe piso → paredes → móveis e clique em *Jogar* |
-| `topdown.html` | Demo top-down (visão de cima) de um apartamento pronto, com texturas |
+| `editor.html`  | **Módulo Chão & Paredes** — desenhe piso e paredes (texturas Modern Interiors), escolha o personagem e clique em *Jogar* |
+| `topdown.html` | Demo top-down antiga (pacote TopDownHouse) |
 | `click.html`   | Protótipo inicial de cliques (cenas de lado, portas com nome) |
+
+## Módulo atual: Chão & Paredes
+
+O jogo está sendo construído por módulos. O primeiro é o **desenho da casa**:
+
+- **🟫 Piso** — 8 texturas do pacote *Modern Interiors* (madeiras, tijolo, cerâmica, azulejo, espinha, cinza).
+- **🧱 Parede** — parede branca uniforme que fica correta na horizontal **e** na vertical, com relevo por sombra.
+- **🪣 Encher** — balde de tinta pra preencher uma área conectada.
+- **🧽 Apagar** e **▦ Grade**.
+- **Personagem** — Adam, Alex, Amelia ou Bob (sprites 16×16 do pacote), com caminhada nas 4 direções.
+- **▶ Jogar** — anda com **WASD/setas** e colide com as paredes.
+
+Próximo módulo: **móveis** (na proporção certa dos personagens, usando o `Interiors_free`).
 
 ## Editor de Casa (o principal)
 
@@ -38,8 +51,9 @@ Outras ações: **💾 Salvar** (guarda no navegador), **⬇ Exportar** (baixa u
 
 ## Texturas
 
-Os pisos e móveis usam o pacote **TopDownHouse** (tiles de 16px), na pasta `assets/`.
-A cama é desenhada por código porque o pacote não inclui uma.
+- `assets/modern/` — pacote **Modern Interiors** (LimeZu), tiles de 16px: `Room_Builder_free_16x16.png`
+  (chão + paredes) e os personagens `Adam/Alex/Amelia/Bob` (`_run` e `_idle`).
+- `assets/` — pacote antigo **TopDownHouse**, usado só pela demo `topdown.html`.
 
 ## Rodando localmente
 
