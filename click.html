@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS 2D</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: #1a1a24;
+    color: #eee;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px;
+    overflow: hidden;
+  }
+  h1 { margin: 0; font-size: 20px; letter-spacing: 2px; color: #ffd36e; }
+  #wrap {
+    position: relative;
+    width: min(96vw, 800px);
+    aspect-ratio: 16 / 9;
+    border: 3px solid #000;
+    border-radius: 6px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    overflow: hidden;
+  }
+  canvas {
+    width: 100%; height: 100%; display: block;
+    image-rendering: pixelated;
+    cursor: pointer;
+  }
+  #hint {
+    font-size: 13px; color: #9aa0b0; text-align: center;
+    max-width: 800px; padding: 0 10px;
+  }
+  kbd {
+    background:#333; border-radius:4px; padding:1px 6px;
+    border:1px solid #555; font-size:12px;
+  }
+</style>
+</head>
+<body>
+  <h1>LIFE OS · 2D</h1>
+  <div id="wrap"><canvas id="game" width="320" height="180"></canvas></div>
+  <div id="hint">
+    Ande com <kbd>←</kbd> <kbd>→</kbd> ou clicando no chão · Clique nos <b>itens</b> pra usar ·
+    Clique nas <b>portas</b> pra trocar de cômodo
+  </div>
+
+<script>
+/* ============================================================
+   LifeOS 2D — protótipo de jogo de cliques (Canvas puro)
+   Tudo é orientado a DADOS: pra criar um cômodo novo, basta
+   adicionar uma entrada em ROOMS. Sem tocar no motor.
+   ============================================================ */
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const FLOOR_Y = 150;          // altura do chão
+const WALK_SPEED = 60;        // pixels por segundo
+
+/* ---------- STATUS DE VIDA (o "sistema operacional" da vida) ---------- */
+const stats = {
+  energia:   { val: 80, color:'#7ee081', icon:'⚡' },
+  fome:      { val: 70, color:'#ffb454', icon:'🍔' },
+  higiene:   { val: 90, color:'#6ec6ff', icon:'🚿' },
+  diversao:  { val: 60, color:'#ff8fd0', icon:'🎮' },
+};
+// quanto cada status cai por segundo (a vida corre...)
+const DECAY = { energia: 0.8, fome: 1.1, higiene: 0.5, diversao: 0.9 };
+
+/* ---------- COMODOS ----------
+   items: hotspots clicáveis. draw(ctx,item) desenha; use() aplica efeito.
+   doors: portas que levam a outro cômodo (destino = id do ROOM).
+*/
+const ROOMS = {
+  cozinha: {
+    nome: 'Cozinha',
+    wall: '#c78b5c', wall2: '#b87a4c', floor: '#7a5a3a',
+    items: [
+      { x: 40, w: 40, label:'Geladeira', draw:drawFridge,
+        use(){ apply('fome', +35); toast('Você comeu 🍽️  +Fome'); } },
+      { x: 150, w: 46, label:'Fogão', draw:drawStove,
+        use(){ apply('fome', +20); apply('higiene',-5); toast('Cozinhou algo 🍳'); } },
+    ],
+    doors: [ { x: 270, dest:'sala', label:'Sala' } ],
+  },
+  sala: {
+    nome: 'Sala',
+    wall: '#6d8bb0', wall2: '#5d7ba0', floor: '#4a4550',
+    items: [
+      { x: 60, w: 60, label:'Sofá + TV', draw:drawTV,
+        use(){ apply('diversao', +30); apply('energia',+5); toast('Assistiu TV 📺  +Diversão'); } },
+    ],
+    doors: [
+      { x: 20,  dest:'cozinha', label:'Cozinha' },
+      { x: 260, dest:'quarto',  label:'Quarto' },
+      { x: 150, dest:'banheiro',label:'Banheiro' },
+    ],
+  },
+  quarto: {
+    nome: 'Quarto',
+    wall: '#8a6db0', wall2: '#7a5da0', floor: '#3f3a4a',
+    items: [
+      { x: 50, w: 90, label:'Cama', draw:drawBed,
+        use(){ apply('energia', +45); apply('fome',-8); toast('Dormiu 😴  +Energia'); } },
+    ],
+    doors: [ { x: 270, dest:'sala', label:'Sala' } ],
+  },
+  banheiro: {
+    nome: 'Banheiro',
+    wall: '#5fb0a8', wall2: '#4fa098', floor: '#456a68',
+    items: [
+      { x: 60, w: 34, label:'Chuveiro', draw:drawShower,
+        use(){ apply('higiene', +40); apply('diversao',+3); toast('Tomou banho 🚿  +Higiene'); } },
+    ],
+    doors: [ { x: 250, dest:'sala', label:'Sala' } ],
+  },
+};
+
+/* ---------- ESTADO DO JOGO ---------- */
+const player = { x: 160, dir: 1, target: null, moving:false, frame:0 };
+let currentRoom = 'sala';
+let toastMsg = '', toastT = 0;
+
+function apply(stat, amount){
+  stats[stat].val = Math.max(0, Math.min(100, stats[stat].val + amount));
+}
+function toast(msg){ toastMsg = msg; toastT = 2.2; }
+
+/* ---------- ENTRADA (clique / teclado) ---------- */
+const keys = {};
+addEventListener('keydown', e => { keys[e.key] = true; });
+addEventListener('keyup',   e => { keys[e.key] = false; });
+
+canvas.addEventListener('click', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = (e.clientX - r.left) / r.width  * W;
+  const my = (e.clientY - r.top)  / r.height * H;
+  const room = ROOMS[currentRoom];
+
+  // clicou numa porta?
+  for (const d of room.doors) {
+    if (mx > d.x-4 && mx < d.x + DOOR_W+4 && my > DOOR_Y && my < FLOOR_Y+6) {
+      player.target = d.x + DOOR_W/2;
+      player.pendingDoor = d;
+      return;
+    }
+  }
+  // clicou num item?
+  for (const it of room.items) {
+    if (mx > it.x-6 && mx < it.x + it.w+6 && my > 60 && my < FLOOR_Y+6) {
+      player.target = clamp(it.x + it.w/2, 20, W-20);
+      player.pendingItem = it;
+      return;
+    }
+  }
+  // senão, anda até o ponto do chão
+  if (my > FLOOR_Y - 40) { player.target = clamp(mx, 12, W-12); }
+});
+
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---------- LOOP PRINCIPAL ---------- */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now - last)/1000); last = now;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  // decaimento dos status
+  for (const k in DECAY) apply(k, -DECAY[k]*dt);
+
+  // movimento por teclado
+  let mv = 0;
+  if (keys['ArrowLeft'])  mv -= 1;
+  if (keys['ArrowRight']) mv += 1;
+  if (mv !== 0) { player.target = null; player.x += mv*WALK_SPEED*dt; player.dir = mv; player.moving = true; }
+  else if (player.target !== null) {
+    // movimento por clique (anda até o alvo)
+    const d = player.target - player.x;
+    if (Math.abs(d) < 2) {
+      player.x = player.target; player.target = null; player.moving = false;
+      // chegou: dispara ação pendente
+      if (player.pendingItem){ player.pendingItem.use(); player.pendingItem = null; }
+      if (player.pendingDoor){ enterRoom(player.pendingDoor.dest, player.pendingDoor); player.pendingDoor = null; }
+    } else {
+      player.dir = Math.sign(d);
+      player.x += player.dir*WALK_SPEED*dt;
+      player.moving = true;
+    }
+  } else player.moving = false;
+
+  player.x = clamp(player.x, 12, W-12);
+  if (player.moving) player.frame += dt*8; else player.frame = 0;
+
+  if (toastT > 0) toastT -= dt;
+}
+
+function enterRoom(dest, fromDoor){
+  currentRoom = dest;
+  // entra pelo lado oposto da porta pela qual saiu
+  player.x = (fromDoor.x < W/2) ? W-30 : 30;
+  player.target = null;
+  toast('Entrou: ' + ROOMS[dest].nome);
+}
+
+/* ============================================================
+   RENDERIZAÇÃO
+   ============================================================ */
+const DOOR_W = 34, DOOR_H = 62, DOOR_Y = FLOOR_Y - DOOR_H;
+
+function render(){
+  const room = ROOMS[currentRoom];
+
+  // parede (com um leve padrão xadrez pra dar textura pixelada)
+  ctx.fillStyle = room.wall; ctx.fillRect(0,0,W,FLOOR_Y);
+  ctx.fillStyle = room.wall2;
+  for (let y=0;y<FLOOR_Y;y+=16) for (let x=(y/16%2?0:8);x<W;x+=16) ctx.fillRect(x,y,8,8);
+  // rodapé
+  ctx.fillStyle='rgba(0,0,0,.18)'; ctx.fillRect(0,FLOOR_Y-6,W,6);
+  // chão
+  ctx.fillStyle = room.floor; ctx.fillRect(0,FLOOR_Y,W,H-FLOOR_Y);
+  ctx.fillStyle='rgba(255,255,255,.05)';
+  for (let x=0;x<W;x+=20) ctx.fillRect(x,FLOOR_Y,10,H-FLOOR_Y);
+
+  // portas
+  for (const d of room.doors) drawDoor(d);
+  // itens
+  for (const it of room.items) it.draw(ctx, it);
+
+  // personagem
+  drawPlayer(player.x, FLOOR_Y);
+
+  // HUD
+  drawHUD(room.nome);
+  if (toastT > 0) drawToast();
+}
+
+function drawDoor(d){
+  ctx.fillStyle = '#3a2a1a'; ctx.fillRect(d.x, DOOR_Y, DOOR_W, DOOR_H);
+  ctx.fillStyle = '#5a4030'; ctx.fillRect(d.x+3, DOOR_Y+3, DOOR_W-6, DOOR_H-6);
+  ctx.fillStyle = '#ffd36e'; ctx.fillRect(d.x+DOOR_W-9, DOOR_Y+DOOR_H/2-2, 4, 4); // maçaneta
+  // placa com o nome
+  ctx.fillStyle = '#111'; ctx.fillRect(d.x-3, DOOR_Y-13, DOOR_W+6, 12);
+  ctx.fillStyle = '#ffd36e';
+  ctx.font = '8px monospace'; ctx.textAlign='center';
+  ctx.fillText(d.label, d.x+DOOR_W/2, DOOR_Y-4);
+}
+
+function drawPlayer(x, groundY){
+  const bob = player.moving ? Math.sin(player.frame*2)*1.5 : 0;
+  const y = groundY - 30 + bob;
+  ctx.save();
+  ctx.translate(x, 0);
+  ctx.scale(player.dir >= 0 ? 1 : -1, 1);
+  // sombra
+  ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath();
+  ctx.ellipse(0, groundY-1, 9, 3, 0, 0, 7); ctx.fill();
+  // pernas (animação simples)
+  const step = player.moving ? Math.sin(player.frame*2)*3 : 0;
+  ctx.fillStyle='#33507a';
+  ctx.fillRect(-5, y+20, 4, 10+step);
+  ctx.fillRect( 1, y+20, 4, 10-step);
+  // corpo
+  ctx.fillStyle='#e05a4a'; ctx.fillRect(-6, y+8, 12, 14);
+  // cabeça
+  ctx.fillStyle='#f0c090'; ctx.fillRect(-5, y-2, 10, 10);
+  // cabelo
+  ctx.fillStyle='#5a3820'; ctx.fillRect(-6, y-4, 12, 5);
+  // olho
+  ctx.fillStyle='#222'; ctx.fillRect(2, y+2, 2, 2);
+  ctx.restore();
+}
+
+/* ---------- desenhos de itens (pixel-art simples) ---------- */
+function drawFridge(c,it){ const y=FLOOR_Y;
+  c.fillStyle='#dfe6ee'; c.fillRect(it.x,y-64,it.w,64);
+  c.fillStyle='#c4ccd6'; c.fillRect(it.x,y-34,it.w,2);
+  c.fillStyle='#8a96a4'; c.fillRect(it.x+it.w-7,y-58,3,18); c.fillRect(it.x+it.w-7,y-28,3,18);
+  label(c,it);
+}
+function drawStove(c,it){ const y=FLOOR_Y;
+  c.fillStyle='#4a4a55'; c.fillRect(it.x,y-40,it.w,40);
+  c.fillStyle='#2a2a30'; c.fillRect(it.x+4,y-16,it.w-8,12);
+  c.fillStyle='#ff7a3a'; c.fillRect(it.x+9,y-52,7,7); c.fillRect(it.x+24,y-52,7,7);
+  label(c,it);
+}
+function drawTV(c,it){ const y=FLOOR_Y;
+  c.fillStyle='#3a2c22'; c.fillRect(it.x,y-14,it.w,14); // sofá
+  c.fillStyle='#5a4436'; c.fillRect(it.x,y-26,it.w,14);
+  c.fillStyle='#111'; c.fillRect(it.x+it.w/2-16,y-58,32,24); // tv
+  c.fillStyle='#6ec6ff'; c.fillRect(it.x+it.w/2-13,y-55,26,18);
+  label(c,it);
+}
+function drawBed(c,it){ const y=FLOOR_Y;
+  c.fillStyle='#6a4a8a'; c.fillRect(it.x,y-22,it.w,22);
+  c.fillStyle='#c0a0e0'; c.fillRect(it.x,y-28,it.w,8);
+  c.fillStyle='#fff'; c.fillRect(it.x+4,y-30,20,10); // travesseiro
+  label(c,it);
+}
+function drawShower(c,it){ const y=FLOOR_Y;
+  c.fillStyle='#cfe8ff'; c.fillRect(it.x,y-70,it.w,70); // box
+  c.globalAlpha=.5; c.fillStyle='#6ec6ff';
+  for(let i=0;i<5;i++) c.fillRect(it.x+6+i*5,y-56,2,44);
+  c.globalAlpha=1;
+  c.fillStyle='#8a96a4'; c.fillRect(it.x+it.w/2-6,y-70,12,4);
+  label(c,it);
+}
+function label(c,it){
+  c.fillStyle='rgba(0,0,0,.55)';
+  c.font='7px monospace'; c.textAlign='center';
+  const tx = clamp(it.x+it.w/2, 20, W-20);
+  c.fillRect(tx-it.label.length*2.2, FLOOR_Y+5, it.label.length*4.4, 10);
+  c.fillStyle='#fff'; c.fillText(it.label, tx, FLOOR_Y+12);
+}
+
+/* ---------- HUD de status ---------- */
+function drawHUD(roomName){
+  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fillRect(0,0,W,16);
+  ctx.fillStyle='#fff'; ctx.font='8px monospace'; ctx.textAlign='left';
+  ctx.fillText('📍 '+roomName, 4, 11);
+
+  let x = 92;
+  for (const k in stats){
+    const s = stats[k];
+    ctx.fillText(s.icon, x, 11); x += 11;
+    ctx.fillStyle='#000'; ctx.fillRect(x, 4, 30, 8);
+    ctx.fillStyle = s.val < 25 ? '#ff5555' : s.color;
+    ctx.fillRect(x+1, 5, 28*(s.val/100), 6);
+    ctx.fillStyle='#fff'; x += 36;
+  }
+}
+
+function drawToast(){
+  ctx.globalAlpha = Math.min(1, toastT);
+  ctx.fillStyle='rgba(0,0,0,.75)';
+  ctx.font='9px monospace'; ctx.textAlign='center';
+  const w = toastMsg.length*5.4 + 14;
+  ctx.fillRect(W/2-w/2, 22, w, 15);
+  ctx.fillStyle='#ffd36e'; ctx.fillText(toastMsg, W/2, 32);
+  ctx.globalAlpha = 1;
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

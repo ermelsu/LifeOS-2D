@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS 2D · Editor de Casa</title>
+<style>
+  :root{ color-scheme:dark; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:#14141c; color:#e8e8ee;
+    font-family:"Segoe UI",system-ui,sans-serif; overflow:hidden; user-select:none; }
+  #app{ display:flex; height:100%; }
+  /* barra lateral */
+  #side{ width:210px; flex:0 0 210px; background:#1c1c26; border-right:2px solid #000;
+    display:flex; flex-direction:column; gap:8px; padding:10px; overflow-y:auto; }
+  h1{ font-size:15px; margin:0 0 2px; color:#ffd36e; letter-spacing:1px; }
+  .step{ font-size:11px; color:#9aa0b0; line-height:1.4; margin-bottom:4px; }
+  .grp{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#7a7f8c; margin:6px 0 2px; }
+  .tools,.acts{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  button{ background:#2a2a38; color:#e8e8ee; border:1px solid #3a3a4a; border-radius:6px;
+    padding:7px 4px; font-size:12px; cursor:pointer; }
+  button:hover{ background:#33334a; }
+  button.on{ background:#ffd36e; color:#20140a; border-color:#ffd36e; font-weight:600; }
+  .palette{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+  .sw{ position:relative; aspect-ratio:1; background:#111; border:2px solid #333;
+    border-radius:5px; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .sw canvas{ width:100%; height:100%; image-rendering:pixelated; }
+  .sw.on{ border-color:#ffd36e; }
+  .sw .nm{ position:absolute; bottom:0; left:0; right:0; font-size:8px; background:rgba(0,0,0,.6);
+    text-align:center; padding:1px 0; color:#ffd36e; }
+  /* área do jogo */
+  #stage{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:12px; }
+  #wrap{ position:relative; width:min(92%,760px); aspect-ratio:22/15;
+    border:3px solid #000; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,.6);
+    overflow:hidden; background:#0c0c12; }
+  canvas#game{ width:100%; height:100%; display:block; image-rendering:pixelated; cursor:crosshair; }
+  #hud{ font-size:12px; color:#9aa0b0; text-align:center; min-height:16px; }
+  kbd{ background:#333; border-radius:4px; padding:0 5px; border:1px solid #555; font-size:11px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="side">
+    <h1>🏠 EDITOR DE CASA</h1>
+    <div class="step" id="stepMsg"></div>
+
+    <div class="grp">Ferramenta</div>
+    <div class="tools" id="tools">
+      <button data-tool="floor" class="on">🟫 Piso</button>
+      <button data-tool="wall">🧱 Parede</button>
+      <button data-tool="furn">🛋️ Móvel</button>
+      <button data-tool="erase">🧽 Apagar</button>
+    </div>
+
+    <div id="paletteBox">
+      <div class="grp" id="palTitle">Pisos</div>
+      <div class="palette" id="palette"></div>
+    </div>
+
+    <div class="grp">Ações</div>
+    <div class="acts">
+      <button id="btnPlay">▶ Jogar</button>
+      <button id="btnSave">💾 Salvar</button>
+      <button id="btnClear">🗑️ Limpar</button>
+      <button id="btnExport">⬇ Exportar</button>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="wrap"><canvas id="game" width="352" height="240"></canvas></div>
+    <div id="hud"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   LifeOS 2D — EDITOR DE CASA + modo Jogar
+   Você desenha: PISO -> PAREDES -> MÓVEIS. Depois joga.
+   Texturas: pacote TopDownHouse (tiles de 16px).
+   ============================================================ */
+const T = 16, COLS = 22, ROWS = 15;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+canvas.width = COLS*T; canvas.height = ROWS*T;
+ctx.imageSmoothingEnabled = false;
+
+/* ---------- texturas ---------- */
+const IMG = {};
+const SRC = { fw:'assets/TopDownHouse_FloorsAndWalls.png', furn:'assets/TopDownHouse_FurnitureState1.png' };
+
+/* ---------- catálogos ---------- */
+// pisos: coord (col,row) na folha FloorsAndWalls
+const FLOORS = {
+  madeira:  { label:'Madeira', t:[10,2] },
+  ladrilho: { label:'Ladrilho',t:[14,6] },
+  carpete:  { label:'Carpete', t:[2,2]  },
+  pedra:    { label:'Pedra',   t:[6,6]  },
+  laranja:  { label:'Laranja', t:[6,2]  },
+  tijolo:   { label:'Tijolo',  t:[10,6] },
+};
+// móveis: w,h = área de colisão; spr=[col,row,sprW,sprH] na folha de móveis (pode ser mais alto)
+// flat: desenhado no chão sem colisão. custom: desenho procedural. effect:[status,valor,texto]
+const FURN = {
+  cama:    { label:'Cama',    w:2,h:2, custom:'bed',     effect:['energia',45,'Dormiu 😴  +Energia'] },
+  sofa:    { label:'Sofá',    w:3,h:2, spr:[2,10,3,2],   effect:['diversao',25,'Relaxou 🛋️  +Diversão'] },
+  sofa2:   { label:'Sofá II', w:3,h:2, spr:[6,10,3,2] },
+  poltrona:{ label:'Poltrona',w:2,h:2, spr:[9,10,2,2] },
+  mesa:    { label:'Mesa',    w:2,h:2, spr:[0,2,2,2] },
+  estante: { label:'Estante', w:2,h:2, spr:[3,2,2,2],    effect:['diversao',15,'Leu um livro 📖'] },
+  comoda:  { label:'Cômoda',  w:2,h:2, spr:[0,8,2,2] },
+  relogio: { label:'Relógio', w:1,h:2, spr:[5,8,1,2] },
+  planta:  { label:'Planta',  w:1,h:2, spr:[0,10,1,2] },
+  tapete:  { label:'Tapete',  w:3,h:3, spr:[10,2,3,3], flat:true },
+  geladeira:{label:'Geladeira',w:2,h:2, spr:[2,12,2,3],  effect:['fome',35,'Comeu 🍽️  +Fome'] },
+  fogao:   { label:'Fogão',   w:2,h:2, spr:[4,12,2,3],   effect:['fome',20,'Cozinhou 🍳  +Fome'] },
+  pia_coz: { label:'Pia',     w:2,h:2, spr:[6,12,2,3] },
+  banheira:{ label:'Banheira',w:3,h:2, spr:[5,16,3,2],   effect:['higiene',40,'Banho 🛁  +Higiene'] },
+  vaso:    { label:'Vaso',    w:1,h:2, spr:[8,16,1,2] },
+  pia_ban: { label:'Pia banh',w:2,h:2, spr:[9,16,2,2] },
+};
+
+/* ---------- estado da casa ---------- */
+let house = blankHouse();
+function blankHouse(){ return {
+  floors: Array(COLS*ROWS).fill(null),  // floorId ou null
+  walls:  Array(COLS*ROWS).fill(false),
+  items:  [],                           // {type,col,row}
+}; }
+const idx = (c,r)=> r*COLS+c;
+const inBounds = (c,r)=> c>=0&&c<COLS&&r>=0&&r<ROWS;
+
+/* ---------- ferramenta / seleção ---------- */
+let tool = 'floor';
+let selFloor = 'madeira';
+let selFurn  = 'sofa';
+let playing = false;
+
+/* ============================================================ UI lateral */
+const stepMsgs = {
+  floor:'Passo 1 — Pinte o CHÃO. Clique/arraste pra desenhar os cômodos.',
+  wall :'Passo 2 — Levante as PAREDES ao redor. Deixe vãos pra portas.',
+  furn :'Passo 3 — Coloque os MÓVEIS. Clique pra posicionar.',
+  erase:'Borracha — remove móvel, parede ou piso (nessa ordem).',
+};
+const palTitle = document.getElementById('palTitle');
+const paletteEl = document.getElementById('palette');
+const paletteBox = document.getElementById('paletteBox');
+
+document.querySelectorAll('#tools button').forEach(b=>{
+  b.onclick = ()=>{
+    tool = b.dataset.tool;
+    document.querySelectorAll('#tools button').forEach(x=>x.classList.toggle('on', x===b));
+    document.getElementById('stepMsg').textContent = stepMsgs[tool];
+    buildPalette();
+  };
+});
+
+function thumb(drawFn){
+  const cv=document.createElement('canvas'); cv.width=32; cv.height=32;
+  const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false;
+  drawFn(cx); return cv;
+}
+function buildPalette(){
+  paletteEl.innerHTML='';
+  if (tool==='floor'){
+    paletteBox.style.display=''; palTitle.textContent='Pisos';
+    for (const id in FLOORS){ const f=FLOORS[id];
+      const el=document.createElement('div'); el.className='sw'+(id===selFloor?' on':'');
+      const [c,r]=f.t;
+      el.appendChild(thumb(cx=>cx.drawImage(IMG.fw, c*T,r*T,T,T, 0,0,32,32)));
+      const nm=document.createElement('div'); nm.className='nm'; nm.textContent=f.label; el.appendChild(nm);
+      el.onclick=()=>{ selFloor=id; buildPalette(); };
+      paletteEl.appendChild(el);
+    }
+  } else if (tool==='furn'){
+    paletteBox.style.display=''; palTitle.textContent='Móveis';
+    for (const id in FURN){ const f=FURN[id];
+      const el=document.createElement('div'); el.className='sw'+(id===selFurn?' on':'');
+      el.appendChild(thumb(cx=>{ drawFurnSprite(cx, f, 0,0, 32/Math.max(f.w,f.h)); }));
+      const nm=document.createElement('div'); nm.className='nm'; nm.textContent=f.label; el.appendChild(nm);
+      el.onclick=()=>{ selFurn=id; buildPalette(); };
+      paletteEl.appendChild(el);
+    }
+  } else { paletteBox.style.display='none'; }
+}
+
+/* ============================================================ desenho de móvel */
+// desenha um móvel do tipo f no contexto cx, com canto (dx,dy) e escala px/tile = sc
+function drawFurnSprite(cx, f, dx, dy, sc){
+  if (f.custom==='bed'){ drawBed(cx, dx, dy, f.w*sc, f.h*sc); return; }
+  const [c,r,sw,sh]=f.spr;
+  const dw=sw*sc, dh=sh*sc;
+  const ox=dx+(f.w*sc-dw)/2;      // centraliza na área
+  const oy=dy+f.h*sc-dh;          // ancora no rodapé (sprite pode subir)
+  cx.drawImage(IMG.furn, c*T,r*T,sw*T,sh*T, ox,oy,dw,dh);
+}
+// cama procedural (o pacote não tem uma) — combina com a paleta de madeira
+function drawBed(cx, x, y, w, h){
+  const u=w/2;                       // unidade ~ meio tile
+  cx.fillStyle='#5a3d28'; cx.fillRect(x,y,w,h);                 // estrutura de madeira
+  cx.fillStyle='#7a5233'; cx.fillRect(x+u*0.12,y+u*0.12,w-u*0.24,h-u*0.24);
+  cx.fillStyle='#c94f4f'; cx.fillRect(x+u*0.2,y+h*0.32,w-u*0.4,h*0.62); // coberta vermelha
+  cx.fillStyle='#e06a6a'; cx.fillRect(x+u*0.2,y+h*0.55,w-u*0.4,u*0.18);
+  cx.fillStyle='#f4f0e8'; cx.fillRect(x+u*0.28,y+u*0.28,w-u*0.56,h*0.22); // travesseiro
+}
+
+/* ============================================================ util colisão/render */
+function footCells(type,col,row){ const f=FURN[type]; const cells=[];
+  for(let r=0;r<f.h;r++)for(let c=0;c<f.w;c++) cells.push([col+c,row+r]); return cells; }
+function itemAt(c,r){ // retorna índice do item (com colisão) que cobre a célula
+  for(let i=house.items.length-1;i>=0;i--){ const it=house.items[i]; const f=FURN[it.type];
+    if(f.flat) continue;
+    if(c>=it.col&&c<it.col+f.w&&r>=it.row&&r<it.row+f.h) return i; }
+  return -1; }
+function canPlace(type,col,row){ const f=FURN[type];
+  if(col<0||row<0||col+f.w>COLS||row+f.h>ROWS) return false;
+  for(const [c,r] of footCells(type,col,row)){
+    if(house.walls[idx(c,r)]) return false;
+    if(!f.flat && itemAt(c,r)!==-1) return false;
+  } return true; }
+
+/* ============================================================ RENDER */
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0c0c12'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // 1) piso
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const fid=house.floors[idx(c,r)];
+    if(!fid) continue; const [fc,fr]=FLOORS[fid].t;
+    ctx.drawImage(IMG.fw, fc*T,fr*T,T,T, c*T,r*T,T,T); }
+  // 2) tapetes (flat) sob os móveis
+  for(const it of house.items){ const f=FURN[it.type]; if(!f.flat) continue;
+    drawFurnSprite(ctx, f, it.col*T, it.row*T, T); }
+  // 3) paredes
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(!house.walls[idx(c,r)]) continue;
+    const x=c*T,y=r*T;
+    ctx.fillStyle='#4a3324'; ctx.fillRect(x,y,T,T);
+    ctx.fillStyle='#5c4230'; ctx.fillRect(x,y,T,5);
+    ctx.fillStyle='rgba(0,0,0,.28)'; ctx.fillRect(x,y+T-3,T,3); }
+  // 4) móveis (ordena por base Y)
+  const soli=house.items.filter(it=>!FURN[it.type].flat)
+    .sort((a,b)=>(a.row+FURN[a.type].h)-(b.row+FURN[b.type].h));
+  for(const it of soli) drawFurnSprite(ctx, FURN[it.type], it.col*T, it.row*T, T);
+
+  if(playing){ drawPlayer(); drawStatsHUD(); if(toastT>0) drawToast(); }
+  else drawEditorOverlay();
+}
+
+function drawEditorOverlay(){
+  // grade
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(c*T,0); ctx.lineTo(c*T,ROWS*T); ctx.stroke(); }
+  for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*T); ctx.lineTo(COLS*T,r*T); ctx.stroke(); }
+  // pré-visualização do cursor
+  if(hover.c<0) return;
+  if(tool==='furn'){ const f=FURN[selFurn]; const ok=canPlace(selFurn,hover.c,hover.r);
+    ctx.globalAlpha=.6; drawFurnSprite(ctx,f,hover.c*T,hover.r*T,T); ctx.globalAlpha=1;
+    ctx.strokeStyle=ok?'#7ee081':'#ff5555'; ctx.lineWidth=1;
+    ctx.strokeRect(hover.c*T+.5,hover.r*T+.5,f.w*T-1,f.h*T-1);
+  } else {
+    ctx.strokeStyle='#ffd36e'; ctx.lineWidth=1;
+    ctx.strokeRect(hover.c*T+.5,hover.r*T+.5,T-1,T-1);
+  }
+}
+
+/* ============================================================ interação editor */
+const hover = { c:-1, r:-1 };
+let painting = false;
+function cellFromEvent(e){
+  const r=canvas.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/r.width*canvas.width;
+  const my=(e.clientY-r.top )/r.height*canvas.height;
+  return { c:Math.floor(mx/T), r:Math.floor(my/T) };
+}
+function applyAt(c,r){
+  if(!inBounds(c,r)) return;
+  if(tool==='floor'){ house.floors[idx(c,r)]=selFloor; }
+  else if(tool==='wall'){ house.walls[idx(c,r)]=true; }
+  else if(tool==='erase'){
+    const ii=itemAt(c,r);
+    if(ii!==-1) house.items.splice(ii,1);
+    else if(house.walls[idx(c,r)]) house.walls[idx(c,r)]=false;
+    else house.floors[idx(c,r)]=null;
+  }
+}
+canvas.addEventListener('mousedown', e=>{
+  if(playing) return;
+  const {c,r}=cellFromEvent(e); hover.c=c; hover.r=r;
+  if(tool==='furn'){ if(canPlace(selFurn,c,r)) house.items.push({type:selFurn,col:c,row:r}); }
+  else { painting=true; applyAt(c,r); }
+});
+canvas.addEventListener('mousemove', e=>{
+  if(playing) return;
+  const {c,r}=cellFromEvent(e); hover.c=c; hover.r=r;
+  if(painting) applyAt(c,r);
+});
+addEventListener('mouseup', ()=> painting=false);
+canvas.addEventListener('mouseleave', ()=>{ hover.c=-1; painting=false; });
+canvas.addEventListener('contextmenu', e=>{ e.preventDefault();
+  if(playing) return; const {c,r}=cellFromEvent(e); const ii=itemAt(c,r);
+  if(ii!==-1) house.items.splice(ii,1);
+});
+
+/* ============================================================ MODO JOGAR */
+const stats = {
+  energia:{val:80,color:'#7ee081',icon:'⚡'}, fome:{val:70,color:'#ffb454',icon:'🍔'},
+  higiene:{val:90,color:'#6ec6ff',icon:'🚿'}, diversao:{val:60,color:'#ff8fd0',icon:'🎮'},
+};
+const DECAY={ energia:0.5,fome:0.8,higiene:0.35,diversao:0.6 };
+const applyStat=(s,a)=> stats[s].val=Math.max(0,Math.min(100,stats[s].val+a));
+let toastMsg='',toastT=0; const toast=m=>{toastMsg=m;toastT=2.2;};
+const player={ x:0,y:0,r:4.5,dx:0,dy:1,speed:64,moving:false,frame:0 };
+const keys={};
+
+function solidCell(c,r){ if(!inBounds(c,r)) return true;
+  if(house.walls[idx(c,r)]) return true;
+  return itemAt(c,r)!==-1; }
+function solidAt(px,py){ return solidCell(Math.floor(px/T),Math.floor(py/T)); }
+function canBe(px,py){ const r=player.r;
+  return !(solidAt(px-r,py-r)||solidAt(px+r,py-r)||solidAt(px-r,py+r)||solidAt(px+r,py+r)); }
+
+function startPlay(){
+  // spawn: célula com piso, sem parede/móvel, mais central possível
+  let best=null,bd=1e9;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    if(house.floors[idx(c,r)] && !solidCell(c,r)){
+      const d=Math.hypot(c-COLS/2,r-ROWS/2); if(d<bd){bd=d;best=[c,r];}
+    }
+  }
+  if(!best){ setHud('Desenhe o chão primeiro! 🟫'); return false; }
+  player.x=best[0]*T+T/2; player.y=best[1]*T+T/2;
+  for(const k in stats) stats[k].val=Math.max(stats[k].val,60);
+  return true;
+}
+function nearFurniture(){ let best=null,bd=1e9;
+  for(const it of house.items){ const f=FURN[it.type]; if(!f.effect) continue;
+    const px0=it.col*T,py0=it.row*T,pw=f.w*T,ph=f.h*T;
+    const nx=Math.max(px0,Math.min(player.x,px0+pw)), ny=Math.max(py0,Math.min(player.y,py0+ph));
+    const d=Math.hypot(player.x-nx,player.y-ny);
+    if(d<12&&d<bd){bd=d;best={it,f};}
+  } return best; }
+function interact(){ const h=nearFurniture(); if(h){ const[s,v,t]=h.f.effect; applyStat(s,v); toast(t); } }
+
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys[k]=true;
+  if(k==='e'&&playing) interact();
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault(); });
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+canvas.addEventListener('click',()=>{ if(playing) interact(); });
+
+let last=performance.now();
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(playing) tick(dt); render(); requestAnimationFrame(loop); }
+function tick(dt){
+  for(const k in DECAY) applyStat(k,-DECAY[k]*dt);
+  let mx=0,my=0;
+  if(keys['a']||keys['arrowleft'])mx-=1; if(keys['d']||keys['arrowright'])mx+=1;
+  if(keys['w']||keys['arrowup'])my-=1;  if(keys['s']||keys['arrowdown'])my+=1;
+  player.moving=(mx||my)!==0;
+  if(player.moving){ const l=Math.hypot(mx,my)||1; mx/=l;my/=l; player.dx=mx;player.dy=my;
+    const nx=player.x+mx*player.speed*dt, ny=player.y+my*player.speed*dt;
+    if(canBe(nx,player.y))player.x=nx; if(canBe(player.x,ny))player.y=ny;
+    player.frame+=dt*10;
+  } else player.frame=0;
+  if(toastT>0)toastT-=dt;
+  const h=nearFurniture();
+  setHud(h? ('Aperte E: '+h.f.label) : 'WASD/setas: andar  ·  E: usar móvel');
+}
+function drawPlayer(){ const x=player.x,y=player.y,bob=player.moving?Math.sin(player.frame):0;
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x,y+5,6,3,0,0,7); ctx.fill();
+  ctx.fillStyle='#e05a4a'; ctx.beginPath(); ctx.arc(x,y+bob,player.r+1,0,7); ctx.fill();
+  ctx.fillStyle='#f0c090'; ctx.beginPath(); ctx.arc(x,y-2+bob,3.2,0,7); ctx.fill();
+  ctx.fillStyle='#5a3820'; ctx.fillRect(x-3,y-6+bob,6,2.5);
+  ctx.fillStyle='#222'; ctx.fillRect(x-1+player.dx*3,y-2+player.dy*3+bob,2,2);
+  const h=nearFurniture(); if(h){ ctx.fillStyle='#ffd36e';
+    ctx.beginPath(); ctx.arc(h.it.col*T+FURN[h.it.type].w*T/2, h.it.row*T-3,4,0,7); ctx.fill();
+    ctx.fillStyle='#111'; ctx.font='6px monospace'; ctx.textAlign='center';
+    ctx.fillText('E', h.it.col*T+FURN[h.it.type].w*T/2, h.it.row*T-1); }
+}
+function drawStatsHUD(){ ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(0,0,canvas.width,14);
+  let x=4; ctx.textAlign='left';
+  for(const k in stats){ const s=stats[k];
+    ctx.font='8px monospace'; ctx.fillStyle='#fff'; ctx.fillText(s.icon,x,10); x+=10;
+    ctx.fillStyle='#000'; ctx.fillRect(x,4,34,7);
+    ctx.fillStyle=s.val<25?'#ff5555':s.color; ctx.fillRect(x+1,5,32*(s.val/100),5); x+=42; } }
+function drawToast(){ ctx.globalAlpha=Math.min(1,toastT);
+  ctx.fillStyle='rgba(0,0,0,.8)'; ctx.font='8px monospace'; ctx.textAlign='center';
+  const w=toastMsg.length*5+12; ctx.fillRect(canvas.width/2-w/2,canvas.height-16,w,12);
+  ctx.fillStyle='#ffd36e'; ctx.fillText(toastMsg,canvas.width/2,canvas.height-7); ctx.globalAlpha=1; }
+
+/* ============================================================ ações */
+const hudEl=document.getElementById('hud'); const setHud=t=>hudEl.textContent=t;
+const KEY='lifeos_house_v1';
+function save(){ localStorage.setItem(KEY, JSON.stringify(house)); flash('💾 Casa salva!'); }
+function load(){ const s=localStorage.getItem(KEY); if(s){ try{
+  const h=JSON.parse(s);
+  if(h.floors&&h.floors.length===COLS*ROWS){ house=h; house.items=house.items||[]; return true; }
+}catch(e){} } return false; }
+function flash(msg){ setHud(msg); }
+
+document.getElementById('btnSave').onclick=save;
+document.getElementById('btnClear').onclick=()=>{ if(confirm('Apagar toda a casa?')){ house=blankHouse(); } };
+document.getElementById('btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(house)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='minha-casa.json'; a.click(); };
+const btnPlay=document.getElementById('btnPlay');
+btnPlay.onclick=()=>{
+  if(!playing){ if(startPlay()){ playing=true; btnPlay.textContent='✎ Editar';
+      canvas.style.cursor='default'; document.getElementById('stepMsg').textContent='Modo JOGAR — feche pra continuar editando.'; } }
+  else { playing=false; btnPlay.textContent='▶ Jogar'; canvas.style.cursor='crosshair';
+    document.getElementById('stepMsg').textContent=stepMsgs[tool]; setHud(''); }
+};
+
+/* ============================================================ start */
+function starterHouse(){ // um cômodo de exemplo pra não começar do zero absoluto
+  const h=blankHouse();
+  for(let r=3;r<12;r++)for(let c=4;c<18;c++) h.floors[r*COLS+c]='madeira';
+  for(let c=3;c<=18;c++){ h.walls[2*COLS+c]=true; h.walls[12*COLS+c]=true; }
+  for(let r=2;r<=12;r++){ h.walls[r*COLS+3]=true; h.walls[r*COLS+18]=true; }
+  h.walls[12*COLS+10]=false; h.walls[12*COLS+11]=false; // porta
+  return h;
+}
+let started=false;
+function begin(){ if(started) return; started=true;
+  ctx.imageSmoothingEnabled=false;
+  if(!load()) house=starterHouse();
+  document.getElementById('stepMsg').textContent=stepMsgs.floor;
+  buildPalette();
+  requestAnimationFrame(loop);
+}
+(function loadAll(){ let n=Object.keys(SRC).length;
+  for(const k in SRC){ const im=new Image();
+    im.onload=()=>{ if(--n===0) begin(); };
+    im.onerror=()=>{ if(--n===0) begin(); };
+    IMG[k]=im; im.src=SRC[k]; }
+})();
+</script>
+</body>
+</html>

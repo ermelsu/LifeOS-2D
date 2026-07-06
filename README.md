@@ -1,57 +1,58 @@
 # LifeOS 2D
 
-Protótipo de jogo 2D de **cliques**, estilo *Life is a Game* / The Sims em versão simples.
-Você anda entre cômodos (só pra frente e pra trás), clica em portas pra trocar de cena
-e clica em itens pra cuidar dos status da sua vida.
+Um joguinho 2D pra "controlar os aspectos da sua vida" — no estilo *Life is a Game* / The Sims,
+feito com **Canvas 2D puro** (HTML + JavaScript, sem instalação e sem dependências).
 
-## Como rodar
+👉 Roda direto no navegador. Se estiver publicado no **GitHub Pages**, é só abrir a URL do projeto.
 
-Não precisa instalar **nada**. É só abrir o arquivo:
+## Páginas
 
+| Arquivo | O que é |
+|---------|---------|
+| `index.html`   | Página inicial (hub) com links pra tudo |
+| `editor.html`  | **Editor de Casa** — desenhe piso → paredes → móveis e clique em *Jogar* |
+| `topdown.html` | Demo top-down (visão de cima) de um apartamento pronto, com texturas |
+| `click.html`   | Protótipo inicial de cliques (cenas de lado, portas com nome) |
+
+## Editor de Casa (o principal)
+
+O fluxo segue a ordem natural de construção:
+
+1. **🟫 Piso** — escolha uma textura e clique/arraste pra desenhar os cômodos.
+2. **🧱 Parede** — levante as paredes ao redor (deixe vãos pras portas).
+3. **🛋️ Móvel** — escolha um móvel na paleta e clique pra posicionar (colisão automática).
+4. **▶ Jogar** — entra no modo jogo: ande com **WASD/setas**, aperte **E** perto de um móvel pra usar.
+
+Outras ações: **💾 Salvar** (guarda no navegador), **⬇ Exportar** (baixa um `.json`), **🧽 Apagar**, **🗑️ Limpar**.
+
+## Status de vida
+
+`Energia · Fome · Higiene · Diversão` caem com o tempo. Usar os móveis certos recupera:
+
+| Móvel | Efeito |
+|-------|--------|
+| Cama | +Energia |
+| Geladeira / Fogão | +Fome |
+| Sofá / Estante | +Diversão |
+| Banheira | +Higiene |
+
+## Texturas
+
+Os pisos e móveis usam o pacote **TopDownHouse** (tiles de 16px), na pasta `assets/`.
+A cama é desenhada por código porque o pacote não inclui uma.
+
+## Rodando localmente
+
+Como as páginas carregam imagens da pasta `assets/`, sirva a pasta por HTTP
+(abrir o arquivo direto pelo `file://` pode bloquear as texturas em alguns navegadores):
+
+```bash
+python3 -m http.server 8000
+# depois abra http://localhost:8000
 ```
-Abra index.html no navegador (duplo clique).
-```
 
-## Controles
+## Publicar no GitHub Pages
 
-- **← →** ou clicar no chão → andar
-- Clicar num **item** → o personagem vai até ele e usa (comer, dormir, banho, TV...)
-- Clicar numa **porta** → troca de cômodo
-
-## Status (o "sistema operacional" da vida)
-
-`Energia · Fome · Higiene · Diversão` caem com o tempo. Usar os itens certos recupera:
-
-| Cômodo   | Item      | Efeito            |
-|----------|-----------|-------------------|
-| Cozinha  | Geladeira | +Fome (comer)     |
-| Cozinha  | Fogão     | +Fome (cozinhar)  |
-| Sala     | Sofá + TV | +Diversão         |
-| Quarto   | Cama      | +Energia (dormir) |
-| Banheiro | Chuveiro  | +Higiene          |
-
-## Como expandir (tudo é orientado a dados)
-
-O jogo inteiro é **um arquivo** (`index.html`). Para criar um cômodo novo,
-adicione uma entrada em `ROOMS` — não precisa mexer no motor:
-
-```js
-escritorio: {
-  nome: 'Escritório',
-  wall: '#7a7a8a', wall2: '#6a6a7a', floor: '#3a3a44',
-  items: [
-    { x: 60, w: 50, label:'Computador', draw:drawTV,
-      use(){ apply('diversao', +10); toast('Trabalhou 💻'); } },
-  ],
-  doors: [ { x: 260, dest:'sala', label:'Sala' } ],
-}
-```
-
-Depois é só adicionar uma porta `{ x, dest:'escritorio', label:'Escritório' }`
-em outro cômodo para conseguir chegar lá.
-
-### Próximos passos possíveis
-- Dinheiro / trabalho (ganhar $ no computador, gastar comprando comida)
-- Dia/noite e relógio
-- Salvar progresso no `localStorage`
-- Sprites de verdade (trocar as funções `draw*` por imagens `.png`)
+Em **Settings → Pages**, escolha a branch a servir (raiz `/`).
+Um `.nojekyll` já está incluído pra o Pages servir todos os arquivos como estão.
+A URL fica no formato `https://<usuario>.github.io/<repositorio>/`.

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS 2D · Top-Down</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; height:100%; background:#14141c; color:#eee;
+    font-family:"Segoe UI", system-ui, sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; overflow:hidden; user-select:none;
+  }
+  h1 { margin:0; font-size:20px; letter-spacing:2px; color:#ffd36e; }
+  #wrap {
+    position:relative; width:min(94vw,640px); aspect-ratio:20 / 13;
+    border:3px solid #000; border-radius:6px;
+    box-shadow:0 10px 40px rgba(0,0,0,.6); overflow:hidden; background:#000;
+  }
+  canvas { width:100%; height:100%; display:block; image-rendering:pixelated; }
+  #hint { font-size:13px; color:#9aa0b0; text-align:center; max-width:640px; padding:0 10px; }
+  kbd { background:#333; border-radius:4px; padding:1px 6px; border:1px solid #555; font-size:12px; }
+</style>
+</head>
+<body>
+  <h1>LIFE OS · 2D · TOP-DOWN</h1>
+  <div id="wrap"><canvas id="game" width="320" height="208"></canvas></div>
+  <div id="hint">
+    Ande com <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>setas</kbd> ·
+    Chegue perto de um móvel e aperte <kbd>E</kbd> pra usar
+  </div>
+
+<script>
+/* ============================================================
+   LifeOS 2D — TOP-DOWN com texturas TopDownHouse (16px tiles)
+   Pisos e móveis são recortados das spritesheets reais.
+   Dados: MAP (cômodos) + FURNITURE (sprite + colisão + efeito).
+   ============================================================ */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const T = 16, W = canvas.width, H = canvas.height;
+
+/* ---------- carregamento das texturas ---------- */
+const IMG = {};
+const SRC = {
+  fw:   'assets/TopDownHouse_FloorsAndWalls.png',
+  furn: 'assets/TopDownHouse_FurnitureState1.png',
+};
+function loadAll(cb){
+  let n = Object.keys(SRC).length;
+  for (const k in SRC){ const im = new Image();
+    im.onload = ()=>{ if(--n===0) cb(); };
+    im.onerror= ()=>{ if(--n===0) cb(); };
+    IMG[k]=im; im.src=SRC[k];
+  }
+}
+// blit por tiles: (sheet, colOrigem,rowOrigem, larguraTiles,alturaTiles, destX,destY, destW,destH)
+function blit(img, sc, sr, sw, sh, dx, dy, dw, dh){
+  ctx.drawImage(img, sc*T, sr*T, sw*T, sh*T, dx, dy, dw, dh);
+}
+
+/* ---------- MAPA (cada char = 1 tile) ----------
+   #=parede  k=cozinha  l=sala  b=quarto  h=banheiro  .=porta */
+const MAP = [
+  "####################",
+  "#kkkkkkkk#lllllllll#",
+  "#kkkkkkkk#lllllllll#",
+  "#kkkkkkkk.lllllllll#",
+  "#kkkkkkkk#lllllllll#",
+  "#kkkkkkkk#lllllllll#",
+  "####.#########.#####",
+  "#bbbbbbbb#hhhhhhhhh#",
+  "#bbbbbbbb#hhhhhhhhh#",
+  "#bbbbbbbb.hhhhhhhhh#",
+  "#bbbbbbbb#hhhhhhhhh#",
+  "#bbbbbbbb#hhhhhhhhh#",
+  "####################",
+];
+const ROWS = MAP.length, COLS = MAP[0].length;
+
+// piso de cada cômodo = (col,row) na folha FloorsAndWalls
+const FLOOR_TILE = {
+  k:[14,6],   // ladrilho laranja (cozinha)
+  l:[10,2],   // tábuas de madeira clara (sala)
+  b:[2,2],    // carpete verde (quarto)
+  h:[6,6],    // pedra bege (banheiro)
+  '.':[10,2], // porta = madeira
+};
+const ROOM_NAME = { k:'Cozinha', l:'Sala', b:'Quarto', h:'Banheiro', '.':'' };
+const tileAt = (c,r)=>(r<0||r>=ROWS||c<0||c>=COLS)?'#':MAP[r][c];
+const isWall = (c,r)=>tileAt(c,r)==='#';
+
+/* ---------- MÓVEIS ----------
+   col,row,w,h = área de COLISÃO (em tiles)
+   spr = [sheetCol, sheetRow, spriteW, spriteH] recorte na folha de móveis
+   O sprite é ancorado no rodapé da área e centralizado (pode subir além). */
+const FURNITURE = [
+  // COZINHA
+  { col:1, row:1, w:2, h:2, spr:[2,12,2,3], label:'Geladeira',
+    use(){ apply('fome',+35); toast('Comeu 🍽️  +Fome'); } },
+  { col:3, row:1, w:2, h:2, spr:[4,12,2,3], label:'Fogão',
+    use(){ apply('fome',+20); apply('higiene',-4); toast('Cozinhou 🍳'); } },
+  { col:5, row:1, w:2, h:1, spr:[6,12,2,3], label:'Pia' },                 // decorativo
+  { col:2, row:4, w:2, h:1, spr:[0,2,2,2],  label:'Mesa' },                // decorativo
+  // SALA
+  { col:12, row:4, w:3, h:1, spr:[2,10,3,2], label:'Sofá',
+    use(){ apply('diversao',+12); apply('energia',+8); toast('Descansou no sofá 🛋️'); } },
+  { col:16, row:4, w:2, h:1, spr:[9,10,2,2], label:'Poltrona' },           // decorativo
+  { col:13, row:1, w:1, h:1, spr:[12,17,1,1], label:'TV',
+    use(){ apply('diversao',+30); toast('Assistiu TV 📺  +Diversão'); } },
+  { col:10, row:1, w:1, h:1, spr:[0,10,1,2], label:'Planta' },             // decorativo
+  // QUARTO
+  { col:1, row:8, w:2, h:2, spr:[0,0,2,2], label:'Cama',
+    use(){ apply('energia',+45); apply('fome',-8); toast('Dormiu 😴  +Energia'); } },
+  { col:5, row:7, w:2, h:1, spr:[0,8,2,2], label:'Cômoda' },               // decorativo
+  { col:7, row:10, w:1, h:1, spr:[5,8,1,2], label:'Relógio' },             // decorativo
+  // BANHEIRO
+  { col:11, row:8, w:3, h:1, spr:[5,16,3,2], label:'Banheira',
+    use(){ apply('higiene',+40); toast('Tomou banho 🛁  +Higiene'); } },
+  { col:16, row:8, w:1, h:1, spr:[8,16,1,2], label:'Vaso' },               // decorativo
+];
+FURNITURE.forEach(f=>{ f.px=f.col*T; f.py=f.row*T; f.pw=f.w*T; f.ph=f.h*T; });
+
+/* ---------- STATUS DE VIDA ---------- */
+const stats = {
+  energia:  { val:80, color:'#7ee081', icon:'⚡' },
+  fome:     { val:70, color:'#ffb454', icon:'🍔' },
+  higiene:  { val:90, color:'#6ec6ff', icon:'🚿' },
+  diversao: { val:60, color:'#ff8fd0', icon:'🎮' },
+};
+const DECAY = { energia:0.6, fome:0.9, higiene:0.4, diversao:0.7 };
+const apply = (s,a)=> stats[s].val = Math.max(0,Math.min(100,stats[s].val+a));
+let toastMsg='', toastT=0;
+const toast = m => { toastMsg=m; toastT=2.2; };
+
+/* ---------- JOGADOR ---------- */
+const player = { x:100, y:52, r:4.5, dx:0, dy:1, speed:66, moving:false, frame:0 };
+
+/* ---------- ENTRADA ---------- */
+const keys = {};
+addEventListener('keydown', e=>{
+  const k=e.key.toLowerCase(); keys[k]=true;
+  if (k==='e') tryInteract();
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+});
+addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+canvas.addEventListener('click', tryInteract);
+
+function nearFurniture(){
+  let best=null, bd=1e9;
+  for (const f of FURNITURE){
+    if (!f.use) continue;                       // só os interativos destacam
+    const nx=Math.max(f.px,Math.min(player.x,f.px+f.pw));
+    const ny=Math.max(f.py,Math.min(player.y,f.py+f.ph));
+    const d=Math.hypot(player.x-nx, player.y-ny);
+    if (d<12 && d<bd){ bd=d; best=f; }
+  }
+  return best;
+}
+function tryInteract(){ const f=nearFurniture(); if(f) f.use(); }
+
+/* ---------- COLISÃO ---------- */
+function solidAt(px,py){
+  if (isWall(Math.floor(px/T), Math.floor(py/T))) return true;
+  for (const f of FURNITURE)
+    if (px>=f.px && px<f.px+f.pw && py>=f.py && py<f.py+f.ph) return true;
+  return false;
+}
+function canBe(px,py){ const r=player.r;
+  return !(solidAt(px-r,py-r)||solidAt(px+r,py-r)||solidAt(px-r,py+r)||solidAt(px+r,py+r)); }
+
+/* ---------- LOOP ---------- */
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  update(dt); render();
+  requestAnimationFrame(loop);
+}
+function update(dt){
+  for (const k in DECAY) apply(k,-DECAY[k]*dt);
+  let mx=0,my=0;
+  if (keys['a']||keys['arrowleft'])  mx-=1;
+  if (keys['d']||keys['arrowright']) mx+=1;
+  if (keys['w']||keys['arrowup'])    my-=1;
+  if (keys['s']||keys['arrowdown'])  my+=1;
+  player.moving=(mx||my)!==0;
+  if (player.moving){
+    const len=Math.hypot(mx,my)||1; mx/=len; my/=len; player.dx=mx; player.dy=my;
+    const nx=player.x+mx*player.speed*dt, ny=player.y+my*player.speed*dt;
+    if (canBe(nx,player.y)) player.x=nx;
+    if (canBe(player.x,ny)) player.y=ny;
+    player.frame+=dt*10;
+  } else player.frame=0;
+  if (toastT>0) toastT-=dt;
+}
+
+/* ============================================================ RENDER */
+function render(){
+  // 1) piso (textura real por cômodo)
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
+    const t=MAP[r][c];
+    if (t==='#') continue;
+    const [fc,fr]=FLOOR_TILE[t]||FLOOR_TILE['.'];
+    blit(IMG.fw, fc,fr,1,1, c*T,r*T, T,T);
+  }
+  // 2) paredes (bloco quente combinando com o pacote)
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
+    if (MAP[r][c]!=='#') continue;
+    const x=c*T,y=r*T;
+    ctx.fillStyle='#4a3324'; ctx.fillRect(x,y,T,T);
+    ctx.fillStyle='#5c4230'; ctx.fillRect(x,y,T,5);            // topo iluminado
+    ctx.fillStyle='rgba(0,0,0,.28)'; ctx.fillRect(x,y+T-3,T,3);// sombra na base
+  }
+  // 3) rótulos dos cômodos
+  labelRoom('Cozinha',4.5,1); labelRoom('Sala',14.5,1);
+  labelRoom('Quarto',4.5,7);  labelRoom('Banheiro',14.5,7);
+
+  // 4) móveis (ordenados por Y pra sobreposição correta)
+  const sorted=[...FURNITURE].sort((a,b)=>(a.py+a.ph)-(b.py+b.ph));
+  for (const f of sorted){
+    const [sc,sr,sw,sh]=f.spr;
+    const dw=sw*T, dh=sh*T;
+    const dx=f.px+(f.pw-dw)/2;      // centraliza na área
+    const dy=f.py+f.ph-dh;          // ancora no rodapé (pode subir)
+    blit(IMG.furn, sc,sr,sw,sh, dx,dy, dw,dh);
+  }
+
+  // 5) destaque do móvel próximo + botão E
+  const hot=nearFurniture();
+  if (hot){
+    ctx.strokeStyle='#ffd36e'; ctx.lineWidth=1;
+    ctx.strokeRect(hot.px+.5,hot.py+.5,hot.pw-1,hot.ph-1);
+    keyBubble('E', hot.px+hot.pw/2, hot.py-2);
+  }
+  drawPlayer();
+  drawHUD(hot);
+  if (toastT>0) drawToast();
+}
+
+function labelRoom(name,c,r){
+  ctx.fillStyle='rgba(255,255,255,.14)'; ctx.font='6px monospace'; ctx.textAlign='center';
+  ctx.fillText(name.toUpperCase(), c*T, r*T-3);
+}
+function drawPlayer(){
+  const x=player.x,y=player.y,bob=player.moving?Math.sin(player.frame)*1:0;
+  ctx.fillStyle='rgba(0,0,0,.30)'; ctx.beginPath(); ctx.ellipse(x,y+5,6,3,0,0,7); ctx.fill();
+  ctx.fillStyle='#e05a4a'; ctx.beginPath(); ctx.arc(x,y+bob,player.r+1,0,7); ctx.fill();
+  ctx.fillStyle='#f0c090'; ctx.beginPath(); ctx.arc(x,y-2+bob,3.2,0,7); ctx.fill();
+  ctx.fillStyle='#5a3820'; ctx.fillRect(x-3,y-6+bob,6,2.5);
+  ctx.fillStyle='#222'; ctx.fillRect(x-1+player.dx*3, y-2+player.dy*3+bob, 2, 2);
+}
+function keyBubble(txt,x,y){
+  ctx.fillStyle='#ffd36e'; ctx.beginPath(); ctx.arc(x,y-2,4,0,7); ctx.fill();
+  ctx.fillStyle='#111'; ctx.font='6px monospace'; ctx.textAlign='center'; ctx.fillText(txt,x,y);
+}
+function drawHUD(hot){
+  ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(0,0,W,15);
+  const rt=MAP[Math.floor(player.y/T)][Math.floor(player.x/T)];
+  ctx.fillStyle='#fff'; ctx.font='7px monospace'; ctx.textAlign='left';
+  ctx.fillText('📍'+(ROOM_NAME[rt]||''), 3, 10);
+  let x=78;
+  for (const k in stats){ const s=stats[k];
+    ctx.fillText(s.icon,x,10); x+=10;
+    ctx.fillStyle='#000'; ctx.fillRect(x,4,26,7);
+    ctx.fillStyle=s.val<25?'#ff5555':s.color; ctx.fillRect(x+1,5,24*(s.val/100),5);
+    ctx.fillStyle='#fff'; x+=32;
+  }
+  if (hot){ ctx.textAlign='right'; ctx.fillStyle='#ffd36e'; ctx.fillText('E: '+hot.label,W-3,10); }
+}
+function drawToast(){
+  ctx.globalAlpha=Math.min(1,toastT);
+  ctx.fillStyle='rgba(0,0,0,.8)'; ctx.font='8px monospace'; ctx.textAlign='center';
+  const w=toastMsg.length*5+12; ctx.fillRect(W/2-w/2,H-18,w,13);
+  ctx.fillStyle='#ffd36e'; ctx.fillText(toastMsg,W/2,H-9);
+  ctx.globalAlpha=1;
+}
+
+/* ---------- start ---------- */
+ctx.fillStyle='#fff'; ctx.font='9px monospace'; ctx.textAlign='center';
+ctx.fillText('Carregando texturas...', W/2, H/2);
+loadAll(()=>{ ctx.imageSmoothingEnabled=false; requestAnimationFrame(loop); });
+</script>
+</body>
+</html>
