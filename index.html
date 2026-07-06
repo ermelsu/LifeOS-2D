@@ -3,59 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LifeOS 2D</title>
+<title>LifeOS 2</title>
 <style>
-  :root{ color-scheme:dark; }
+  :root{
+    --bg1:#0e1018; --bg2:#171b28; --panel:#1a1f2e; --panel2:#222839;
+    --line:#2c3346; --ink:#e7eaf3; --mut:#8a93a9; --acc:#ffc94d; --acc-ink:#25190a;
+    --ok:#54d98c;
+    color-scheme:dark;
+  }
   *{ box-sizing:border-box; margin:0; padding:0; }
-  body{ min-height:100vh; background:radial-gradient(circle at 50% -10%,#28283a,#12121a 60%);
-    color:#e8e8ee; font-family:"Segoe UI",system-ui,sans-serif;
-    display:flex; flex-direction:column; align-items:center; padding:40px 16px; gap:6px; }
-  h1{ font-size:34px; letter-spacing:3px; color:#ffd36e; text-shadow:0 3px 0 #00000060; }
-  .sub{ color:#9aa0b0; font-size:15px; margin-bottom:26px; text-align:center; max-width:520px; }
-  .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:18px; width:100%; max-width:760px; }
-  a.card{ text-decoration:none; color:inherit; background:#1c1c28; border:1px solid #2e2e40;
-    border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:8px;
-    transition:transform .12s, border-color .12s, background .12s; }
-  a.card:hover{ transform:translateY(-4px); border-color:#ffd36e; background:#232336; }
-  .card .ico{ font-size:34px; }
-  .card .t{ font-size:18px; font-weight:600; }
-  .card .d{ font-size:13px; color:#9aa0b0; line-height:1.5; }
-  .tag{ align-self:flex-start; font-size:11px; padding:2px 8px; border-radius:20px;
-    background:#ffd36e; color:#20140a; font-weight:600; margin-top:4px; }
-  footer{ margin-top:34px; color:#5a5f6e; font-size:12px; text-align:center; line-height:1.6; }
+  html,body{ height:100%; font-family:"Segoe UI",system-ui,sans-serif; color:var(--ink);
+    background:radial-gradient(120% 120% at 50% 0%,var(--bg2),var(--bg1)); overflow:hidden; user-select:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; border-radius:10px; }
+  .btn{ background:var(--panel2); color:var(--ink); border:1px solid var(--line); padding:10px 14px; font-size:14px; }
+  .btn:hover{ background:#2b3245; }
+  .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border-color:var(--acc); }
+  .btn.primary:hover{ filter:brightness(1.06); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  #app{ height:100%; display:flex; flex-direction:column; }
+
+  /* ---------- barra superior (passos) ---------- */
+  #top{ display:none; align-items:center; gap:14px; padding:12px 18px; background:var(--panel);
+    border-bottom:1px solid var(--line); }
+  #top .badge{ background:var(--acc); color:var(--acc-ink); font-weight:800; font-size:12px;
+    padding:5px 10px; border-radius:20px; letter-spacing:.5px; white-space:nowrap; }
+  #top .ttl{ font-weight:700; font-size:16px; }
+  #top .desc{ color:var(--mut); font-size:13px; }
+  #top .sp{ flex:1; }
+
+  /* ---------- palco / tabuleiro ---------- */
+  #stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
+  #wrap{ position:relative; height:100%; aspect-ratio:22/14; max-width:100%;
+    border:3px solid #000; border-radius:10px; box-shadow:0 12px 50px rgba(0,0,0,.55); overflow:hidden; }
+  canvas#game{ width:100%; height:100%; display:block; image-rendering:pixelated; }
+
+  /* ---------- barra inferior (ferramentas) ---------- */
+  #bottom{ display:none; align-items:center; gap:16px; padding:12px 18px; background:var(--panel);
+    border-top:1px solid var(--line); flex-wrap:wrap; }
+  .tools{ display:flex; gap:8px; }
+  .tool{ display:flex; flex-direction:column; align-items:center; gap:3px; background:var(--panel2);
+    border:2px solid var(--line); border-radius:10px; padding:7px 12px; font-size:12px; color:var(--ink); }
+  .tool .em{ font-size:18px; }
+  .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
+  .sep{ width:1px; align-self:stretch; background:var(--line); }
+  .swatches{ display:flex; gap:8px; flex-wrap:wrap; }
+  .sw{ display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
+    border:2px solid var(--line); border-radius:9px; padding:5px; background:#12151f; }
+  .sw.on{ border-color:var(--acc); }
+  .sw canvas{ width:38px; height:38px; image-rendering:pixelated; border-radius:4px; }
+  .sw span{ font-size:11px; color:var(--mut); }
+  #bottom .sp{ flex:1; }
+
+  /* ---------- telas cheias (título / personagem) ---------- */
+  .screen{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:22px; text-align:center;
+    background:radial-gradient(120% 120% at 50% 0%,var(--bg2),var(--bg1)); z-index:20; padding:24px; }
+  .screen.show{ display:flex; }
+
+  #titleArt{ image-rendering:pixelated; width:min(78vw,560px); height:auto; border-radius:14px;
+    border:3px solid #000; box-shadow:0 18px 60px rgba(0,0,0,.6); }
+  .logo{ font-size:clamp(38px,8vw,72px); font-weight:900; letter-spacing:3px; line-height:1;
+    color:var(--acc); text-shadow:0 4px 0 #0007, 0 0 30px #ffc94d55; }
+  .logo small{ display:block; font-size:15px; letter-spacing:4px; font-weight:600; color:var(--mut);
+    margin-top:8px; text-shadow:none; }
+  .tagline{ color:var(--mut); font-size:15px; max-width:460px; }
+
+  h2.head{ font-size:24px; font-weight:800; }
+  .charrow{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .card{ position:relative; width:120px; background:var(--panel); border:2px solid var(--line);
+    border-radius:14px; padding:14px 10px 12px; cursor:pointer; transition:transform .1s,border-color .1s; }
+  .card:hover{ transform:translateY(-4px); }
+  .card.on{ border-color:var(--acc); background:#221d10; }
+  .card canvas{ width:64px; height:96px; image-rendering:pixelated; }
+  .card .nm{ font-weight:700; margin-top:6px; }
+  .card .pill{ position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    background:var(--ok); color:#06210f; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  kbd{ background:#2a3145; border-radius:5px; padding:1px 7px; border:1px solid #3c465c; font-size:12px; }
 </style>
 </head>
 <body>
-  <h1>LIFE OS · 2D</h1>
-  <p class="sub">Um joguinho pra controlar os aspectos da sua vida. Construa sua casa,
-    ande pelos cômodos e cuide dos seus status.</p>
-
-  <div class="cards">
-    <a class="card" href="editor.html">
-      <div class="ico">🧱</div>
-      <div class="t">Chão &amp; Paredes</div>
-      <div class="d">Desenhe o piso e as paredes com as texturas do <b>Modern Interiors</b>,
-        escolha o personagem e clique em <b>Jogar</b> pra andar com colisão.</div>
-      <span class="tag">COMECE AQUI</span>
-    </a>
-    <a class="card" href="topdown.html">
-      <div class="ico">🎮</div>
-      <div class="t">Demo Top-Down</div>
-      <div class="d">Um apartamento pronto em visão de cima. Ande com WASD, use os móveis
-        e veja as texturas em ação.</div>
-    </a>
-    <a class="card" href="click.html">
-      <div class="ico">🖱️</div>
-      <div class="t">Protótipo de Cliques</div>
-      <div class="d">A primeira versão: cenas de lado, portas com nome e itens clicáveis.
-        Estilo <i>Life is a Game</i>.</div>
-    </a>
+<div id="app">
+  <!-- barra superior -->
+  <div id="top">
+    <span class="badge" id="stepBadge">PASSO 1</span>
+    <span class="ttl" id="stepTtl"></span>
+    <span class="desc" id="stepDesc"></span>
+    <span class="sp"></span>
+    <button class="btn" id="btnBack" style="display:none">◀ Voltar</button>
+    <button class="btn primary" id="btnNext"></button>
   </div>
 
-  <footer>
-    Feito com Canvas 2D puro · texturas <b>Modern Interiors</b> (LimeZu)<br>
-    Sem instalação — roda direto no navegador.
-  </footer>
+  <!-- tabuleiro -->
+  <div id="stage"><div id="wrap"><canvas id="game" width="352" height="224"></canvas></div></div>
+
+  <!-- barra inferior -->
+  <div id="bottom">
+    <div class="tools" id="toolbar"></div>
+    <div class="sep" id="palSep"></div>
+    <div class="swatches" id="swatches"></div>
+    <span class="sp"></span>
+    <span class="desc" id="playHint" style="color:var(--mut);font-size:13px"></span>
+  </div>
+</div>
+
+<!-- TELA TÍTULO -->
+<div class="screen show" id="scrTitle">
+  <canvas id="titleArt" width="176" height="112"></canvas>
+  <div class="logo">LIFEOS 2<small>ORGANIZE SUA VIDA · UM CÔMODO DE CADA VEZ</small></div>
+  <button class="btn primary" id="btnPlayTitle" style="font-size:18px;padding:14px 40px">▶ JOGAR</button>
+</div>
+
+<!-- TELA PERSONAGEM -->
+<div class="screen" id="scrChar">
+  <h2 class="head">Escolha seu personagem</h2>
+  <div class="charrow" id="charRow"></div>
+  <button class="btn primary" id="btnCharNext" style="font-size:16px;padding:12px 30px">Continuar ▶</button>
+</div>
+
+<script>
+/* ============================================================
+   LifeOS 2 — fluxo guiado: título → personagem →
+   passo 1 (chão) → passo 2 (paredes + portas) → jogar.
+   Texturas: Modern Interiors (LimeZu), tiles 16px.
+   ============================================================ */
+const T=16, COLS=22, ROWS=14;
+const canvas=document.getElementById('game'); const ctx=canvas.getContext('2d');
+canvas.width=COLS*T; canvas.height=ROWS*T; ctx.imageSmoothingEnabled=false;
+
+/* ---------- assets ---------- */
+const IMG={}; const CHARS=['Adam','Alex','Amelia','Bob'];
+const SRC={ rb:'assets/modern/Room_Builder_free_16x16.png' };
+CHARS.forEach(c=>{ SRC[c+'_run']='assets/modern/'+c+'_run_16x16.png';
+                   SRC[c+'_idle']='assets/modern/'+c+'_idle_16x16.png'; });
+
+/* ---------- catálogos ---------- */
+const FLOORS={
+  mad:      { label:'Madeira',  t:[0,12] },
+  nogueira: { label:'Nogueira', t:[0,14] },
+  cerejeira:{ label:'Cerejeira',t:[0,16] },
+  tijolo:   { label:'Tijolo',   t:[11,5] },
+  ceramica: { label:'Cerâmica', t:[11,7] },
+  azulejo:  { label:'Azulejo',  t:[11,9] },
+  espinha:  { label:'Espinha',  t:[11,13] },
+  cinza:    { label:'Cinza',    t:[11,11] },
+};
+const WALL_FILL=[15,3];   // tile branco 100% sólido (uniforme em toda direção)
+
+/* ---------- estado ---------- */
+let house={ floors:Array(COLS*ROWS).fill(null), walls:Array(COLS*ROWS).fill(false), doors:Array(COLS*ROWS).fill(false) };
+const idx=(c,r)=>r*COLS+c; const inB=(c,r)=>c>=0&&c<COLS&&r>=0&&r<ROWS;
+const wallSolid=(c,r)=> inB(c,r) && house.walls[idx(c,r)] && !house.doors[idx(c,r)];
+const collide  =(c,r)=> !inB(c,r) || (house.walls[idx(c,r)] && !house.doors[idx(c,r)]);
+
+let state='title', selChar='Bob', selFloor='mad', tool='paint';
+
+/* ============================================================ FLUXO / TELAS */
+const el=id=>document.getElementById(id);
+function setState(s){ state=s;
+  el('scrTitle').classList.toggle('show', s==='title');
+  el('scrChar').classList.toggle('show', s==='char');
+  el('top').style.display   = (s==='floor'||s==='walls') ? 'flex':'none';
+  el('bottom').style.display= (s==='floor'||s==='walls'||s==='play') ? 'flex':'none';
+  if(s==='floor') setupFloorStep();
+  if(s==='walls') setupWallsStep();
+  if(s==='play')  setupPlay();
+}
+
+/* ---------- passo 1: chão ---------- */
+function setupFloorStep(){
+  el('stepBadge').textContent='PASSO 1';
+  el('stepTtl').textContent='Desenhe o chão';
+  el('stepDesc').textContent='Pinte o piso de TODOS os cômodos. Clique e arraste.';
+  el('btnBack').style.display='none';
+  el('btnNext').textContent='Finalizar chão ▶';
+  el('btnNext').onclick=()=>{ if(house.floors.some(Boolean)) setState('walls');
+    else flashHint('Desenhe pelo menos um cômodo primeiro 🟫'); };
+  buildToolbar([['paint','🖌️','Pincel'],['fill','🪣','Balde'],['erase','🧽','Apagar']]);
+  el('palSep').style.display=''; el('swatches').style.display='';
+  buildSwatches(); tool='paint'; refreshToolbar(); el('playHint').textContent='';
+}
+/* ---------- passo 2: paredes + portas ---------- */
+function setupWallsStep(){
+  el('stepBadge').textContent='PASSO 2';
+  el('stepTtl').textContent='Paredes e portas';
+  el('stepDesc').textContent='Contorne os cômodos com paredes. Use a Porta pra deixar passagens.';
+  el('btnBack').style.display=''; el('btnBack').textContent='◀ Voltar ao chão';
+  el('btnBack').onclick=()=>setState('floor');
+  el('btnNext').textContent='JOGAR ▶';
+  el('btnNext').onclick=()=>setState('play');
+  buildToolbar([['wall','🧱','Parede'],['door','🚪','Porta'],['erase','🧽','Apagar']]);
+  el('palSep').style.display='none'; el('swatches').style.display='none';
+  tool='wall'; refreshToolbar(); el('playHint').textContent='';
+}
+/* ---------- jogar ---------- */
+function setupPlay(){
+  el('toolbar').innerHTML=''; el('palSep').style.display='none'; el('swatches').style.display='none';
+  const b=document.createElement('button'); b.className='btn'; b.textContent='✎ Editar casa';
+  b.onclick=()=>setState('walls'); el('toolbar').appendChild(b);
+  el('playHint').innerHTML='<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou setas pra andar · esbarra nas paredes';
+  startPlay();
+}
+
+/* ---------- ferramentas / paleta ---------- */
+function buildToolbar(list){ const tb=el('toolbar'); tb.innerHTML='';
+  list.forEach(([id,em,lbl])=>{ const d=document.createElement('button'); d.className='tool'; d.dataset.tool=id;
+    d.innerHTML='<span class="em">'+em+'</span>'+lbl; d.onclick=()=>{ tool=id; refreshToolbar(); }; tb.appendChild(d); }); }
+function refreshToolbar(){ document.querySelectorAll('#toolbar .tool').forEach(t=>t.classList.toggle('on',t.dataset.tool===tool)); }
+function mkThumb(w,h,fn){ const cv=document.createElement('canvas'); cv.width=w;cv.height=h;
+  const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false; fn(cx); return cv; }
+function buildSwatches(){ const box=el('swatches'); box.innerHTML='';
+  for(const id in FLOORS){ const f=FLOORS[id], [c,r]=f.t;
+    const s=document.createElement('div'); s.className='sw'+(id===selFloor?' on':'');
+    s.appendChild(mkThumb(38,38,cx=>{ for(let a=0;a<2;a++)for(let b=0;b<2;b++) cx.drawImage(IMG.rb,c*T,r*T,T,T,b*19,a*19,19,19); }));
+    const sp=document.createElement('span'); sp.textContent=f.label; s.appendChild(sp);
+    s.onclick=()=>{ selFloor=id; buildSwatches(); }; box.appendChild(s);
+  } }
+let hintTimer=0;
+function flashHint(msg){ el('playHint').textContent=msg; el('playHint').style.color='var(--acc)';
+  clearTimeout(hintTimer); hintTimer=setTimeout(()=>{ el('playHint').style.color='var(--mut)'; el('playHint').textContent=''; },2200); }
+
+/* ============================================================ personagens */
+const DIR={ down:0, up:1, left:2, right:3 };           // ordem real do sprite
+function drawCharAt(cx,name,dir,moving,frame,footX,footY){
+  const sheet=moving?IMG[name+'_run']:IMG[name+'_idle'];
+  const col=moving? ([0,6,12,18][dir]+(frame%6)) : dir;
+  cx.drawImage(sheet, col*16,0,16,32, Math.round(footX-8),Math.round(footY-27),16,32);
+}
+
+/* ============================================================ RENDER tabuleiro */
+function nearestFloor(c,r){ if(inB(c,r)&&house.floors[idx(c,r)]) return house.floors[idx(c,r)];
+  const N=[[0,1],[0,-1],[1,0],[-1,0]]; for(const[dx,dy]of N){ const x=c+dx,y=r+dy;
+    if(inB(x,y)&&house.floors[idx(x,y)]) return house.floors[idx(x,y)]; } return 'mad'; }
+
+function render(){
+  // fundo "papel" (xadrez sutil) — deixa claro onde é a área construível
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    ctx.fillStyle=((c+r)&1)?'#12151f':'#0e111a'; ctx.fillRect(c*T,r*T,T,T); }
+  // piso
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const fid=house.floors[idx(c,r)];
+    if(fid){ const [fc,fr]=FLOORS[fid].t; ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,c*T,r*T,T,T); } }
+  // portas (piso vizinho + soleira)
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(!house.doors[idx(c,r)]) continue;
+    const [fc,fr]=FLOORS[nearestFloor(c,r)].t; ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,c*T,r*T,T,T);
+    ctx.fillStyle='rgba(120,80,40,.55)'; ctx.fillRect(c*T+2,r*T+6,T-4,4); }
+  // sombra projetada das paredes
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(wallSolid(c,r)&&inB(c,r+1)&&!wallSolid(c,r+1)&&!house.doors[idx(c,r+1)]){
+    ctx.fillStyle='rgba(0,0,0,.16)'; ctx.fillRect(c*T,(r+1)*T,T,4); } }
+  // paredes (sólido + relevo)
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(!wallSolid(c,r)) continue; const x=c*T,y=r*T;
+    ctx.drawImage(IMG.rb,WALL_FILL[0]*T,WALL_FILL[1]*T,T,T,x,y,T,T);
+    if(!wallSolid(c,r-1)){ ctx.fillStyle='rgba(255,255,255,.16)'; ctx.fillRect(x,y,T,2); }
+    if(!wallSolid(c,r+1)){ ctx.fillStyle='rgba(0,0,0,.28)';       ctx.fillRect(x,y+T-3,T,3); }
+    if(!wallSolid(c-1,r)){ ctx.fillStyle='rgba(0,0,0,.14)';       ctx.fillRect(x,y,2,T); }
+    if(!wallSolid(c+1,r)){ ctx.fillStyle='rgba(0,0,0,.14)';       ctx.fillRect(x+T-2,y,2,T); }
+  }
+  // personagem (no jogo)
+  if(state==='play') drawCharAt(ctx,selChar,player.dir,player.moving,Math.floor(player.animT*10),player.x,player.y);
+  // grade (só na edição)
+  if(state==='floor'||state==='walls') drawGrid();
+  // cursor
+  if((state==='floor'||state==='walls') && hover.c>=0) drawCursor();
+  // moldura da área
+  ctx.strokeStyle='rgba(255,201,77,.9)'; ctx.lineWidth=2; ctx.strokeRect(1,1,canvas.width-2,canvas.height-2);
+}
+function drawGrid(){
+  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=1;
+  for(let c=1;c<COLS;c++){ ctx.beginPath(); ctx.moveTo(c*T+.5,0); ctx.lineTo(c*T+.5,ROWS*T); ctx.stroke(); }
+  for(let r=1;r<ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*T+.5); ctx.lineTo(COLS*T,r*T+.5); ctx.stroke(); }
+}
+function drawCursor(){ const x=hover.c*T,y=hover.r*T;
+  if(state==='floor'&&tool!=='erase'){ const [fc,fr]=FLOORS[selFloor].t; ctx.globalAlpha=.5;
+    ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,x,y,T,T); ctx.globalAlpha=1; }
+  ctx.strokeStyle=tool==='erase'?'#ff6b6b':(tool==='door'?'#8b5a2b':'#ffc94d');
+  ctx.lineWidth=1.5; ctx.strokeRect(x+.75,y+.75,T-1.5,T-1.5); }
+
+/* ============================================================ JOGO */
+const player={ x:0,y:0,dir:DIR.down,moving:false,animT:0,speed:56 };
+const keys={};
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys[k]=true;
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault(); });
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
+function feetFree(px,py){ const hw=5;
+  for(const [x,y] of [[px-hw,py-4],[px+hw,py-4],[px-hw,py+3],[px+hw,py+3]])
+    if(collide(Math.floor(x/T),Math.floor(y/T))) return false; return true; }
+function startPlay(){ let best=null,bd=1e9;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(house.floors[idx(c,r)]&&!collide(c,r)){
+    const d=Math.hypot(c-COLS/2,r-ROWS/2); if(d<bd){bd=d;best=[c,r];} } }
+  if(best){ player.x=best[0]*T+T/2; player.y=best[1]*T+T-2; player.dir=DIR.down; } }
+
+/* ============================================================ loop */
+let last=performance.now();
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(state==='play') tickPlay(dt); if(state!=='title'&&state!=='char') render(); requestAnimationFrame(loop); }
+function tickPlay(dt){
+  let mx=0,my=0;
+  if(keys['a']||keys['arrowleft'])mx-=1; if(keys['d']||keys['arrowright'])mx+=1;
+  if(keys['w']||keys['arrowup'])my-=1;  if(keys['s']||keys['arrowdown'])my+=1;
+  player.moving=(mx||my)!==0;
+  if(player.moving){ const l=Math.hypot(mx,my)||1; mx/=l; my/=l;
+    if(my<0)player.dir=DIR.up; else if(my>0)player.dir=DIR.down;
+    if(mx<0)player.dir=DIR.left; else if(mx>0)player.dir=DIR.right;
+    const nx=player.x+mx*player.speed*dt, ny=player.y+my*player.speed*dt;
+    if(feetFree(nx,player.y)) player.x=nx;
+    if(feetFree(player.x,ny)) player.y=ny;
+    player.animT+=dt;
+  }
+}
+
+/* ============================================================ edição (mouse) */
+const hover={c:-1,r:-1}; let painting=false;
+function cellOf(e){ const b=canvas.getBoundingClientRect();
+  return { c:Math.floor((e.clientX-b.left)/b.width*canvas.width/T),
+           r:Math.floor((e.clientY-b.top )/b.height*canvas.height/T) }; }
+function applyTool(c,r){ if(!inB(c,r))return; const i=idx(c,r);
+  if(state==='floor'){
+    if(tool==='paint') house.floors[i]=selFloor;
+    else if(tool==='erase') house.floors[i]=null;
+    else if(tool==='fill') flood(c,r);
+  } else if(state==='walls'){
+    if(tool==='wall'){ house.walls[i]=true; house.doors[i]=false; }
+    else if(tool==='door'){ house.doors[i]=true; house.walls[i]=true; }
+    else if(tool==='erase'){ house.walls[i]=false; house.doors[i]=false; }
+  } }
+function flood(c,r){ const target=house.floors[idx(c,r)]; if(target===selFloor)return; const st=[[c,r]];
+  while(st.length){ const[x,y]=st.pop(); if(!inB(x,y))continue; if(house.floors[idx(x,y)]!==target)continue;
+    house.floors[idx(x,y)]=selFloor; st.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]); } }
+canvas.addEventListener('mousedown',e=>{ if(state!=='floor'&&state!=='walls')return; const{c,r}=cellOf(e); hover.c=c;hover.r=r;
+  if(tool==='fill'){ if(inB(c,r))flood(c,r); return; } painting=true; applyTool(c,r); });
+canvas.addEventListener('mousemove',e=>{ if(state!=='floor'&&state!=='walls')return; const{c,r}=cellOf(e); hover.c=c;hover.r=r;
+  if(painting&&tool!=='fill') applyTool(c,r); });
+addEventListener('mouseup',()=>painting=false);
+canvas.addEventListener('mouseleave',()=>{hover.c=-1;painting=false;});
+
+/* ============================================================ telas título/personagem */
+function drawTitleArt(){
+  const cv=el('titleArt'); const w=cv.width,h=cv.height;
+  const x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
+  x.fillStyle='#0e111a'; x.fillRect(0,0,w,h);
+  const WT=WALL_FILL, f=FLOORS.mad.t, cols=w/16, rows=h/16;
+  // piso
+  for(let r=2;r<rows-1;r++)for(let c=1;c<cols-1;c++) x.drawImage(IMG.rb,f[0]*16,f[1]*16,16,16,c*16,r*16,16,16);
+  // paredes (topo + laterais)
+  for(let c=1;c<cols-1;c++) x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,c*16,16,16,16);
+  for(let r=1;r<rows-1;r++){ x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,16,r*16,16,16);
+    x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,(cols-2)*16,r*16,16,16); }
+  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(16,32,(cols-2)*16-16,3);   // sombrinha da parede
+  drawCharAt(x,'Bob',DIR.down,false,0,w/2,h-24);                        // Bob no centro
+  x.strokeStyle='rgba(255,201,77,.9)'; x.lineWidth=2; x.strokeRect(1,1,w-2,h-2);
+}
+function buildCharCards(){ const row=el('charRow'); row.innerHTML='';
+  CHARS.forEach(name=>{ const card=document.createElement('div'); card.className='card'+(name===selChar?' on':'');
+    if(name==='Bob'){ const p=document.createElement('div'); p.className='pill'; p.textContent='PRINCIPAL'; card.appendChild(p); }
+    card.appendChild(mkThumb(64,96,cx=>{ const im=IMG[name+'_idle']; cx.drawImage(im,0,0,16,32,0,4,64,96); }));
+    const nm=document.createElement('div'); nm.className='nm'; nm.textContent=name; card.appendChild(nm);
+    card.onclick=()=>{ selChar=name; buildCharCards(); }; row.appendChild(card);
+  }); }
+
+el('btnPlayTitle').onclick=()=>{ buildCharCards(); setState('char'); };
+el('btnCharNext').onclick=()=>setState('floor');
+
+/* ============================================================ start */
+function starter(){ // casa de exemplo pra facilitar
+  for(let r=3;r<11;r++)for(let c=5;c<17;c++) house.floors[idx(c,r)]='mad'; }
+(function(){ let n=Object.keys(SRC).length;
+  for(const k in SRC){ const im=new Image(); im.onload=im.onerror=()=>{ if(--n===0) begin(); }; IMG[k]=im; im.src=SRC[k]; }
+})();
+function begin(){ ctx.imageSmoothingEnabled=false; starter(); drawTitleArt(); requestAnimationFrame(loop); }
+</script>
 </body>
 </html>

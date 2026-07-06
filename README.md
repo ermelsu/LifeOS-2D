@@ -1,72 +1,48 @@
-# LifeOS 2D
+# LifeOS 2
 
-Um joguinho 2D pra "controlar os aspectos da sua vida" — no estilo *Life is a Game* / The Sims,
-feito com **Canvas 2D puro** (HTML + JavaScript, sem instalação e sem dependências).
+Um jogo 2D pra "organizar a sua vida, um cômodo de cada vez" — feito com **Canvas 2D puro**
+(HTML + JavaScript, sem instalação e sem dependências). Roda direto no navegador.
 
-👉 Roda direto no navegador. Se estiver publicado no **GitHub Pages**, é só abrir a URL do projeto.
+👉 No **GitHub Pages**, a URL do projeto abre direto na tela inicial **LifeOS 2**.
 
-## Páginas
+## O fluxo do jogo
 
-| Arquivo | O que é |
-|---------|---------|
-| `index.html`   | Página inicial (hub) com links pra tudo |
-| `editor.html`  | **Módulo Chão & Paredes** — desenhe piso e paredes (texturas Modern Interiors), escolha o personagem e clique em *Jogar* |
-| `topdown.html` | Demo top-down antiga (pacote TopDownHouse) |
-| `click.html`   | Protótipo inicial de cliques (cenas de lado, portas com nome) |
-
-## Módulo atual: Chão & Paredes
-
-O jogo está sendo construído por módulos. O primeiro é o **desenho da casa**:
-
-- **🟫 Piso** — 8 texturas do pacote *Modern Interiors* (madeiras, tijolo, cerâmica, azulejo, espinha, cinza).
-- **🧱 Parede** — parede branca uniforme que fica correta na horizontal **e** na vertical, com relevo por sombra.
-- **🪣 Encher** — balde de tinta pra preencher uma área conectada.
-- **🧽 Apagar** e **▦ Grade**.
-- **Personagem** — Adam, Alex, Amelia ou Bob (sprites 16×16 do pacote), com caminhada nas 4 direções.
-- **▶ Jogar** — anda com **WASD/setas** e colide com as paredes.
-
-Próximo módulo: **móveis** (na proporção certa dos personagens, usando o `Interiors_free`).
-
-## Editor de Casa (o principal)
-
-O fluxo segue a ordem natural de construção:
-
-1. **🟫 Piso** — escolha uma textura e clique/arraste pra desenhar os cômodos.
-2. **🧱 Parede** — levante as paredes ao redor (deixe vãos pras portas).
-3. **🛋️ Móvel** — escolha um móvel na paleta e clique pra posicionar (colisão automática).
-4. **▶ Jogar** — entra no modo jogo: ande com **WASD/setas**, aperte **E** perto de um móvel pra usar.
-
-Outras ações: **💾 Salvar** (guarda no navegador), **⬇ Exportar** (baixa um `.json`), **🧽 Apagar**, **🗑️ Limpar**.
-
-## Status de vida
-
-`Energia · Fome · Higiene · Diversão` caem com o tempo. Usar os móveis certos recupera:
-
-| Móvel | Efeito |
-|-------|--------|
-| Cama | +Energia |
-| Geladeira / Fogão | +Fome |
-| Sofá / Estante | +Diversão |
-| Banheira | +Higiene |
+1. **Tela inicial** — LifeOS 2, com um cenário de exemplo. Clique em **▶ JOGAR**.
+2. **Escolha o personagem** — Adam, Alex, Amelia ou **Bob** (o principal).
+3. **Passo 1 — Desenhe o chão** — pinte o piso de todos os cômodos (pincel, balde, borracha)
+   e clique em **Finalizar chão**.
+4. **Passo 2 — Paredes e portas** — contorne os cômodos com paredes e use a **Porta** pra
+   deixar passagens.
+5. **▶ JOGAR** — ande pela casa que você criou com **WASD/setas**, com colisão nas paredes.
 
 ## Texturas
 
-- `assets/modern/` — pacote **Modern Interiors** (LimeZu), tiles de 16px: `Room_Builder_free_16x16.png`
-  (chão + paredes) e os personagens `Adam/Alex/Amelia/Bob` (`_run` e `_idle`).
-- `assets/` — pacote antigo **TopDownHouse**, usado só pela demo `topdown.html`.
+Pacote **Modern Interiors** (LimeZu), tiles de 16px, em `assets/modern/`:
+- `Room_Builder_free_16x16.png` — pisos e paredes.
+- `Adam/Alex/Amelia/Bob` (`_run` e `_idle`) — personagens 16×16 com caminhada nas 4 direções.
+
+## Arquivos
+
+| Arquivo | O que é |
+|---------|---------|
+| `index.html`   | **LifeOS 2** — o jogo (fluxo título → personagem → chão → paredes → jogar) |
+| `topdown.html` | Demo top-down antiga (pacote TopDownHouse) |
+| `click.html`   | Protótipo inicial de cliques |
 
 ## Rodando localmente
 
-Como as páginas carregam imagens da pasta `assets/`, sirva a pasta por HTTP
-(abrir o arquivo direto pelo `file://` pode bloquear as texturas em alguns navegadores):
+As páginas carregam imagens de `assets/`, então sirva por HTTP (o `file://` pode bloquear as texturas):
 
 ```bash
-python3 -m http.server 8000
-# depois abra http://localhost:8000
+python3 -m http.server 8000   # depois abra http://localhost:8000
 ```
 
 ## Publicar no GitHub Pages
 
-Em **Settings → Pages**, escolha a branch a servir (raiz `/`).
-Um `.nojekyll` já está incluído pra o Pages servir todos os arquivos como estão.
-A URL fica no formato `https://<usuario>.github.io/<repositorio>/`.
+Em **Settings → Pages**, escolha a branch a servir (raiz `/`). Já existe um `.nojekyll`.
+URL no formato `https://<usuario>.github.io/<repositorio>/`.
+
+## Próximos módulos
+
+Móveis (na proporção certa dos personagens), objetos interativos e mecânicas de vida
+(status, dinheiro, tempo).
