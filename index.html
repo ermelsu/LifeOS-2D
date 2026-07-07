@@ -5,12 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LifeOS 2</title>
 <style>
-  :root{
-    --bg1:#0e1018; --bg2:#171b28; --panel:#1a1f2e; --panel2:#222839;
-    --line:#2c3346; --ink:#e7eaf3; --mut:#8a93a9; --acc:#ffc94d; --acc-ink:#25190a;
-    --ok:#54d98c;
-    color-scheme:dark;
-  }
+  :root{ --bg1:#0e1018; --bg2:#171b28; --panel:#1a1f2e; --panel2:#222839; --line:#2c3346;
+    --ink:#e7eaf3; --mut:#8a93a9; --acc:#ffc94d; --acc-ink:#25190a; --ok:#54d98c; color-scheme:dark; }
   *{ box-sizing:border-box; margin:0; padding:0; }
   html,body{ height:100%; font-family:"Segoe UI",system-ui,sans-serif; color:var(--ink);
     background:radial-gradient(120% 120% at 50% 0%,var(--bg2),var(--bg1)); overflow:hidden; user-select:none; }
@@ -19,102 +15,74 @@
   .btn:hover{ background:#2b3245; }
   .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border-color:var(--acc); }
   .btn.primary:hover{ filter:brightness(1.06); }
-  .btn:disabled{ opacity:.4; cursor:not-allowed; }
-
   #app{ height:100%; display:flex; flex-direction:column; }
-
-  /* ---------- barra superior (passos) ---------- */
-  #top{ display:none; align-items:center; gap:14px; padding:12px 18px; background:var(--panel);
-    border-bottom:1px solid var(--line); }
-  #top .badge{ background:var(--acc); color:var(--acc-ink); font-weight:800; font-size:12px;
-    padding:5px 10px; border-radius:20px; letter-spacing:.5px; white-space:nowrap; }
-  #top .ttl{ font-weight:700; font-size:16px; }
-  #top .desc{ color:var(--mut); font-size:13px; }
-  #top .sp{ flex:1; }
-
-  /* ---------- palco / tabuleiro ---------- */
-  #stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
-  #wrap{ position:relative; height:100%; aspect-ratio:22/14; max-width:100%;
-    border:3px solid #000; border-radius:10px; box-shadow:0 12px 50px rgba(0,0,0,.55); overflow:hidden; }
-  canvas#game{ width:100%; height:100%; display:block; image-rendering:pixelated; }
-
-  /* ---------- barra inferior (ferramentas) ---------- */
-  #bottom{ display:none; align-items:center; gap:16px; padding:12px 18px; background:var(--panel);
-    border-top:1px solid var(--line); flex-wrap:wrap; }
-  .tools{ display:flex; gap:8px; }
-  .tool{ display:flex; flex-direction:column; align-items:center; gap:3px; background:var(--panel2);
-    border:2px solid var(--line); border-radius:10px; padding:7px 12px; font-size:12px; color:var(--ink); }
-  .tool .em{ font-size:18px; }
-  .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
+  #top{ display:none; align-items:center; gap:14px; padding:12px 18px; background:var(--panel); border-bottom:1px solid var(--line); }
+  #top .badge{ background:var(--acc); color:var(--acc-ink); font-weight:800; font-size:12px; padding:5px 10px; border-radius:20px; letter-spacing:.5px; white-space:nowrap; }
+  #top .ttl{ font-weight:700; font-size:16px; } #top .desc{ color:var(--mut); font-size:13px; } #top .sp{ flex:1; }
+  #stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:14px; min-height:0; }
+  #wrap{ position:relative; width:100%; height:100%; border:3px solid #000; border-radius:10px; box-shadow:0 12px 50px rgba(0,0,0,.55); overflow:hidden; background:#0b0d14; }
+  canvas#game{ width:100%; height:100%; display:block; image-rendering:pixelated; cursor:crosshair; touch-action:none; }
+  #zoombar{ position:absolute; right:10px; bottom:10px; display:none; flex-direction:column; gap:6px; z-index:5; }
+  #zoombar button{ width:38px; height:34px; font-size:16px; background:rgba(26,31,46,.92); color:var(--ink); border:1px solid var(--line); }
+  #zoombar button:hover{ background:#2b3245; }
+  #zoomlbl{ position:absolute; left:10px; bottom:10px; display:none; z-index:5; font-size:12px; color:var(--mut); background:rgba(20,24,36,.8); padding:3px 8px; border-radius:8px; border:1px solid var(--line); }
+  #bottom{ display:none; align-items:center; gap:14px; padding:11px 16px; background:var(--panel); border-top:1px solid var(--line); flex-wrap:wrap; }
+  .tools{ display:flex; gap:7px; }
+  .tool{ display:flex; flex-direction:column; align-items:center; gap:2px; background:var(--panel2); border:2px solid var(--line); border-radius:10px; padding:6px 10px; font-size:11px; color:var(--ink); }
+  .tool .em{ font-size:17px; } .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
   .sep{ width:1px; align-self:stretch; background:var(--line); }
-  .swatches{ display:flex; gap:8px; flex-wrap:wrap; }
-  .sw{ display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
-    border:2px solid var(--line); border-radius:9px; padding:5px; background:#12151f; }
-  .sw.on{ border-color:var(--acc); }
-  .sw canvas{ width:38px; height:38px; image-rendering:pixelated; border-radius:4px; }
-  .sw span{ font-size:11px; color:var(--mut); }
+  .swatches{ display:flex; gap:7px; flex-wrap:wrap; }
+  .sw{ display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; border:2px solid var(--line); border-radius:9px; padding:4px; background:#12151f; }
+  .sw.on{ border-color:var(--acc); } .sw canvas{ width:34px; height:34px; image-rendering:pixelated; border-radius:4px; } .sw span{ font-size:10px; color:var(--mut); }
   #bottom .sp{ flex:1; }
-
-  /* ---------- telas cheias (título / personagem) ---------- */
-  .screen{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center;
-    justify-content:center; gap:22px; text-align:center;
-    background:radial-gradient(120% 120% at 50% 0%,var(--bg2),var(--bg1)); z-index:20; padding:24px; }
+  .screen{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; text-align:center; background:radial-gradient(120% 120% at 50% 0%,var(--bg2),var(--bg1)); z-index:20; padding:24px; }
   .screen.show{ display:flex; }
-
-  #titleArt{ image-rendering:pixelated; width:min(78vw,560px); height:auto; border-radius:14px;
-    border:3px solid #000; box-shadow:0 18px 60px rgba(0,0,0,.6); }
-  .logo{ font-size:clamp(38px,8vw,72px); font-weight:900; letter-spacing:3px; line-height:1;
-    color:var(--acc); text-shadow:0 4px 0 #0007, 0 0 30px #ffc94d55; }
-  .logo small{ display:block; font-size:15px; letter-spacing:4px; font-weight:600; color:var(--mut);
-    margin-top:8px; text-shadow:none; }
-  .tagline{ color:var(--mut); font-size:15px; max-width:460px; }
-
+  #titleArt{ image-rendering:pixelated; width:min(78vw,560px); height:auto; border-radius:14px; border:3px solid #000; box-shadow:0 18px 60px rgba(0,0,0,.6); }
+  .logo{ font-size:clamp(38px,8vw,72px); font-weight:900; letter-spacing:3px; line-height:1; color:var(--acc); text-shadow:0 4px 0 #0007, 0 0 30px #ffc94d55; }
+  .logo small{ display:block; font-size:15px; letter-spacing:4px; font-weight:600; color:var(--mut); margin-top:8px; text-shadow:none; }
   h2.head{ font-size:24px; font-weight:800; }
   .charrow{ display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
-  .card{ position:relative; width:120px; background:var(--panel); border:2px solid var(--line);
-    border-radius:14px; padding:14px 10px 12px; cursor:pointer; transition:transform .1s,border-color .1s; }
-  .card:hover{ transform:translateY(-4px); }
-  .card.on{ border-color:var(--acc); background:#221d10; }
-  .card canvas{ width:64px; height:96px; image-rendering:pixelated; }
-  .card .nm{ font-weight:700; margin-top:6px; }
-  .card .pill{ position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-    background:var(--ok); color:#06210f; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .card{ position:relative; width:120px; background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:14px 10px 12px; cursor:pointer; transition:transform .1s,border-color .1s; }
+  .card:hover{ transform:translateY(-4px); } .card.on{ border-color:var(--acc); background:#221d10; }
+  .card canvas{ width:64px; height:96px; image-rendering:pixelated; } .card .nm{ font-weight:700; margin-top:6px; }
+  .card .pill{ position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:var(--ok); color:#06210f; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; white-space:nowrap; }
   kbd{ background:#2a3145; border-radius:5px; padding:1px 7px; border:1px solid #3c465c; font-size:12px; }
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- barra superior -->
   <div id="top">
-    <span class="badge" id="stepBadge">PASSO 1</span>
-    <span class="ttl" id="stepTtl"></span>
-    <span class="desc" id="stepDesc"></span>
+    <span class="badge">MONTE</span>
+    <span class="ttl">Monte sua casa</span>
+    <span class="desc" id="topDesc">Desenhe cômodos (áreas), cerque com paredes e deixe portas. Depois é só jogar.</span>
     <span class="sp"></span>
-    <button class="btn" id="btnBack" style="display:none">◀ Voltar</button>
-    <button class="btn primary" id="btnNext"></button>
+    <button class="btn primary" id="btnPlay">JOGAR ▶</button>
   </div>
 
-  <!-- tabuleiro -->
-  <div id="stage"><div id="wrap"><canvas id="game" width="352" height="224"></canvas></div></div>
+  <div id="stage"><div id="wrap">
+    <canvas id="game"></canvas>
+    <div id="zoomlbl">100%</div>
+    <div id="zoombar">
+      <button id="zin" title="Aproximar">＋</button>
+      <button id="zfit" title="Ver tudo">⤢</button>
+      <button id="zout" title="Afastar">－</button>
+    </div>
+  </div></div>
 
-  <!-- barra inferior -->
   <div id="bottom">
     <div class="tools" id="toolbar"></div>
-    <div class="sep" id="palSep"></div>
+    <div class="sep"></div>
     <div class="swatches" id="swatches"></div>
     <span class="sp"></span>
     <span class="desc" id="playHint" style="color:var(--mut);font-size:13px"></span>
   </div>
 </div>
 
-<!-- TELA TÍTULO -->
 <div class="screen show" id="scrTitle">
   <canvas id="titleArt" width="176" height="112"></canvas>
   <div class="logo">LIFEOS 2<small>ORGANIZE SUA VIDA · UM CÔMODO DE CADA VEZ</small></div>
   <button class="btn primary" id="btnPlayTitle" style="font-size:18px;padding:14px 40px">▶ JOGAR</button>
 </div>
-
-<!-- TELA PERSONAGEM -->
 <div class="screen" id="scrChar">
   <h2 class="head">Escolha seu personagem</h2>
   <div class="charrow" id="charRow"></div>
@@ -123,252 +91,247 @@
 
 <script>
 /* ============================================================
-   LifeOS 2 — fluxo guiado: título → personagem →
-   passo 1 (chão) → passo 2 (paredes + portas) → jogar.
-   Texturas: Modern Interiors (LimeZu), tiles 16px.
+   LifeOS 2 — título → personagem → MONTAR (cômodos+paredes numa
+   tela só) → jogar. Câmera com zoom/pan. Modern Interiors.
    ============================================================ */
-const T=16, COLS=22, ROWS=14;
-const canvas=document.getElementById('game'); const ctx=canvas.getContext('2d');
-canvas.width=COLS*T; canvas.height=ROWS*T; ctx.imageSmoothingEnabled=false;
+const T=16, WCOLS=44, WROWS=30, WORLD_W=WCOLS*T, WORLD_H=WROWS*T;
+const canvas=document.getElementById('game'); const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false;
+const el=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 /* ---------- assets ---------- */
 const IMG={}; const CHARS=['Adam','Alex','Amelia','Bob'];
 const SRC={ rb:'assets/modern/Room_Builder_free_16x16.png' };
-CHARS.forEach(c=>{ SRC[c+'_run']='assets/modern/'+c+'_run_16x16.png';
-                   SRC[c+'_idle']='assets/modern/'+c+'_idle_16x16.png'; });
+CHARS.forEach(c=>{ SRC[c+'_run']='assets/modern/'+c+'_run_16x16.png'; SRC[c+'_idle']='assets/modern/'+c+'_idle_16x16.png'; });
 
-/* ---------- catálogos ---------- */
+/* ---------- pisos (só contínuos, sem brecha) ---------- */
 const FLOORS={
-  mad:      { label:'Madeira',  t:[0,12] },
-  nogueira: { label:'Nogueira', t:[0,14] },
-  cerejeira:{ label:'Cerejeira',t:[0,16] },
-  tijolo:   { label:'Tijolo',   t:[11,5] },
-  ceramica: { label:'Cerâmica', t:[11,7] },
-  azulejo:  { label:'Azulejo',  t:[11,9] },
-  espinha:  { label:'Espinha',  t:[11,13] },
-  cinza:    { label:'Cinza',    t:[11,11] },
+  madeira: {label:'Madeira', t:[11,13]},   // espinha de peixe (contínuo)
+  ceramica:{label:'Cerâmica',t:[11,7]},
+  azulejo: {label:'Azulejo', t:[11,9]},
+  tijolo:  {label:'Tijolo',  t:[11,5]},
+  cinza:   {label:'Cinza',   t:[11,11]},
 };
-const WALL_FILL=[15,3];   // tile branco 100% sólido (uniforme em toda direção)
+const WALL_FILL=[15,3];
 
-/* ---------- estado ---------- */
-let house={ floors:Array(COLS*ROWS).fill(null), walls:Array(COLS*ROWS).fill(false), doors:Array(COLS*ROWS).fill(false) };
-const idx=(c,r)=>r*COLS+c; const inB=(c,r)=>c>=0&&c<COLS&&r>=0&&r<ROWS;
-const wallSolid=(c,r)=> inB(c,r) && house.walls[idx(c,r)] && !house.doors[idx(c,r)];
-const collide  =(c,r)=> !inB(c,r) || (house.walls[idx(c,r)] && !house.doors[idx(c,r)]);
+/* ---------- estado da casa ----------
+   rooms: retângulos {x,y,w,h,floor} em tiles.  walls/doors: grade booleana. */
+let rooms=[];
+let walls=Array(WCOLS*WROWS).fill(false);
+let doors=Array(WCOLS*WROWS).fill(false);
+const idx=(c,r)=>r*WCOLS+c; const inB=(c,r)=>c>=0&&c<WCOLS&&r>=0&&r<WROWS;
+function floorAt(c,r){ for(let i=rooms.length-1;i>=0;i--){ const R=rooms[i]; if(c>=R.x&&c<R.x+R.w&&r>=R.y&&r<R.y+R.h) return R.floor; } return null; }
+function roomAt(c,r){ for(let i=rooms.length-1;i>=0;i--){ const R=rooms[i]; if(c>=R.x&&c<R.x+R.w&&r>=R.y&&r<R.y+R.h) return i; } return -1; }
+const isWall=(c,r)=> inB(c,r)&&walls[idx(c,r)]&&!doors[idx(c,r)];
+function solidPlay(c,r){ if(!inB(c,r))return true; if(doors[idx(c,r)])return false; if(walls[idx(c,r)])return true; return floorAt(c,r)===null; }
 
-let state='title', selChar='Bob', selFloor='mad', tool='paint';
+let state='title', selChar='Bob', selFloor='madeira', tool='room', selRoom=-1;
 
-/* ============================================================ FLUXO / TELAS */
-const el=id=>document.getElementById(id);
+/* ---------- câmera ---------- */
+const cam={x:0,y:0,zoom:2}; let VIEW_W=0,VIEW_H=0,DPR=1,minZoom=1,maxZoom=5;
+function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); const r=el('wrap').getBoundingClientRect();
+  canvas.width=Math.max(1,Math.round(r.width*DPR)); canvas.height=Math.max(1,Math.round(r.height*DPR));
+  VIEW_W=canvas.width; VIEW_H=canvas.height; ctx.imageSmoothingEnabled=false;
+  minZoom=Math.min(VIEW_W/WORLD_W,VIEW_H/WORLD_H); maxZoom=Math.max(minZoom*1.2,3*DPR);
+  cam.zoom=clamp(cam.zoom,minZoom,maxZoom); clampCam(); updateZoomLbl(); }
+function clampCam(){ const vw=VIEW_W/cam.zoom, vh=VIEW_H/cam.zoom;
+  cam.x = vw>=WORLD_W ? (WORLD_W-vw)/2 : clamp(cam.x,0,WORLD_W-vw);
+  cam.y = vh>=WORLD_H ? (WORLD_H-vh)/2 : clamp(cam.y,0,WORLD_H-vh); }
+function fitView(){ cam.zoom=minZoom; clampCam(); updateZoomLbl(); }
+function setZoom(z,ax,ay){ ax=ax??VIEW_W/2; ay=ay??VIEW_H/2; const wx=cam.x+ax/cam.zoom, wy=cam.y+ay/cam.zoom;
+  cam.zoom=clamp(z,minZoom,maxZoom); cam.x=wx-ax/cam.zoom; cam.y=wy-ay/cam.zoom; clampCam(); updateZoomLbl(); }
+function updateZoomLbl(){ el('zoomlbl').textContent=Math.round(cam.zoom/minZoom*100)+'%'; }
+function tileRect(c,r){ const dx=Math.round((c*T-cam.x)*cam.zoom), dy=Math.round((r*T-cam.y)*cam.zoom);
+  return [dx,dy, Math.round(((c+1)*T-cam.x)*cam.zoom)-dx, Math.round(((r+1)*T-cam.y)*cam.zoom)-dy]; }
+const wToSx=wx=>(wx-cam.x)*cam.zoom, wToSy=wy=>(wy-cam.y)*cam.zoom;
+
+/* ============================================================ FLUXO */
 function setState(s){ state=s;
-  el('scrTitle').classList.toggle('show', s==='title');
-  el('scrChar').classList.toggle('show', s==='char');
-  el('top').style.display   = (s==='floor'||s==='walls') ? 'flex':'none';
-  el('bottom').style.display= (s==='floor'||s==='walls'||s==='play') ? 'flex':'none';
-  if(s==='floor') setupFloorStep();
-  if(s==='walls') setupWallsStep();
-  if(s==='play')  setupPlay();
+  el('scrTitle').classList.toggle('show',s==='title'); el('scrChar').classList.toggle('show',s==='char');
+  const edit=s==='edit', game=s==='play';
+  el('top').style.display=edit?'flex':'none';
+  el('bottom').style.display=(edit||game)?'flex':'none';
+  el('zoombar').style.display=(edit||game)?'flex':'none'; el('zoomlbl').style.display=(edit||game)?'block':'none';
+  if(edit||game) requestAnimationFrame(()=>{ resize(); if(edit) fitView(); });
+  if(edit) setupEdit(); if(game) setupPlay();
 }
+function setupEdit(){
+  buildToolbar([['room','🟫','Cômodo'],['select','✥','Mover'],['wall','🧱','Parede'],['door','🚪','Porta'],['erase','🧽','Apagar']]);
+  const fb=document.createElement('button'); fb.className='tool'; fb.style.borderColor='#3a6'; fb.innerHTML='<span class="em">🏠</span>Cercar';
+  fb.title='Gera paredes ao redor dos cômodos'; fb.onclick=fenceAll; el('toolbar').appendChild(fb);
+  el('swatches').style.display=''; buildSwatches(); tool='room'; refreshToolbar();
+  el('playHint').textContent='';
+}
+function setupPlay(){ el('toolbar').innerHTML=''; el('swatches').style.display='none';
+  const b=document.createElement('button'); b.className='btn'; b.textContent='✎ Editar casa'; b.onclick=()=>setState('edit'); el('toolbar').appendChild(b);
+  el('playHint').innerHTML='<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou setas · a câmera te segue';
+  startPlay(); }
 
-/* ---------- passo 1: chão ---------- */
-function setupFloorStep(){
-  el('stepBadge').textContent='PASSO 1';
-  el('stepTtl').textContent='Desenhe o chão';
-  el('stepDesc').textContent='Pinte o piso de TODOS os cômodos. Clique e arraste.';
-  el('btnBack').style.display='none';
-  el('btnNext').textContent='Finalizar chão ▶';
-  el('btnNext').onclick=()=>{ if(house.floors.some(Boolean)) setState('walls');
-    else flashHint('Desenhe pelo menos um cômodo primeiro 🟫'); };
-  buildToolbar([['paint','🖌️','Pincel'],['fill','🪣','Balde'],['erase','🧽','Apagar']]);
-  el('palSep').style.display=''; el('swatches').style.display='';
-  buildSwatches(); tool='paint'; refreshToolbar(); el('playHint').textContent='';
-}
-/* ---------- passo 2: paredes + portas ---------- */
-function setupWallsStep(){
-  el('stepBadge').textContent='PASSO 2';
-  el('stepTtl').textContent='Paredes e portas';
-  el('stepDesc').textContent='Contorne os cômodos com paredes. Use a Porta pra deixar passagens.';
-  el('btnBack').style.display=''; el('btnBack').textContent='◀ Voltar ao chão';
-  el('btnBack').onclick=()=>setState('floor');
-  el('btnNext').textContent='JOGAR ▶';
-  el('btnNext').onclick=()=>setState('play');
-  buildToolbar([['wall','🧱','Parede'],['door','🚪','Porta'],['erase','🧽','Apagar']]);
-  el('palSep').style.display='none'; el('swatches').style.display='none';
-  tool='wall'; refreshToolbar(); el('playHint').textContent='';
-}
-/* ---------- jogar ---------- */
-function setupPlay(){
-  el('toolbar').innerHTML=''; el('palSep').style.display='none'; el('swatches').style.display='none';
-  const b=document.createElement('button'); b.className='btn'; b.textContent='✎ Editar casa';
-  b.onclick=()=>setState('walls'); el('toolbar').appendChild(b);
-  el('playHint').innerHTML='<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ou setas pra andar · esbarra nas paredes';
-  startPlay();
-}
-
-/* ---------- ferramentas / paleta ---------- */
 function buildToolbar(list){ const tb=el('toolbar'); tb.innerHTML='';
   list.forEach(([id,em,lbl])=>{ const d=document.createElement('button'); d.className='tool'; d.dataset.tool=id;
-    d.innerHTML='<span class="em">'+em+'</span>'+lbl; d.onclick=()=>{ tool=id; refreshToolbar(); }; tb.appendChild(d); }); }
-function refreshToolbar(){ document.querySelectorAll('#toolbar .tool').forEach(t=>t.classList.toggle('on',t.dataset.tool===tool)); }
-function mkThumb(w,h,fn){ const cv=document.createElement('canvas'); cv.width=w;cv.height=h;
-  const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false; fn(cx); return cv; }
+    d.innerHTML='<span class="em">'+em+'</span>'+lbl; d.onclick=()=>{ tool=id; if(id!=='select')selRoom=-1; refreshToolbar(); }; tb.appendChild(d); }); }
+function refreshToolbar(){ document.querySelectorAll('#toolbar .tool[data-tool]').forEach(t=>t.classList.toggle('on',t.dataset.tool===tool)); }
+function mkThumb(w,h,fn){ const cv=document.createElement('canvas'); cv.width=w;cv.height=h; const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false; fn(cx); return cv; }
 function buildSwatches(){ const box=el('swatches'); box.innerHTML='';
-  for(const id in FLOORS){ const f=FLOORS[id], [c,r]=f.t;
-    const s=document.createElement('div'); s.className='sw'+(id===selFloor?' on':'');
-    s.appendChild(mkThumb(38,38,cx=>{ for(let a=0;a<2;a++)for(let b=0;b<2;b++) cx.drawImage(IMG.rb,c*T,r*T,T,T,b*19,a*19,19,19); }));
+  for(const id in FLOORS){ const f=FLOORS[id],[c,r]=f.t; const s=document.createElement('div'); s.className='sw'+(id===selFloor?' on':'');
+    s.appendChild(mkThumb(34,34,cx=>{ for(let a=0;a<2;a++)for(let b=0;b<2;b++) cx.drawImage(IMG.rb,c*T,r*T,T,T,b*17,a*17,17,17); }));
     const sp=document.createElement('span'); sp.textContent=f.label; s.appendChild(sp);
-    s.onclick=()=>{ selFloor=id; buildSwatches(); }; box.appendChild(s);
+    s.onclick=()=>{ selFloor=id; if(tool==='select'&&selRoom>=0) rooms[selRoom].floor=id; buildSwatches(); }; box.appendChild(s);
   } }
+function fenceAll(){ for(let r=0;r<WROWS;r++)for(let c=0;c<WCOLS;c++){ if(floorAt(c,r)!==null||doors[idx(c,r)]) continue;
+  let adj=false; for(let dy=-1;dy<=1&&!adj;dy++)for(let dx=-1;dx<=1;dx++){ if(!dx&&!dy)continue; if(floorAt(c+dx,r+dy)!==null){adj=true;break;} }
+  if(adj) walls[idx(c,r)]=true; } flash('🏠 Paredes geradas! Use a Porta pra abrir passagens.'); }
 let hintTimer=0;
-function flashHint(msg){ el('playHint').textContent=msg; el('playHint').style.color='var(--acc)';
-  clearTimeout(hintTimer); hintTimer=setTimeout(()=>{ el('playHint').style.color='var(--mut)'; el('playHint').textContent=''; },2200); }
+function flash(m){ el('playHint').textContent=m; el('playHint').style.color='var(--acc)'; clearTimeout(hintTimer);
+  hintTimer=setTimeout(()=>{ el('playHint').style.color='var(--mut)'; el('playHint').textContent=''; },2600); }
 
-/* ============================================================ personagens */
-const DIR={ down:0, up:1, left:2, right:3 };           // ordem real do sprite
-function drawCharAt(cx,name,dir,moving,frame,footX,footY){
-  const sheet=moving?IMG[name+'_run']:IMG[name+'_idle'];
-  const col=moving? ([0,6,12,18][dir]+(frame%6)) : dir;
-  cx.drawImage(sheet, col*16,0,16,32, Math.round(footX-8),Math.round(footY-27),16,32);
-}
+/* ============================================================ personagem */
+const DIR={down:0,up:1,left:2,right:3};
+function drawCharWorld(name,dir,moving,frame,fx,fy){ const sh=moving?IMG[name+'_run']:IMG[name+'_idle'];
+  const col=moving?([0,6,12,18][dir]+(frame%6)):dir;
+  ctx.drawImage(sh,col*16,0,16,32, Math.round((fx-8-cam.x)*cam.zoom),Math.round((fy-27-cam.y)*cam.zoom),Math.round(16*cam.zoom),Math.round(32*cam.zoom)); }
+function drawCharAt(cx,name,dir,moving,frame,fx,fy){ const sh=moving?IMG[name+'_run']:IMG[name+'_idle'];
+  const col=moving?([0,6,12,18][dir]+(frame%6)):dir; cx.drawImage(sh,col*16,0,16,32,Math.round(fx-8),Math.round(fy-27),16,32); }
 
-/* ============================================================ RENDER tabuleiro */
-function nearestFloor(c,r){ if(inB(c,r)&&house.floors[idx(c,r)]) return house.floors[idx(c,r)];
-  const N=[[0,1],[0,-1],[1,0],[-1,0]]; for(const[dx,dy]of N){ const x=c+dx,y=r+dy;
-    if(inB(x,y)&&house.floors[idx(x,y)]) return house.floors[idx(x,y)]; } return 'mad'; }
-
+/* ============================================================ RENDER */
+function nearestFloor(c,r){ const f=floorAt(c,r); if(f)return f;
+  for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){ const g=floorAt(c+dx,r+dy); if(g)return g; } return 'madeira'; }
+function visRange(){ return [Math.max(0,Math.floor(cam.x/T)),Math.max(0,Math.floor(cam.y/T)),
+  Math.min(WCOLS-1,Math.floor((cam.x+VIEW_W/cam.zoom)/T)),Math.min(WROWS-1,Math.floor((cam.y+VIEW_H/cam.zoom)/T))]; }
 function render(){
-  // fundo "papel" (xadrez sutil) — deixa claro onde é a área construível
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    ctx.fillStyle=((c+r)&1)?'#12151f':'#0e111a'; ctx.fillRect(c*T,r*T,T,T); }
-  // piso
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const fid=house.floors[idx(c,r)];
-    if(fid){ const [fc,fr]=FLOORS[fid].t; ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,c*T,r*T,T,T); } }
-  // portas (piso vizinho + soleira)
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(!house.doors[idx(c,r)]) continue;
-    const [fc,fr]=FLOORS[nearestFloor(c,r)].t; ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,c*T,r*T,T,T);
-    ctx.fillStyle='rgba(120,80,40,.55)'; ctx.fillRect(c*T+2,r*T+6,T-4,4); }
-  // sombra projetada das paredes
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(wallSolid(c,r)&&inB(c,r+1)&&!wallSolid(c,r+1)&&!house.doors[idx(c,r+1)]){
-    ctx.fillStyle='rgba(0,0,0,.16)'; ctx.fillRect(c*T,(r+1)*T,T,4); } }
-  // paredes (sólido + relevo)
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(!wallSolid(c,r)) continue; const x=c*T,y=r*T;
-    ctx.drawImage(IMG.rb,WALL_FILL[0]*T,WALL_FILL[1]*T,T,T,x,y,T,T);
-    if(!wallSolid(c,r-1)){ ctx.fillStyle='rgba(255,255,255,.16)'; ctx.fillRect(x,y,T,2); }
-    if(!wallSolid(c,r+1)){ ctx.fillStyle='rgba(0,0,0,.28)';       ctx.fillRect(x,y+T-3,T,3); }
-    if(!wallSolid(c-1,r)){ ctx.fillStyle='rgba(0,0,0,.14)';       ctx.fillRect(x,y,2,T); }
-    if(!wallSolid(c+1,r)){ ctx.fillStyle='rgba(0,0,0,.14)';       ctx.fillRect(x+T-2,y,2,T); }
+  ctx.fillStyle='#0b0d14'; ctx.fillRect(0,0,VIEW_W,VIEW_H);
+  const [c0,r0,c1,r1]=visRange();
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ const [x,y,w,h]=tileRect(c,r); ctx.fillStyle=((c+r)&1)?'#12151f':'#0e111a'; ctx.fillRect(x,y,w,h); }
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ const fid=floorAt(c,r); if(!fid)continue; const[fc,fr]=FLOORS[fid].t,[x,y,w,h]=tileRect(c,r); ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,x,y,w,h); }
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ if(!doors[idx(c,r)])continue; const[fc,fr]=FLOORS[nearestFloor(c,r)].t,[x,y,w,h]=tileRect(c,r);
+    ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,x,y,w,h); ctx.fillStyle='rgba(120,80,40,.5)'; ctx.fillRect(x+2,y+Math.round(h*0.35),w-4,Math.max(2,Math.round(h*0.14))); }
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ if(isWall(c,r)&&!isWall(c,r+1)&&inB(c,r+1)&&!doors[idx(c,r+1)]){ const[x,y,w,h]=tileRect(c,r+1); ctx.fillStyle='rgba(0,0,0,.16)'; ctx.fillRect(x,y,w,Math.max(2,Math.round(h*0.14))); } }
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ if(!isWall(c,r))continue; const[x,y,w,h]=tileRect(c,r);
+    ctx.drawImage(IMG.rb,WALL_FILL[0]*T,WALL_FILL[1]*T,T,T,x,y,w,h); const e=Math.max(1,Math.round(h*0.11));
+    if(!isWall(c,r-1)){ctx.fillStyle='rgba(255,255,255,.16)';ctx.fillRect(x,y,w,e);}
+    if(!isWall(c,r+1)){ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(x,y+h-e,w,e);}
+    if(!isWall(c-1,r)){ctx.fillStyle='rgba(0,0,0,.14)';ctx.fillRect(x,y,e,h);}
+    if(!isWall(c+1,r)){ctx.fillStyle='rgba(0,0,0,.14)';ctx.fillRect(x+w-e,y,e,h);}
   }
-  // personagem (no jogo)
-  if(state==='play') drawCharAt(ctx,selChar,player.dir,player.moving,Math.floor(player.animT*10),player.x,player.y);
-  // grade (só na edição)
-  if(state==='floor'||state==='walls') drawGrid();
+  if(state==='play') drawCharWorld(selChar,player.dir,player.moving,Math.floor(player.animT*10),player.x,player.y);
+  if(state==='edit'){ drawGrid(c0,r0,c1,r1); drawEditOverlay(); }
+  const bx=Math.round((0-cam.x)*cam.zoom), by=Math.round((0-cam.y)*cam.zoom);
+  ctx.strokeStyle='rgba(255,201,77,.85)'; ctx.lineWidth=2; ctx.strokeRect(bx+1,by+1,Math.round(WORLD_W*cam.zoom)-2,Math.round(WORLD_H*cam.zoom)-2);
+}
+function drawGrid(c0,r0,c1,r1){ ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1;
+  for(let c=c0;c<=c1+1;c++){ const x=Math.round((c*T-cam.x)*cam.zoom)+.5; ctx.beginPath(); ctx.moveTo(x,Math.round((r0*T-cam.y)*cam.zoom)); ctx.lineTo(x,Math.round(((r1+1)*T-cam.y)*cam.zoom)); ctx.stroke(); }
+  for(let r=r0;r<=r1+1;r++){ const y=Math.round((r*T-cam.y)*cam.zoom)+.5; ctx.beginPath(); ctx.moveTo(Math.round((c0*T-cam.x)*cam.zoom),y); ctx.lineTo(Math.round(((c1+1)*T-cam.x)*cam.zoom),y); ctx.stroke(); }
+}
+function drawEditOverlay(){
+  // rascunho de novo cômodo
+  if(draft){ const R=normRect(draft.c0,draft.r0,draft.c1,draft.r1); const[fc,fr]=FLOORS[selFloor].t;
+    ctx.globalAlpha=.5; for(let r=R.y;r<R.y+R.h;r++)for(let c=R.x;c<R.x+R.w;c++){ const[x,y,w,h]=tileRect(c,r); ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,x,y,w,h);} ctx.globalAlpha=1;
+    ctx.strokeStyle='#ffc94d'; ctx.lineWidth=2; const a=tileRect(R.x,R.y); ctx.strokeRect(a[0],a[1],Math.round(R.w*T*cam.zoom),Math.round(R.h*T*cam.zoom)); }
   // cursor
-  if((state==='floor'||state==='walls') && hover.c>=0) drawCursor();
-  // moldura da área
-  ctx.strokeStyle='rgba(255,201,77,.9)'; ctx.lineWidth=2; ctx.strokeRect(1,1,canvas.width-2,canvas.height-2);
+  if(hover.c>=0 && (tool==='wall'||tool==='door'||tool==='erase')){ const[x,y,w,h]=tileRect(hover.c,hover.r);
+    ctx.strokeStyle=tool==='erase'?'#ff6b6b':(tool==='door'?'#c98a4b':'#ffc94d'); ctx.lineWidth=2; ctx.strokeRect(x+1,y+1,w-2,h-2); }
+  // cômodo selecionado + alças
+  if(tool==='select'&&selRoom>=0){ const R=rooms[selRoom]; const x=wToSx(R.x*T),y=wToSy(R.y*T),w=R.w*T*cam.zoom,h=R.h*T*cam.zoom;
+    ctx.strokeStyle='#4dd2ff'; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle='#4dd2ff'; for(const hd of handleList(R)){ ctx.fillRect(wToSx(hd.wx)-4,wToSy(hd.wy)-4,8,8); } }
 }
-function drawGrid(){
-  ctx.strokeStyle='rgba(255,255,255,.09)'; ctx.lineWidth=1;
-  for(let c=1;c<COLS;c++){ ctx.beginPath(); ctx.moveTo(c*T+.5,0); ctx.lineTo(c*T+.5,ROWS*T); ctx.stroke(); }
-  for(let r=1;r<ROWS;r++){ ctx.beginPath(); ctx.moveTo(0,r*T+.5); ctx.lineTo(COLS*T,r*T+.5); ctx.stroke(); }
-}
-function drawCursor(){ const x=hover.c*T,y=hover.r*T;
-  if(state==='floor'&&tool!=='erase'){ const [fc,fr]=FLOORS[selFloor].t; ctx.globalAlpha=.5;
-    ctx.drawImage(IMG.rb,fc*T,fr*T,T,T,x,y,T,T); ctx.globalAlpha=1; }
-  ctx.strokeStyle=tool==='erase'?'#ff6b6b':(tool==='door'?'#8b5a2b':'#ffc94d');
-  ctx.lineWidth=1.5; ctx.strokeRect(x+.75,y+.75,T-1.5,T-1.5); }
+function handleList(R){ const xs=[R.x*T,(R.x+R.w/2)*T,(R.x+R.w)*T], ys=[R.y*T,(R.y+R.h/2)*T,(R.y+R.h)*T];
+  return [ {n:'nw',wx:xs[0],wy:ys[0]},{n:'n',wx:xs[1],wy:ys[0]},{n:'ne',wx:xs[2],wy:ys[0]},
+           {n:'w',wx:xs[0],wy:ys[1]},{n:'e',wx:xs[2],wy:ys[1]},
+           {n:'sw',wx:xs[0],wy:ys[2]},{n:'s',wx:xs[1],wy:ys[2]},{n:'se',wx:xs[2],wy:ys[2]} ]; }
 
 /* ============================================================ JOGO */
-const player={ x:0,y:0,dir:DIR.down,moving:false,animT:0,speed:56 };
-const keys={};
-addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys[k]=true;
-  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault(); });
+const player={x:0,y:0,dir:DIR.down,moving:false,animT:0,speed:56}; const keys={};
+addEventListener('keydown',e=>{ const k=e.key.toLowerCase(); keys[k]=true; if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)&&state==='play')e.preventDefault(); });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
-function feetFree(px,py){ const hw=5;
-  for(const [x,y] of [[px-hw,py-4],[px+hw,py-4],[px-hw,py+3],[px+hw,py+3]])
-    if(collide(Math.floor(x/T),Math.floor(y/T))) return false; return true; }
-function startPlay(){ let best=null,bd=1e9;
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ if(house.floors[idx(c,r)]&&!collide(c,r)){
-    const d=Math.hypot(c-COLS/2,r-ROWS/2); if(d<bd){bd=d;best=[c,r];} } }
-  if(best){ player.x=best[0]*T+T/2; player.y=best[1]*T+T-2; player.dir=DIR.down; } }
+function feetFree(px,py){ const hw=5; for(const[x,y]of[[px-hw,py-4],[px+hw,py-4],[px-hw,py+3],[px+hw,py+3]]) if(solidPlay(Math.floor(x/T),Math.floor(y/T)))return false; return true; }
+function startPlay(){ let best=null,bd=1e9; for(let r=0;r<WROWS;r++)for(let c=0;c<WCOLS;c++){ if(floorAt(c,r)&&!solidPlay(c,r)){ const d=Math.hypot(c-WCOLS/2,r-WROWS/2); if(d<bd){bd=d;best=[c,r];} } }
+  if(best){ player.x=best[0]*T+T/2; player.y=best[1]*T+T-2; player.dir=DIR.down; } if(cam.zoom<minZoom*1.6) setZoom(Math.min(maxZoom,minZoom*2.2)); camFollow(); }
+function camFollow(){ cam.x=player.x-VIEW_W/cam.zoom/2; cam.y=player.y-VIEW_H/cam.zoom/2; clampCam(); }
 
-/* ============================================================ loop */
 let last=performance.now();
-function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
-  if(state==='play') tickPlay(dt); if(state!=='title'&&state!=='char') render(); requestAnimationFrame(loop); }
-function tickPlay(dt){
-  let mx=0,my=0;
-  if(keys['a']||keys['arrowleft'])mx-=1; if(keys['d']||keys['arrowright'])mx+=1;
-  if(keys['w']||keys['arrowup'])my-=1;  if(keys['s']||keys['arrowdown'])my+=1;
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(state==='play')tickPlay(dt); if(state!=='title'&&state!=='char')render(); requestAnimationFrame(loop); }
+function tickPlay(dt){ let mx=0,my=0;
+  if(keys['a']||keys['arrowleft'])mx-=1; if(keys['d']||keys['arrowright'])mx+=1; if(keys['w']||keys['arrowup'])my-=1; if(keys['s']||keys['arrowdown'])my+=1;
   player.moving=(mx||my)!==0;
-  if(player.moving){ const l=Math.hypot(mx,my)||1; mx/=l; my/=l;
-    if(my<0)player.dir=DIR.up; else if(my>0)player.dir=DIR.down;
-    if(mx<0)player.dir=DIR.left; else if(mx>0)player.dir=DIR.right;
+  if(player.moving){ const l=Math.hypot(mx,my)||1; mx/=l;my/=l;
+    if(my<0)player.dir=DIR.up; else if(my>0)player.dir=DIR.down; if(mx<0)player.dir=DIR.left; else if(mx>0)player.dir=DIR.right;
     const nx=player.x+mx*player.speed*dt, ny=player.y+my*player.speed*dt;
-    if(feetFree(nx,player.y)) player.x=nx;
-    if(feetFree(player.x,ny)) player.y=ny;
-    player.animT+=dt;
-  }
-}
+    if(feetFree(nx,player.y))player.x=nx; if(feetFree(player.x,ny))player.y=ny; player.animT+=dt; }
+  camFollow(); }
 
-/* ============================================================ edição (mouse) */
-const hover={c:-1,r:-1}; let painting=false;
-function cellOf(e){ const b=canvas.getBoundingClientRect();
-  return { c:Math.floor((e.clientX-b.left)/b.width*canvas.width/T),
-           r:Math.floor((e.clientY-b.top )/b.height*canvas.height/T) }; }
-function applyTool(c,r){ if(!inB(c,r))return; const i=idx(c,r);
-  if(state==='floor'){
-    if(tool==='paint') house.floors[i]=selFloor;
-    else if(tool==='erase') house.floors[i]=null;
-    else if(tool==='fill') flood(c,r);
-  } else if(state==='walls'){
-    if(tool==='wall'){ house.walls[i]=true; house.doors[i]=false; }
-    else if(tool==='door'){ house.doors[i]=true; house.walls[i]=true; }
-    else if(tool==='erase'){ house.walls[i]=false; house.doors[i]=false; }
-  } }
-function flood(c,r){ const target=house.floors[idx(c,r)]; if(target===selFloor)return; const st=[[c,r]];
-  while(st.length){ const[x,y]=st.pop(); if(!inB(x,y))continue; if(house.floors[idx(x,y)]!==target)continue;
-    house.floors[idx(x,y)]=selFloor; st.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]); } }
-canvas.addEventListener('mousedown',e=>{ if(state!=='floor'&&state!=='walls')return; const{c,r}=cellOf(e); hover.c=c;hover.r=r;
-  if(tool==='fill'){ if(inB(c,r))flood(c,r); return; } painting=true; applyTool(c,r); });
-canvas.addEventListener('mousemove',e=>{ if(state!=='floor'&&state!=='walls')return; const{c,r}=cellOf(e); hover.c=c;hover.r=r;
-  if(painting&&tool!=='fill') applyTool(c,r); });
-addEventListener('mouseup',()=>painting=false);
+/* ============================================================ input tabuleiro */
+const hover={c:-1,r:-1}; let painting=false, panning=false, panLast=null;
+let draft=null, drag=null;
+function normRect(c0,r0,c1,r1){ const x=Math.min(c0,c1),y=Math.min(r0,r1); return {x,y,w:Math.abs(c1-c0)+1,h:Math.abs(r1-r0)+1}; }
+function toCell(e){ const b=canvas.getBoundingClientRect(); const sx=(e.clientX-b.left)*(canvas.width/b.width), sy=(e.clientY-b.top)*(canvas.height/b.height);
+  return { c:Math.floor((cam.x+sx/cam.zoom)/T), r:Math.floor((cam.y+sy/cam.zoom)/T), sx, sy }; }
+function paintCell(c,r){ if(!inB(c,r))return; const i=idx(c,r);
+  if(tool==='wall'){walls[i]=true;doors[i]=false;} else if(tool==='door'){doors[i]=true;walls[i]=true;}
+  else if(tool==='erase'){walls[i]=false;doors[i]=false;} }
+function hitHandle(R,sx,sy){ for(const hd of handleList(R)){ if(Math.abs(wToSx(hd.wx)-sx)<=7&&Math.abs(wToSy(hd.wy)-sy)<=7) return hd.n; } return null; }
+
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('mousedown',e=>{
+  if(state==='title'||state==='char')return;
+  if(e.button===2||e.button===1){ panning=true; panLast={x:e.clientX,y:e.clientY}; canvas.style.cursor='grabbing'; return; }
+  if(e.button!==0||state!=='edit')return;
+  const cl=toCell(e); hover.c=cl.c; hover.r=cl.r;
+  if(tool==='room'){ draft={c0:cl.c,r0:cl.r,c1:cl.c,r1:cl.r}; }
+  else if(tool==='select'){
+    if(selRoom>=0){ const hnd=hitHandle(rooms[selRoom],cl.sx,cl.sy);
+      if(hnd){ drag={mode:'resize',h:hnd,snap:{...rooms[selRoom]}}; return; } }
+    const ri=roomAt(cl.c,cl.r);
+    if(ri>=0){ selRoom=ri; drag={mode:'move',c:cl.c,r:cl.r,snap:{...rooms[ri]}}; } else selRoom=-1;
+  } else { painting=true; paintCell(cl.c,cl.r); }
+});
+canvas.addEventListener('mousemove',e=>{
+  if(panning&&panLast){ const b=canvas.getBoundingClientRect();
+    cam.x-=(e.clientX-panLast.x)*(canvas.width/b.width)/cam.zoom; cam.y-=(e.clientY-panLast.y)*(canvas.height/b.height)/cam.zoom; clampCam(); panLast={x:e.clientX,y:e.clientY}; return; }
+  if(state!=='edit')return; const cl=toCell(e); hover.c=cl.c; hover.r=cl.r;
+  if(draft){ draft.c1=clamp(cl.c,0,WCOLS-1); draft.r1=clamp(cl.r,0,WROWS-1); }
+  else if(drag&&selRoom>=0){ const R=rooms[selRoom], s=drag.snap;
+    if(drag.mode==='move'){ R.x=clamp(s.x+(cl.c-drag.c),0,WCOLS-s.w); R.y=clamp(s.y+(cl.r-drag.r),0,WROWS-s.h); }
+    else { let x=s.x,y=s.y,x2=s.x+s.w,y2=s.y+s.h;
+      if(drag.h.includes('n')) y=clamp(cl.r,0,y2-1); if(drag.h.includes('s')) y2=clamp(cl.r+1,y+1,WROWS);
+      if(drag.h.includes('w')) x=clamp(cl.c,0,x2-1); if(drag.h.includes('e')) x2=clamp(cl.c+1,x+1,WCOLS);
+      R.x=x;R.y=y;R.w=x2-x;R.h=y2-y; } }
+  else if(painting) paintCell(cl.c,cl.r);
+});
+addEventListener('mouseup',()=>{ if(draft){ const R=normRect(draft.c0,draft.r0,draft.c1,draft.r1); rooms.push({x:R.x,y:R.y,w:R.w,h:R.h,floor:selFloor}); selRoom=rooms.length-1; draft=null; }
+  painting=false; drag=null; if(panning){panning=false;panLast=null;canvas.style.cursor='crosshair';} });
 canvas.addEventListener('mouseleave',()=>{hover.c=-1;painting=false;});
+canvas.addEventListener('wheel',e=>{ if(state==='title'||state==='char')return; e.preventDefault();
+  const b=canvas.getBoundingClientRect(); setZoom(cam.zoom*(e.deltaY<0?1.15:1/1.15),(e.clientX-b.left)*(canvas.width/b.width),(e.clientY-b.top)*(canvas.height/b.height)); },{passive:false});
+el('zin').onclick=()=>setZoom(cam.zoom*1.3); el('zout').onclick=()=>setZoom(cam.zoom/1.3); el('zfit').onclick=fitView;
+addEventListener('keydown',e=>{ if(state!=='edit')return;
+  if((e.key==='Delete'||e.key==='Backspace')&&tool==='select'&&selRoom>=0){ rooms.splice(selRoom,1); selRoom=-1; return; }
+  const s=44/cam.zoom;
+  if(e.key==='ArrowLeft'){cam.x-=s;clampCam();} if(e.key==='ArrowRight'){cam.x+=s;clampCam();}
+  if(e.key==='ArrowUp'){cam.y-=s;clampCam();} if(e.key==='ArrowDown'){cam.y+=s;clampCam();} });
 
-/* ============================================================ telas título/personagem */
-function drawTitleArt(){
-  const cv=el('titleArt'); const w=cv.width,h=cv.height;
-  const x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
-  x.fillStyle='#0e111a'; x.fillRect(0,0,w,h);
-  const WT=WALL_FILL, f=FLOORS.mad.t, cols=w/16, rows=h/16;
-  // piso
+/* ============================================================ título/personagem */
+function drawTitleArt(){ const cv=el('titleArt'),w=cv.width,h=cv.height,x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
+  x.fillStyle='#0e111a'; x.fillRect(0,0,w,h); const WT=WALL_FILL,f=FLOORS.madeira.t,cols=w/16,rows=h/16;
   for(let r=2;r<rows-1;r++)for(let c=1;c<cols-1;c++) x.drawImage(IMG.rb,f[0]*16,f[1]*16,16,16,c*16,r*16,16,16);
-  // paredes (topo + laterais)
   for(let c=1;c<cols-1;c++) x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,c*16,16,16,16);
-  for(let r=1;r<rows-1;r++){ x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,16,r*16,16,16);
-    x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,(cols-2)*16,r*16,16,16); }
-  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(16,32,(cols-2)*16-16,3);   // sombrinha da parede
-  drawCharAt(x,'Bob',DIR.down,false,0,w/2,h-24);                        // Bob no centro
-  x.strokeStyle='rgba(255,201,77,.9)'; x.lineWidth=2; x.strokeRect(1,1,w-2,h-2);
-}
+  for(let r=1;r<rows-1;r++){ x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,16,r*16,16,16); x.drawImage(IMG.rb,WT[0]*16,WT[1]*16,16,16,(cols-2)*16,r*16,16,16); }
+  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(16,32,(cols-2)*16-16,3); drawCharAt(x,'Bob',DIR.down,false,0,w/2,h-24);
+  x.strokeStyle='rgba(255,201,77,.9)'; x.lineWidth=2; x.strokeRect(1,1,w-2,h-2); }
 function buildCharCards(){ const row=el('charRow'); row.innerHTML='';
   CHARS.forEach(name=>{ const card=document.createElement('div'); card.className='card'+(name===selChar?' on':'');
     if(name==='Bob'){ const p=document.createElement('div'); p.className='pill'; p.textContent='PRINCIPAL'; card.appendChild(p); }
-    card.appendChild(mkThumb(64,96,cx=>{ const im=IMG[name+'_idle']; cx.drawImage(im,0,0,16,32,0,4,64,96); }));
+    card.appendChild(mkThumb(64,96,cx=>cx.drawImage(IMG[name+'_idle'],0,0,16,32,0,4,64,96)));
     const nm=document.createElement('div'); nm.className='nm'; nm.textContent=name; card.appendChild(nm);
-    card.onclick=()=>{ selChar=name; buildCharCards(); }; row.appendChild(card);
-  }); }
-
+    card.onclick=()=>{selChar=name;buildCharCards();}; row.appendChild(card); }); }
 el('btnPlayTitle').onclick=()=>{ buildCharCards(); setState('char'); };
-el('btnCharNext').onclick=()=>setState('floor');
+el('btnCharNext').onclick=()=>setState('edit');
+el('btnPlay').onclick=()=>{ if(rooms.length) setState('play'); else flash('Desenhe pelo menos um cômodo 🟫'); };
 
 /* ============================================================ start */
-function starter(){ // casa de exemplo pra facilitar
-  for(let r=3;r<11;r++)for(let c=5;c<17;c++) house.floors[idx(c,r)]='mad'; }
-(function(){ let n=Object.keys(SRC).length;
-  for(const k in SRC){ const im=new Image(); im.onload=im.onerror=()=>{ if(--n===0) begin(); }; IMG[k]=im; im.src=SRC[k]; }
-})();
+function starter(){ rooms.push({x:16,y:11,w:12,h:8,floor:'madeira'}); }
+new ResizeObserver(()=>{ if(state==='edit'||state==='play') resize(); }).observe(el('wrap'));
+(function(){ let n=Object.keys(SRC).length; for(const k in SRC){ const im=new Image(); im.onload=im.onerror=()=>{ if(--n===0)begin(); }; IMG[k]=im; im.src=SRC[k]; } })();
 function begin(){ ctx.imageSmoothingEnabled=false; starter(); drawTitleArt(); requestAnimationFrame(loop); }
 </script>
 </body>
