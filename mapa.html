@@ -9,24 +9,31 @@
     --acc:#ffc94d; --acc-ink:#241802; --ok:#54d98c; --dmg:#ff6b6b; color-scheme:dark; }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{ background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:12px; }
-  .app{ max-width:1200px; margin:0 auto; }
+  .app{ max-width:1280px; margin:0 auto; }
   .top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
   .top .brand{ font-weight:900; letter-spacing:1px; color:var(--acc); font-size:19px; } .top .sp{ flex:1; }
   a.back{ color:var(--mut); text-decoration:none; font-size:13px; } a.back:hover{ color:var(--ink); }
-  .toolbar{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px; margin-bottom:12px; }
-  .tool{ background:var(--card2); border:2px solid var(--line); color:var(--ink); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
-  .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
-  .sp2{ flex:1; } .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; } .btn.danger{ color:#ffb3b3; }
-  .hintbar{ color:var(--mut); font-size:12px; margin:-4px 2px 10px; }
+  .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:9px 13px; font:inherit; font-size:13px; cursor:pointer; } .btn:hover{ background:#2c3348; }
+  .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border:none; } .btn.danger{ color:#ffb3b3; }
+  .hintbar{ color:var(--mut); font-size:12.5px; margin:0 2px 10px; }
 
   .wrap{ display:grid; grid-template-columns:1fr 300px; gap:12px; }
-  @media(max-width:860px){ .wrap{ grid-template-columns:1fr; } }
-  .stage{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px; }
-  .mapbox{ position:relative; width:100%; aspect-ratio:10/7; border-radius:12px; overflow:hidden; touch-action:none; background:#0f1320; }
-  .mapbox canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
-  .areaform{ position:absolute; z-index:6; background:var(--card2); border:1px solid var(--acc); border-radius:12px; padding:10px; width:230px; box-shadow:0 12px 30px #0009; }
-  .areaform input,.areaform textarea{ width:100%; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px; font:inherit; font-size:13px; margin-bottom:7px; }
-  .areaform textarea{ min-height:70px; resize:vertical; } .areaform .r{ display:flex; gap:7px; }
+  @media(max-width:900px){ .wrap{ grid-template-columns:1fr; } }
+  .stage{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px; overflow:auto; }
+  .mapbox{ position:relative; width:100%; min-height:280px; border-radius:12px; overflow:hidden; background:#0f1320; touch-action:none; user-select:none; }
+  .mapbox img{ display:block; width:100%; height:auto; pointer-events:none; }
+  .placeholder{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--mut); font-size:14px; padding:30px; }
+  .area{ position:absolute; border:2px solid; border-radius:6px; cursor:pointer; }
+  .area .tag{ position:absolute; top:-1px; left:-1px; font-size:11px; font-weight:800; color:#0a0a0a; padding:1px 7px; border-radius:6px 0 6px 0; white-space:nowrap; }
+  .area .badge{ position:absolute; right:3px; bottom:3px; font-size:11px; font-weight:800; background:#000a; color:#fff; padding:1px 6px; border-radius:10px; }
+  .area.sel{ box-shadow:0 0 0 3px #ffffff55; }
+  .area .del{ position:absolute; top:-11px; right:-11px; width:22px; height:22px; border-radius:50%; background:var(--dmg); color:#fff; border:2px solid #0007; display:none; align-items:center; justify-content:center; cursor:pointer; font-weight:800; }
+  .area.sel .del{ display:flex; }
+  .marquee{ position:absolute; border:2px dashed var(--acc); background:#ffc94d22; border-radius:6px; pointer-events:none; }
+
+  .areaform{ position:fixed; z-index:20; background:var(--card2); border:1px solid var(--acc); border-radius:12px; padding:12px; width:250px; box-shadow:0 16px 40px #000a; }
+  .areaform input,.areaform textarea{ width:100%; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:9px; font:inherit; font-size:13px; margin-bottom:8px; }
+  .areaform textarea{ min-height:76px; resize:vertical; } .areaform .r{ display:flex; gap:7px; }
   .areaform .r button{ flex:1; border:none; border-radius:8px; padding:9px; font-weight:700; cursor:pointer; }
   .areaform .ok{ background:var(--acc); color:var(--acc-ink); } .areaform .no{ background:#33384a; color:var(--ink); }
 
@@ -44,22 +51,22 @@
 </head>
 <body>
 <div class="app">
-  <div class="top"><span class="brand">🗺️ MAPA DA CASA</span><span class="sp"></span><a class="back" href="painel.html">← voltar ao painel</a></div>
-
-  <div class="toolbar">
-    <button class="tool on" data-tool="block">🟦 Bloco</button>
-    <button class="tool" data-tool="erase">🧽 Borracha</button>
-    <button class="tool" data-tool="area">🏷️ Definir área</button>
-    <span class="sp2"></span>
-    <button class="btn danger" id="clear">Limpar tudo</button>
+  <div class="top">
+    <span class="brand">🗺️ MAPA DA CASA</span><span class="sp"></span>
+    <a class="back" href="painel.html">← voltar ao painel</a>
+    <label class="btn primary" style="cursor:pointer">🖼️ Subir/trocar mapa<input type="file" id="file" accept="image/*" hidden></label>
+    <button class="btn danger" id="clear">Limpar áreas</button>
   </div>
-  <div class="hintbar" id="hintbar">🟦 Arraste pra desenhar blocos da casa · 🧽 apaga pedaços · 🏷️ arraste sobre uma parte pra criar uma área com tarefas.</div>
+  <div class="hintbar">Suba o mapa da sua casa e <b>arraste sobre um cômodo</b> pra criar uma área com as tarefas típicas dali. Toque numa área pra selecionar/excluir.</div>
 
   <div class="wrap">
-    <div class="stage"><div class="mapbox" id="mapbox"><canvas id="cv" width="800" height="560"></canvas></div></div>
+    <div class="stage"><div class="mapbox" id="mapbox">
+      <img id="bg" style="display:none">
+      <div class="placeholder" id="ph">🏠 Suba o mapa da sua casa (o do RPG Maker!) no botão <b>“Subir/trocar mapa”</b>.<br>Depois arraste sobre cada cômodo pra criar as áreas.</div>
+    </div></div>
     <div class="side">
       <h2>Áreas & tarefas</h2>
-      <div class="hint">O que estiver com tarefa pendente aparece como <b>desorganizado</b> no painel.</div>
+      <div class="hint">O que tiver tarefa pendente vira <b>desorganizado</b> no painel.</div>
       <div id="zones"></div>
     </div>
   </div>
@@ -67,104 +74,76 @@
 
 <script>
   const KEY='lifeos_mapa';
-  const GW=40, GH=28;                          // grade
-  const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
-  const CS=cv.width/GW;                         // tamanho da célula em px do canvas (20)
-  const mapbox=document.getElementById('mapbox'), zonesEl=document.getElementById('zones'), hintbar=document.getElementById('hintbar');
-  const PAL=['#ffc94d','#54d98c','#5bb8ff','#ff6b6b','#b98cff','#ff9f5b','#7ee0d0','#ff8fd0'];
-
-  let S=JSON.parse(localStorage.getItem(KEY)||'null');
-  if(!S || !S.built || S.built.length!==GW*GH){ S={ built:Array(GW*GH).fill(0), zones:[] }; }
+  let S=JSON.parse(localStorage.getItem(KEY)||'null'); if(!S||!Array.isArray(S.zones)) S={img:null,zones:[]};
   S.zones=S.zones||[];
   const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
-  const bidx=(c,r)=>r*GW+c, inb=(c,r)=>c>=0&&c<GW&&r>=0&&r<GH;
+  const PAL=['#ffc94d','#54d98c','#5bb8ff','#ff6b6b','#b98cff','#ff9f5b','#7ee0d0','#ff8fd0'];
+  const mapbox=document.getElementById('mapbox'), bg=document.getElementById('bg'), ph=document.getElementById('ph'), zonesEl=document.getElementById('zones');
 
-  let tool='block', drag=null, form=null;
-  document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{ tool=b.dataset.tool;
-    document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on',x===b)); });
+  function loadBg(){ if(S.img){ bg.src=S.img; bg.style.display=''; ph.style.display='none'; } else { bg.style.display='none'; ph.style.display=''; } }
+  document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader(); r.onload=()=>{ S.img=r.result; save(); loadBg(); }; r.readAsDataURL(f); };
 
-  function cellOf(e){ const r=cv.getBoundingClientRect();
-    return { c:Math.floor((e.clientX-r.left)/r.width*GW), r:Math.floor((e.clientY-r.top)/r.height*GH),
-             px:(e.clientX-r.left)/r.width*100, py:(e.clientY-r.top)/r.height*100 }; }
-  function norm(a,b){ return { x:Math.min(a.c,b.c), y:Math.min(a.r,b.r), w:Math.abs(a.c-b.c)+1, h:Math.abs(a.r-b.r)+1 }; }
-
-  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(form) return; const cl=cellOf(e); cv.setPointerCapture(e.pointerId);
-    if(tool==='erase'){ drag={mode:'erase'}; eraseAt(cl); }
-    else { drag={mode:tool, a:cl, b:cl }; }
-    render();
+  // ---- desenhar área (marquee) ----
+  let drag=null, marq=null, sel=-1, form=null;
+  function pct(e){ const r=mapbox.getBoundingClientRect();
+    return { x:Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100)), y:Math.max(0,Math.min(100,(e.clientY-r.top)/r.height*100)) }; }
+  mapbox.addEventListener('pointerdown',e=>{
+    if(form) return;
+    if(e.target.closest('.area')) return;        // clicar numa área é tratado nela
+    if(!S.img) return;                           // precisa de mapa
+    e.preventDefault(); selectArea(-1);
+    const p=pct(e); drag={x0:p.x,y0:p.y,x1:p.x,y1:p.y}; mapbox.setPointerCapture(e.pointerId);
+    marq=document.createElement('div'); marq.className='marquee'; mapbox.appendChild(marq); updMarq();
   });
-  cv.addEventListener('pointermove',e=>{ if(!drag)return; const cl=cellOf(e);
-    if(drag.mode==='erase') eraseAt(cl); else { drag.b=cl; } render(); });
-  cv.addEventListener('pointerup',e=>{ if(!drag)return; const d=drag; drag=null;
-    if(d.mode==='block'){ const R=norm(d.a,d.b); for(let r=R.y;r<R.y+R.h;r++)for(let c=R.x;c<R.x+R.w;c++) if(inb(c,r)) S.built[bidx(c,r)]=1; save(); render(); }
-    else if(d.mode==='area'){ const R=norm(d.a,d.b); openAreaForm(R); }
-    else if(d.mode==='erase'){ save(); render(); }
-  });
-  function eraseAt(cl){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ const c=cl.c+dc,r=cl.r+dr; if(inb(c,r)) S.built[bidx(c,r)]=0; } }
+  mapbox.addEventListener('pointermove',e=>{ if(!drag)return; const p=pct(e); drag.x1=p.x; drag.y1=p.y; updMarq(); });
+  mapbox.addEventListener('pointerup',e=>{ if(!drag)return; const d=drag; drag=null; if(marq){ marq.remove(); marq=null; }
+    const R=rectOf(d); if(R.w<3||R.h<3) return; openForm(R,e); });
+  function rectOf(d){ return { x:Math.min(d.x0,d.x1), y:Math.min(d.y0,d.y1), w:Math.abs(d.x1-d.x0), h:Math.abs(d.y1-d.y0) }; }
+  function updMarq(){ if(!marq)return; const R=rectOf(drag); marq.style.left=R.x+'%'; marq.style.top=R.y+'%'; marq.style.width=R.w+'%'; marq.style.height=R.h+'%'; }
 
-  function openAreaForm(R){
+  function openForm(R,e){
     if(form) form.remove();
     const d=document.createElement('div'); d.className='areaform';
-    const left=Math.min(72, R.x/GW*100); d.style.left=left+'%'; d.style.top=Math.min(60,(R.y+R.h)/GH*100)+'%';
+    d.style.left=Math.min(window.innerWidth-270, e.clientX)+'px'; d.style.top=Math.min(window.innerHeight-230, e.clientY)+'px';
     d.innerHTML=`<input id="an" placeholder="nome da área (ex: Canil)">
-      <textarea id="at" placeholder="tarefas típicas (uma por linha):\nvarrer\ntrocar água\nrecolher fezes"></textarea>
-      <div class="r"><button class="no" id="acancel">cancelar</button><button class="ok" id="acreate">criar área</button></div>`;
-    mapbox.appendChild(d); form=d; d.querySelector('#an').focus();
-    d.querySelector('#acancel').onclick=()=>{ d.remove(); form=null; render(); };
-    d.querySelector('#acreate').onclick=()=>{
-      const nm=d.querySelector('#an').value.trim()||'Área';
+      <textarea id="at" placeholder="tarefas típicas (uma por linha):&#10;varrer&#10;trocar água&#10;recolher fezes"></textarea>
+      <div class="r"><button class="no" id="c">cancelar</button><button class="ok" id="k">criar área</button></div>`;
+    document.body.appendChild(d); form=d; d.querySelector('#an').focus();
+    d.querySelector('#c').onclick=()=>{ d.remove(); form=null; };
+    d.querySelector('#k').onclick=()=>{ const nm=d.querySelector('#an').value.trim()||'Área';
       const tasks=d.querySelector('#at').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,done:false}));
-      S.zones.push({ ...R, name:nm, color:PAL[S.zones.length%PAL.length], tasks });
-      save(); d.remove(); form=null; render(); renderZones();
-    };
+      S.zones.push({ ...R, name:nm, color:PAL[S.zones.length%PAL.length], tasks }); save(); d.remove(); form=null; renderAreas(); renderZones(); };
   }
 
-  function render(){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    // blocos construídos
-    for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){ if(!S.built[bidx(c,r)])continue;
-      ctx.fillStyle='#2f3d4a'; ctx.fillRect(c*CS,r*CS,CS,CS);
-      ctx.fillStyle='#3a4a58'; ctx.fillRect(c*CS,r*CS,CS,2); }
-    // grade
-    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
-    for(let c=0;c<=GW;c++){ ctx.beginPath(); ctx.moveTo(c*CS+.5,0); ctx.lineTo(c*CS+.5,cv.height); ctx.stroke(); }
-    for(let r=0;r<=GH;r++){ ctx.beginPath(); ctx.moveTo(0,r*CS+.5); ctx.lineTo(cv.width,r*CS+.5); ctx.stroke(); }
-    // áreas
-    S.zones.forEach(z=>{ const pend=z.tasks.filter(t=>!t.done).length;
-      ctx.fillStyle=z.color+'33'; ctx.fillRect(z.x*CS,z.y*CS,z.w*CS,z.h*CS);
-      ctx.strokeStyle=z.color; ctx.lineWidth=2; ctx.strokeRect(z.x*CS+1,z.y*CS+1,z.w*CS-2,z.h*CS-2);
-      ctx.fillStyle=z.color; ctx.font='bold 12px system-ui'; ctx.fillText(z.name, z.x*CS+5, z.y*CS+15);
-      if(pend>0){ ctx.font='11px system-ui'; ctx.fillStyle='#0a0a0a'; ctx.fillStyle=z.color;
-        ctx.fillText('👾 '+pend, z.x*CS+5, z.y*CS+29); }
-    });
-    // preview do arrasto
-    if(drag && (drag.mode==='block'||drag.mode==='area')){ const R=norm(drag.a,drag.b);
-      ctx.fillStyle=drag.mode==='area'?'#ffc94d33':'#5bb8ff33'; ctx.fillRect(R.x*CS,R.y*CS,R.w*CS,R.h*CS);
-      ctx.strokeStyle=drag.mode==='area'?'#ffc94d':'#5bb8ff'; ctx.lineWidth=2; ctx.strokeRect(R.x*CS,R.y*CS,R.w*CS,R.h*CS); }
-  }
+  function selectArea(i){ sel=i; mapbox.querySelectorAll('.area').forEach((el,idx)=>el.classList.toggle('sel',idx===i)); }
+  function renderAreas(){ mapbox.querySelectorAll('.area').forEach(a=>a.remove());
+    S.zones.forEach((z,i)=>{ const pend=z.tasks.filter(t=>!t.done).length;
+      const el=document.createElement('div'); el.className='area'+(i===sel?' sel':''); el.style.borderColor=z.color;
+      el.style.left=z.x+'%'; el.style.top=z.y+'%'; el.style.width=z.w+'%'; el.style.height=z.h+'%'; el.style.background=z.color+'22';
+      el.innerHTML=`<span class="tag" style="background:${z.color}">${z.name}</span>${pend?`<span class="badge">👾 ${pend}</span>`:''}<div class="del">✕</div>`;
+      el.onclick=ev=>{ ev.stopPropagation(); selectArea(i); };
+      el.querySelector('.del').onclick=ev=>{ ev.stopPropagation(); S.zones.splice(i,1); sel=-1; save(); renderAreas(); renderZones(); };
+      mapbox.appendChild(el); }); }
 
-  function renderZones(){
-    if(!S.zones.length){ zonesEl.innerHTML='<div class="hint">Nenhuma área ainda. Use 🏷️ pra criar.</div>'; return; }
+  function renderZones(){ if(!S.zones.length){ zonesEl.innerHTML='<div class="hint">Nenhuma área ainda.</div>'; return; }
     zonesEl.innerHTML='';
     S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone';
-      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="x" title="excluir área">✕</span></div>
-        <div class="tks"></div>
+      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="x" title="excluir área">✕</span></div><div class="tks"></div>
         <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>`;
       const tks=el.querySelector('.tks');
-      z.tasks.forEach((t,ti)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
+      z.tasks.forEach((t)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
         d.innerHTML=`<div class="box">${t.done?'✔':''}</div><span>${t.t}</span>`;
-        d.onclick=()=>{ t.done=!t.done; save(); renderZones(); render(); }; tks.appendChild(d); });
-      el.querySelector('.x').onclick=()=>{ S.zones.splice(zi,1); save(); renderZones(); render(); };
+        d.onclick=()=>{ t.done=!t.done; save(); renderZones(); renderAreas(); }; tks.appendChild(d); });
+      el.querySelector('.x').onclick=()=>{ S.zones.splice(zi,1); sel=-1; save(); renderZones(); renderAreas(); };
       const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
-      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); render(); };
+      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); renderAreas(); };
       addb.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter')add(); };
-      zonesEl.appendChild(el);
-    });
-  }
+      zonesEl.appendChild(el); }); }
 
-  document.getElementById('clear').onclick=()=>{ if(confirm('Apagar toda a planta e as áreas?')){ S={built:Array(GW*GH).fill(0),zones:[]}; save(); render(); renderZones(); } };
-
-  render(); renderZones();
+  document.getElementById('clear').onclick=()=>{ if(confirm('Apagar todas as áreas? (o mapa continua)')){ S.zones=[]; sel=-1; save(); renderAreas(); renderZones(); } };
+  bg.onload=renderAreas;
+  loadBg(); renderAreas(); renderZones();
 </script>
 </body>
 </html>
