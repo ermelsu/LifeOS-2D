@@ -156,6 +156,21 @@
   .kv b, .meas .nm .cur{ font-size:15px; }
   @media(max-width:680px){ body{ font-size:17px; } .ph h2{ font-size:17px; } .quest{ font-size:16px; }
     .chip{ font-size:15px; } .attr .top{ font-size:15.5px; } .list .li{ font-size:16px; } }
+
+  /* ====== MAPA DA CASA NO PAINEL ====== */
+  .housemap{ position:relative; width:100%; border-radius:12px; overflow:hidden; background:#0f1320; }
+  .housemap img{ display:block; width:100%; height:auto; }
+  .harea{ position:absolute; border:2px solid; border-radius:6px; cursor:pointer; }
+  .harea .lab{ position:absolute; top:-1px; left:-1px; font-size:12px; font-weight:800; color:#0a0a0a; padding:1px 7px; border-radius:6px 0 6px 0; white-space:nowrap; }
+  .harea .bd{ position:absolute; right:3px; bottom:3px; font-size:12px; font-weight:800; padding:1px 7px; border-radius:10px; }
+  .harea.pend{ box-shadow:0 0 0 2px #ff6b6b55; }
+  /* status sim/não */
+  .ask{ display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px dashed #232a3d; } .ask:last-child{ border-bottom:none; }
+  .ask .q{ flex:1; font-size:15px; } .ask .q small{ display:block; color:var(--mut); font-size:12px; }
+  .yn{ display:flex; gap:7px; flex:0 0 auto; }
+  .yn button{ border:1px solid var(--line); background:#0f1320; color:var(--mut); border-radius:10px; padding:9px 15px; font-weight:800; cursor:pointer; font-size:14px; }
+  .yn button.yes.on{ background:#153a29; color:var(--hp); border-color:#2a5a40; }
+  .yn button.no.on{ background:#3a1717; color:var(--dmg); border-color:#5a2a2a; }
 </style>
 </head>
 <body>
@@ -328,14 +343,14 @@ const invBody=`<div class="inv">${invHtml}</div>`;
 grid.innerHTML =
   panel('col-8','🧝','Personagem','', heroBody) +
   panel('col-4','🔥','Sequência (streak)','', streakBody) +
+  panel('col-8','🗺️','Mapa da casa','toque numa área', '<div id="housemapWrap"></div>') +
+  panel('col-4','✅','Status da casa','já está feito?', '<div id="statusWrap"></div>') +
   panel('col-6','📊','Medidas & Progresso', STATE.goal, measBody) +
   panel('col-6','🏋️','Treino de hoje', w.min+' min · casa', workoutBody) +
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
   panel('col-4','🗺️','Missões de hoje','', questBody) +
   panel('col-4','🌀','Chefão atual','', bossBody) +
   panel('col-4','🙂','Humor da semana','', moodBody) +
-  panel('col-7','🧹','Arrumar a casa','tarefas das áreas', houseBody) +
-  panel('col-5','🏠','Áreas da casa', roomsRight, roomsBody) +
   panel('col-12','🐾','A matilha', STATE.dogs.length+' cães', dogsBody) +
   panel('col-4','🤝','Aliados (party)','', alliesBody) +
   panel('col-4','💰','Recursos','', resBody) +
@@ -361,6 +376,33 @@ if(ht) ht.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!
   setTimeout(()=>{ q.remove(); if(!ht.querySelector('.quest')) ht.innerHTML='<div class="sub">Tudo em ordem na casa ✨🐾</div>'; },260); });
 const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
 const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
+/* ===== mapa da casa no painel + status Sim/Não ===== */
+function renderHouse(){
+  ZONES=readZones();
+  let m={}; try{ m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); }catch(e){}
+  const wrap=document.getElementById('housemapWrap'), sw=document.getElementById('statusWrap');
+  if(wrap){
+    if(m.img){
+      const ov=ZONES.map((z,i)=>{ const pend=(z.tasks||[]).filter(t=>!t.done).length;
+        return `<div class="harea ${pend?'pend':''}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color}">
+          <span class="lab" style="background:${z.color}">${z.name}</span>
+          <span class="bd" style="background:${pend?'rgba(0,0,0,.65)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'👾 '+pend:'✓'}</span></div>`; }).join('');
+      wrap.innerHTML=`<div class="housemap"><img src="${m.img}">${ov}</div>`;
+      wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>{ const el=document.getElementById('sz'+a.dataset.z); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
+    } else wrap.innerHTML=`<div class="sub">Suba o mapa da casa e crie áreas com tarefas no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`;
+  }
+  if(sw){
+    if(!ZONES.length){ sw.innerHTML=`<div class="sub">Crie áreas no <a href="mapa.html" style="color:var(--acc)">Mapa</a> pra responder o status aqui, rapidinho no Sim/Não.</div>`; }
+    else { sw.innerHTML=ZONES.map((z,zi)=>`<div id="sz${zi}">`+(z.tasks||[]).map((t,ti)=>`
+      <div class="ask"><div class="q">${t.t}<small>${z.name}</small></div>
+        <div class="yn"><button class="yes ${t.done?'on':''}" data-zi="${zi}" data-ti="${ti}" data-v="1">Sim</button>
+        <button class="no ${!t.done?'on':''}" data-zi="${zi}" data-ti="${ti}" data-v="0">Não</button></div></div>`).join('')+`</div>`).join('');
+      sw.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{ const zi=+b.dataset.zi,ti=+b.dataset.ti;
+        ZONES=readZones(); if(ZONES[zi]&&ZONES[zi].tasks[ti]){ ZONES[zi].tasks[ti].done=(b.dataset.v==='1'); saveZones(ZONES); renderHouse(); } });
+    }
+  }
+}
+renderHouse();
 function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);
 </script>
 </body>

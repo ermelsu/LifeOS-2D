@@ -57,6 +57,10 @@ body{font-size:16px}
 .zone .nm{font-size:16px}.zt{font-size:14.5px}.zt .box{width:19px;height:19px}
 .addt input{font-size:13.5px;padding:8px}.addt button{padding:0 13px;font-size:15px}
 .brand{font-size:22px}.area .tag{font-size:12.5px;padding:2px 8px}.area .badge{font-size:12px}
+.suggwrap{margin-top:9px}.suggh{font-size:11.5px;color:var(--mut);margin-bottom:5px}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg .chip{font-size:12.5px;background:#0f1320;border:1px dashed var(--acc);color:var(--acc);border-radius:20px;padding:5px 10px;cursor:pointer}
+.sugg .chip:hover{background:#2a2617}
 
 </style>
 </head>
@@ -90,6 +94,21 @@ body{font-size:16px}
   S.zones=S.zones||[];
   const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
   const PAL=['#ffc94d','#54d98c','#5bb8ff','#ff6b6b','#b98cff','#ff9f5b','#7ee0d0','#ff8fd0'];
+  // sugestões detalhadas de tarefas por tipo de cômodo (por palavra-chave no nome)
+  const SUGG=[
+    {kw:['canil','cão','cao','cachorr','pet','matilha'], list:['Recolher fezes','Trocar a água dos bebedouros','Encher os potes de ração','Lavar os bebedouros/comedouros','Varrer o chão','Passar pano com desinfetante','Trocar a forração/caminha','Verificar pulgas e carrapatos','Checar se todos estão bem']},
+    {kw:['cozinha'], list:['Lavar a louça','Limpar o fogão','Limpar a bancada','Tirar o lixo','Varrer e passar pano','Guardar comida/organizar geladeira','Preparar marmita/refeição','Checar validade dos alimentos']},
+    {kw:['quarto','dormir','cama'], list:['Arrumar a cama','Recolher roupas do chão','Trocar os lençóis','Varrer/aspirar','Organizar a mesa de cabeceira','Guardar roupas limpas']},
+    {kw:['banheir','lavabo','wc'], list:['Limpar o vaso','Limpar a pia','Passar pano no chão','Limpar o box/chuveiro','Repor papel higiênico','Trocar a toalha','Recolher lixo']},
+    {kw:['sala','estar','tv','living'], list:['Organizar objetos','Passar pano nos móveis','Aspirar o sofá','Varrer o chão','Organizar fios/controles','Regar plantas']},
+    {kw:['jardim','quintal','extern','área','patio','pátio','horta','gramad'], list:['Recolher fezes dos cães','Aparar o mato/grama','Varrer folhas','Regar as plantas','Recolher entulho/lixo','Verificar cercas e portões','Organizar ferramentas','Limpar ralos/escoamento']},
+    {kw:['lavand','serviç','servic','tanque'], list:['Lavar roupa','Estender/recolher','Dobrar e guardar','Limpar o tanque','Varrer o chão']},
+    {kw:['escritóri','escritori','office','trabalho'], list:['Organizar a mesa','Fazer backup dos arquivos','Limpar o computador','Organizar cabos','Anotar pendências']},
+    {kw:['garagem','carro'], list:['Varrer','Organizar ferramentas','Recolher lixo','Verificar o carro']},
+  ];
+  const DEF_SUGG=['Organizar','Limpar o chão','Tirar o lixo','Ver o que está faltando'];
+  function suggFor(name){ const n=(name||'').toLowerCase();
+    for(const s of SUGG){ if(s.kw.some(k=>n.includes(k))) return s.list; } return DEF_SUGG; }
   const mapbox=document.getElementById('mapbox'), bg=document.getElementById('bg'), ph=document.getElementById('ph'), zonesEl=document.getElementById('zones');
 
   function loadBg(){ if(S.img){ bg.src=S.img; bg.style.display=''; ph.style.display='none'; } else { bg.style.display='none'; ph.style.display=''; } }
@@ -142,8 +161,11 @@ body{font-size:16px}
   function renderZones(){ if(!S.zones.length){ zonesEl.innerHTML='<div class="hint">Nenhuma área ainda.</div>'; return; }
     zonesEl.innerHTML='';
     S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone';
+      const have=z.tasks.map(t=>t.t.toLowerCase());
+      const sug=suggFor(z.name).filter(s=>!have.includes(s.toLowerCase()));
       el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="x" title="excluir área">✕</span></div><div class="tks"></div>
-        <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>`;
+        <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>
+        ${sug.length?`<div class="suggwrap"><div class="suggh">💡 sugestões (toque pra adicionar):</div><div class="sugg">${sug.map(s=>`<span class="chip" data-s="${s.replace(/"/g,'&quot;')}">+ ${s}</span>`).join('')}</div></div>`:''}`;
       const tks=el.querySelector('.tks');
       z.tasks.forEach((t)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
         d.innerHTML=`<div class="box">${t.done?'✔':''}</div><span>${t.t}</span>`;
@@ -152,6 +174,7 @@ body{font-size:16px}
       const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
       const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); renderAreas(); };
       addb.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter')add(); };
+      el.querySelectorAll('.sugg .chip').forEach(c=>c.onclick=()=>{ z.tasks.push({t:c.dataset.s,done:false}); save(); renderZones(); renderAreas(); });
       zonesEl.appendChild(el); }); }
 
   document.getElementById('clear').onclick=()=>{ if(confirm('Apagar todas as áreas? (o mapa continua)')){ S.zones=[]; sel=-1; save(); renderAreas(); renderZones(); } };
