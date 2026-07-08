@@ -39,6 +39,7 @@ missões no mundo real e evolui de nível conforme sua vida melhora.
 
 - `index.html` — **tela de entrada** (Life OS): fundo artístico, botão *Jogar* e login/senha (local).
 - `painel.html` — **o painel do jogo**: status, atributos, matilha, cômodos, treino, medidas, humor, receitas, chefão…
+- `saude.html` — **espelho da saúde** (no banheiro): humor, medidas, água, sono e gráfico de evolução do peso.
 - `mapa.html` — **mapa da casa**: suba uma imagem e marque as tarefas (o que fazer e onde).
 - `questionario.html` — formulário de criação de personagem.
 - `ficha.md` — a ficha do Emerson (gerada das respostas).

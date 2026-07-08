@@ -135,6 +135,7 @@
   <div class="topbar">
     <div class="brand">LIFEOS<small>O JOGO DA VIDA DO EMERSON</small></div>
     <span class="sp"></span>
+    <a class="chip" href="saude.html" style="text-decoration:none">🪞 Espelho da saúde</a>
     <a class="chip" href="mapa.html" style="text-decoration:none">🗺️ Mapa da casa</a>
     <span class="chip"><span class="dot"></span>VIVO</span>
     <span class="chip">DIA <b id="day">1</b></span>
@@ -239,7 +240,7 @@ const measBody=STATE.measures.map(m=>{
   return `<div class="meas"><span class="ic">${m.ic}</span><div class="mid">
     <div class="nm"><span>${m.nm}</span><span class="cur">${val}</span></div>
     <div class="bar"><i data-w="${p}%" style="background:linear-gradient(90deg,#54d98c99,#54d98c)"></i></div></div></div>`;
-}).join('')+`<div class="sub" style="margin-top:8px">💡 Me manda peso, cintura e % de gordura que eu começo o acompanhamento.</div>`;
+}).join('')+`<div class="sub" style="margin-top:8px">🪞 Registre e acompanhe no <a href="saude.html" style="color:var(--acc)">Espelho da Saúde</a>.</div>`;
 
 const w=STATE.workout;
 const workoutBody=`<div class="wo">`+w.ex.map((x,i)=>`<div class="exi"><b style="color:var(--mut);font-family:ui-monospace,monospace">${i+1}</b><span>${x.nm}</span><span class="s">${x.s}</span></div>`).join('')+
