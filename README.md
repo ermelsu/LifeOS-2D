@@ -13,8 +13,10 @@ missões no mundo real e evolui de nível conforme sua vida melhora.
 
 ## Como jogar
 
-1. **Criação de personagem** — você responde o [`questionario.md`](questionario.md).
-   São perguntas sobre os status reais da sua vida.
+1. **Criação de personagem** — abra o [`questionario.html`](questionario.html) (formulário
+   com um campo por pergunta, salva sozinho e tem botão pra copiar as respostas) ou leia
+   as perguntas em [`questionario.md`](questionario.md). São perguntas sobre os status
+   reais da sua vida.
 2. **Ficha** — a partir das suas respostas eu monto a sua ficha de personagem
    (atributos de 0–10, missões, inventário, aliados e chefões).
 3. **A campanha** — a gente joga por texto: eu descrevo situações e proponho
