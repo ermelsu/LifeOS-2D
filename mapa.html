@@ -11,157 +11,160 @@
   body{ background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:12px; }
   .app{ max-width:1200px; margin:0 auto; }
   .top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-  .top .brand{ font-weight:900; letter-spacing:1px; color:var(--acc); font-size:19px; }
-  .top .sp{ flex:1; } a.back{ color:var(--mut); text-decoration:none; font-size:13px; } a.back:hover{ color:var(--ink); }
-
-  .toolbar{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--line);
-    border-radius:12px; padding:8px; margin-bottom:12px; }
-  .tool{ display:flex; align-items:center; gap:6px; background:var(--card2); border:2px solid var(--line); color:var(--ink);
-    border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .top .brand{ font-weight:900; letter-spacing:1px; color:var(--acc); font-size:19px; } .top .sp{ flex:1; }
+  a.back{ color:var(--mut); text-decoration:none; font-size:13px; } a.back:hover{ color:var(--ink); }
+  .toolbar{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px; margin-bottom:12px; }
+  .tool{ background:var(--card2); border:2px solid var(--line); color:var(--ink); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
   .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
-  .swatch{ width:22px; height:22px; border-radius:6px; border:2px solid #0006; cursor:pointer; }
-  .swatch.on{ outline:2px solid var(--acc); outline-offset:1px; }
-  input[type=range]{ accent-color:var(--acc); width:90px; }
-  .sp2{ flex:1; }
-  .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
-  .btn:hover{ background:#2c3348; } .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border:none; } .btn.danger{ color:#ffb3b3; }
+  .sp2{ flex:1; } .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; } .btn.danger{ color:#ffb3b3; }
+  .hintbar{ color:var(--mut); font-size:12px; margin:-4px 2px 10px; }
 
-  .wrap{ display:grid; grid-template-columns:1fr 280px; gap:12px; }
-  @media(max-width:820px){ .wrap{ grid-template-columns:1fr; } }
+  .wrap{ display:grid; grid-template-columns:1fr 300px; gap:12px; }
+  @media(max-width:860px){ .wrap{ grid-template-columns:1fr; } }
   .stage{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px; }
-  .mapbox{ position:relative; width:100%; aspect-ratio:10/7; border-radius:12px; overflow:hidden;
-    background:#0f1320; touch-action:none; }
-  .mapbox img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .mapbox{ position:relative; width:100%; aspect-ratio:10/7; border-radius:12px; overflow:hidden; touch-action:none; background:#0f1320; }
   .mapbox canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
-  .hintover{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
-    color:var(--mut); font-size:14px; padding:24px; pointer-events:none; }
-  .pin{ position:absolute; transform:translate(-50%,-100%); cursor:pointer; z-index:3; }
-  .pin .head{ width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #0008; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px #0007; }
-  .pin .head span{ transform:rotate(45deg); font-size:12px; font-weight:800; color:#0a0a0a; }
-  .pin.todo .head{ background:var(--acc); } .pin.done .head{ background:var(--ok); }
-  .pinput{ position:absolute; transform:translate(-50%,8px); z-index:5; background:var(--card2); border:1px solid var(--acc);
-    border-radius:10px; padding:6px; display:flex; gap:6px; box-shadow:0 8px 20px #0008; }
-  .pinput input{ background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:7px; padding:7px 9px; font:inherit; font-size:13px; width:170px; }
-  .pinput button{ background:var(--acc); color:var(--acc-ink); border:none; border-radius:7px; padding:0 10px; font-weight:800; cursor:pointer; }
+  .areaform{ position:absolute; z-index:6; background:var(--card2); border:1px solid var(--acc); border-radius:12px; padding:10px; width:230px; box-shadow:0 12px 30px #0009; }
+  .areaform input,.areaform textarea{ width:100%; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px; font:inherit; font-size:13px; margin-bottom:7px; }
+  .areaform textarea{ min-height:70px; resize:vertical; } .areaform .r{ display:flex; gap:7px; }
+  .areaform .r button{ flex:1; border:none; border-radius:8px; padding:9px; font-weight:700; cursor:pointer; }
+  .areaform .ok{ background:var(--acc); color:var(--acc-ink); } .areaform .no{ background:#33384a; color:var(--ink); }
 
   .side{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; }
   .side h2{ font-size:14px; text-transform:uppercase; letter-spacing:.5px; color:#cdd4e6; margin-bottom:6px; }
   .hint{ color:var(--mut); font-size:12px; margin-bottom:12px; }
-  .task{ display:flex; gap:9px; align-items:flex-start; padding:9px 6px; border-bottom:1px dashed #232a3d; } .task:last-child{ border-bottom:none; }
-  .task .num{ width:22px; height:22px; border-radius:50%; background:var(--acc); color:#0a0a0a; font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; cursor:pointer; }
-  .task.done .num{ background:var(--ok); } .task.done .t{ text-decoration:line-through; color:var(--mut); }
-  .task .t{ flex:1; font-size:13px; } .task .x{ cursor:pointer; color:var(--mut); } .task .x:hover{ color:var(--dmg); }
+  .zone{ background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; }
+  .zone .zh{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .zone .dot{ width:12px; height:12px; border-radius:4px; } .zone .nm{ font-weight:700; font-size:14px; } .zone .x{ margin-left:auto; color:var(--mut); cursor:pointer; } .zone .x:hover{ color:var(--dmg); }
+  .zt{ display:flex; align-items:center; gap:8px; padding:5px 2px; font-size:13px; cursor:pointer; }
+  .zt .box{ width:16px; height:16px; border:2px solid var(--line); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10px; flex:0 0 auto; }
+  .zt.done .box{ background:var(--ok); border-color:var(--ok); color:#06210f; } .zt.done span{ text-decoration:line-through; color:var(--mut); }
+  .addt{ display:flex; gap:6px; margin-top:6px; } .addt input{ flex:1; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:7px; padding:6px 8px; font:inherit; font-size:12px; } .addt button{ background:#2a3446; border:1px solid var(--line); color:var(--ink); border-radius:7px; padding:0 10px; cursor:pointer; }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="top">
-    <span class="brand">🗺️ MAPA DA CASA</span>
-    <span class="sp"></span>
-    <a class="back" href="painel.html">← voltar ao painel</a>
-  </div>
+  <div class="top"><span class="brand">🗺️ MAPA DA CASA</span><span class="sp"></span><a class="back" href="painel.html">← voltar ao painel</a></div>
 
   <div class="toolbar">
-    <button class="tool on" data-tool="pen">✏️ Desenhar</button>
+    <button class="tool on" data-tool="block">🟦 Bloco</button>
     <button class="tool" data-tool="erase">🧽 Borracha</button>
-    <button class="tool" data-tool="pin">📌 Tarefa</button>
-    <span style="display:flex;gap:5px;align-items:center" id="colors"></span>
-    <input type="range" id="size" min="2" max="40" value="6" title="Espessura">
+    <button class="tool" data-tool="area">🏷️ Definir área</button>
     <span class="sp2"></span>
-    <label class="btn" style="cursor:pointer">🖼️ Foto/planta<input type="file" id="file" accept="image/*" hidden></label>
-    <button class="btn danger" id="clear">Limpar</button>
+    <button class="btn danger" id="clear">Limpar tudo</button>
   </div>
+  <div class="hintbar" id="hintbar">🟦 Arraste pra desenhar blocos da casa · 🧽 apaga pedaços · 🏷️ arraste sobre uma parte pra criar uma área com tarefas.</div>
 
   <div class="wrap">
-    <div class="stage">
-      <div class="mapbox" id="mapbox">
-        <img id="bg" style="display:none">
-        <canvas id="cv" width="1000" height="700"></canvas>
-        <div class="hintover" id="hint">✏️ Desenhe a planta da casa com o dedo ou mouse.<br>Escolha <b>📌 Tarefa</b> pra marcar o que fazer e onde.</div>
-      </div>
-    </div>
+    <div class="stage"><div class="mapbox" id="mapbox"><canvas id="cv" width="800" height="560"></canvas></div></div>
     <div class="side">
-      <h2>Tarefas no mapa</h2>
-      <div class="hint">Ferramenta <b>📌 Tarefa</b> → toque no mapa e escreva. Toque no número pra concluir.</div>
-      <div id="tasks"></div>
+      <h2>Áreas & tarefas</h2>
+      <div class="hint">O que estiver com tarefa pendente aparece como <b>desorganizado</b> no painel.</div>
+      <div id="zones"></div>
     </div>
   </div>
 </div>
 
 <script>
   const KEY='lifeos_mapa';
-  let S=JSON.parse(localStorage.getItem(KEY)||'{"img":null,"draw":null,"pins":[]}');
-  const mapbox=document.getElementById('mapbox'), cv=document.getElementById('cv'), ctx=cv.getContext('2d');
-  const bg=document.getElementById('bg'), tasksEl=document.getElementById('tasks'), hint=document.getElementById('hint');
-  let tool='pen', color='#ffc94d', size=6, drawing=false, last=null;
+  const GW=40, GH=28;                          // grade
+  const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  const CS=cv.width/GW;                         // tamanho da célula em px do canvas (20)
+  const mapbox=document.getElementById('mapbox'), zonesEl=document.getElementById('zones'), hintbar=document.getElementById('hintbar');
+  const PAL=['#ffc94d','#54d98c','#5bb8ff','#ff6b6b','#b98cff','#ff9f5b','#7ee0d0','#ff8fd0'];
 
-  const COLORS=['#ffc94d','#ff6b6b','#54d98c','#5bb8ff','#ffffff','#111111'];
-  const colEl=document.getElementById('colors');
-  colEl.innerHTML=COLORS.map((c,i)=>`<span class="swatch ${i===0?'on':''}" data-c="${c}" style="background:${c}"></span>`).join('');
-  colEl.onclick=e=>{ const s=e.target.closest('.swatch'); if(!s)return; color=s.dataset.c;
-    colEl.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on',x===s)); };
-  document.getElementById('size').oninput=e=>size=+e.target.value;
+  let S=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(!S || !S.built || S.built.length!==GW*GH){ S={ built:Array(GW*GH).fill(0), zones:[] }; }
+  S.zones=S.zones||[];
+  const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+  const bidx=(c,r)=>r*GW+c, inb=(c,r)=>c>=0&&c<GW&&r>=0&&r<GH;
 
+  let tool='block', drag=null, form=null;
   document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{ tool=b.dataset.tool;
     document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on',x===b)); });
 
-  function save(){ S.draw=cv.toDataURL(); localStorage.setItem(KEY,JSON.stringify(S)); }
-  function saveMeta(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+  function cellOf(e){ const r=cv.getBoundingClientRect();
+    return { c:Math.floor((e.clientX-r.left)/r.width*GW), r:Math.floor((e.clientY-r.top)/r.height*GH),
+             px:(e.clientX-r.left)/r.width*100, py:(e.clientY-r.top)/r.height*100 }; }
+  function norm(a,b){ return { x:Math.min(a.c,b.c), y:Math.min(a.r,b.r), w:Math.abs(a.c-b.c)+1, h:Math.abs(a.r-b.r)+1 }; }
 
-  function loadDraw(){ if(S.draw){ const im=new Image(); im.onload=()=>ctx.drawImage(im,0,0,cv.width,cv.height); im.src=S.draw; } }
-  function loadBg(){ if(S.img){ bg.src=S.img; bg.style.display=''; } else bg.style.display='none'; }
-  function updHint(){ hint.style.display=(S.draw||S.img||S.pins.length)?'none':''; }
-
-  // coordenadas do ponteiro no canvas (1000x700)
-  function pos(e){ const r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*cv.width, y:(e.clientY-r.top)/r.height*cv.height,
-    px:(e.clientX-r.left)/r.width*100, py:(e.clientY-r.top)/r.height*100 }; }
-
-  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); const p=pos(e);
-    if(tool==='pin'){ openPinInput(p.px,p.py); return; }
-    drawing=true; last=p; cv.setPointerCapture(e.pointerId); hint.style.display='none';
-    // ponto inicial
-    stroke(p,p);
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(form) return; const cl=cellOf(e); cv.setPointerCapture(e.pointerId);
+    if(tool==='erase'){ drag={mode:'erase'}; eraseAt(cl); }
+    else { drag={mode:tool, a:cl, b:cl }; }
+    render();
   });
-  cv.addEventListener('pointermove',e=>{ if(!drawing)return; const p=pos(e); stroke(last,p); last=p; });
-  cv.addEventListener('pointerup',e=>{ if(drawing){ drawing=false; save(); updHint(); } });
-  cv.addEventListener('pointercancel',()=>{ if(drawing){ drawing=false; save(); } });
+  cv.addEventListener('pointermove',e=>{ if(!drag)return; const cl=cellOf(e);
+    if(drag.mode==='erase') eraseAt(cl); else { drag.b=cl; } render(); });
+  cv.addEventListener('pointerup',e=>{ if(!drag)return; const d=drag; drag=null;
+    if(d.mode==='block'){ const R=norm(d.a,d.b); for(let r=R.y;r<R.y+R.h;r++)for(let c=R.x;c<R.x+R.w;c++) if(inb(c,r)) S.built[bidx(c,r)]=1; save(); render(); }
+    else if(d.mode==='area'){ const R=norm(d.a,d.b); openAreaForm(R); }
+    else if(d.mode==='erase'){ save(); render(); }
+  });
+  function eraseAt(cl){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ const c=cl.c+dc,r=cl.r+dr; if(inb(c,r)) S.built[bidx(c,r)]=0; } }
 
-  function stroke(a,b){ ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=size;
-    if(tool==='erase'){ ctx.globalCompositeOperation='destination-out'; ctx.strokeStyle='rgba(0,0,0,1)'; }
-    else { ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=color; }
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    ctx.globalCompositeOperation='source-over';
+  function openAreaForm(R){
+    if(form) form.remove();
+    const d=document.createElement('div'); d.className='areaform';
+    const left=Math.min(72, R.x/GW*100); d.style.left=left+'%'; d.style.top=Math.min(60,(R.y+R.h)/GH*100)+'%';
+    d.innerHTML=`<input id="an" placeholder="nome da área (ex: Canil)">
+      <textarea id="at" placeholder="tarefas típicas (uma por linha):\nvarrer\ntrocar água\nrecolher fezes"></textarea>
+      <div class="r"><button class="no" id="acancel">cancelar</button><button class="ok" id="acreate">criar área</button></div>`;
+    mapbox.appendChild(d); form=d; d.querySelector('#an').focus();
+    d.querySelector('#acancel').onclick=()=>{ d.remove(); form=null; render(); };
+    d.querySelector('#acreate').onclick=()=>{
+      const nm=d.querySelector('#an').value.trim()||'Área';
+      const tasks=d.querySelector('#at').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,done:false}));
+      S.zones.push({ ...R, name:nm, color:PAL[S.zones.length%PAL.length], tasks });
+      save(); d.remove(); form=null; render(); renderZones();
+    };
   }
 
-  // input inline pra tarefa (sem prompt)
-  let openInput=null;
-  function openPinInput(px,py){ if(openInput) openInput.remove();
-    const d=document.createElement('div'); d.className='pinput'; d.style.left=px+'%'; d.style.top=py+'%';
-    d.innerHTML='<input placeholder="o que fazer aqui?"><button>OK</button>';
-    mapbox.appendChild(d); openInput=d; const inp=d.querySelector('input'); inp.focus();
-    const done=()=>{ const t=inp.value.trim(); if(t){ S.pins.push({x:+px.toFixed(1),y:+py.toFixed(1),t,done:false}); saveMeta(); renderPins(); renderTasks(); updHint(); } d.remove(); openInput=null; };
-    d.querySelector('button').onclick=done;
-    inp.onkeydown=ev=>{ if(ev.key==='Enter')done(); if(ev.key==='Escape'){ d.remove(); openInput=null; } };
+  function render(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    // blocos construídos
+    for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){ if(!S.built[bidx(c,r)])continue;
+      ctx.fillStyle='#2f3d4a'; ctx.fillRect(c*CS,r*CS,CS,CS);
+      ctx.fillStyle='#3a4a58'; ctx.fillRect(c*CS,r*CS,CS,2); }
+    // grade
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+    for(let c=0;c<=GW;c++){ ctx.beginPath(); ctx.moveTo(c*CS+.5,0); ctx.lineTo(c*CS+.5,cv.height); ctx.stroke(); }
+    for(let r=0;r<=GH;r++){ ctx.beginPath(); ctx.moveTo(0,r*CS+.5); ctx.lineTo(cv.width,r*CS+.5); ctx.stroke(); }
+    // áreas
+    S.zones.forEach(z=>{ const pend=z.tasks.filter(t=>!t.done).length;
+      ctx.fillStyle=z.color+'33'; ctx.fillRect(z.x*CS,z.y*CS,z.w*CS,z.h*CS);
+      ctx.strokeStyle=z.color; ctx.lineWidth=2; ctx.strokeRect(z.x*CS+1,z.y*CS+1,z.w*CS-2,z.h*CS-2);
+      ctx.fillStyle=z.color; ctx.font='bold 12px system-ui'; ctx.fillText(z.name, z.x*CS+5, z.y*CS+15);
+      if(pend>0){ ctx.font='11px system-ui'; ctx.fillStyle='#0a0a0a'; ctx.fillStyle=z.color;
+        ctx.fillText('👾 '+pend, z.x*CS+5, z.y*CS+29); }
+    });
+    // preview do arrasto
+    if(drag && (drag.mode==='block'||drag.mode==='area')){ const R=norm(drag.a,drag.b);
+      ctx.fillStyle=drag.mode==='area'?'#ffc94d33':'#5bb8ff33'; ctx.fillRect(R.x*CS,R.y*CS,R.w*CS,R.h*CS);
+      ctx.strokeStyle=drag.mode==='area'?'#ffc94d':'#5bb8ff'; ctx.lineWidth=2; ctx.strokeRect(R.x*CS,R.y*CS,R.w*CS,R.h*CS); }
   }
 
-  function renderPins(){ mapbox.querySelectorAll('.pin').forEach(p=>p.remove());
-    S.pins.forEach((p,i)=>{ const el=document.createElement('div'); el.className='pin '+(p.done?'done':'todo');
-      el.style.left=p.x+'%'; el.style.top=p.y+'%'; el.title=p.t; el.innerHTML=`<div class="head"><span>${i+1}</span></div>`;
-      el.onclick=ev=>{ ev.stopPropagation(); p.done=!p.done; saveMeta(); renderPins(); renderTasks(); };
-      mapbox.appendChild(el); }); }
-  function renderTasks(){ tasksEl.innerHTML=S.pins.length?'':'<div class="hint">Nenhuma tarefa ainda.</div>';
-    S.pins.forEach((p,i)=>{ const d=document.createElement('div'); d.className='task '+(p.done?'done':'');
-      d.innerHTML=`<div class="num">${i+1}</div><div class="t">${p.t}</div><div class="x">✕</div>`;
-      d.querySelector('.num').onclick=()=>{ p.done=!p.done; saveMeta(); renderPins(); renderTasks(); };
-      d.querySelector('.x').onclick=()=>{ S.pins.splice(i,1); saveMeta(); renderPins(); renderTasks(); updHint(); };
-      tasksEl.appendChild(d); }); }
+  function renderZones(){
+    if(!S.zones.length){ zonesEl.innerHTML='<div class="hint">Nenhuma área ainda. Use 🏷️ pra criar.</div>'; return; }
+    zonesEl.innerHTML='';
+    S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone';
+      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="x" title="excluir área">✕</span></div>
+        <div class="tks"></div>
+        <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>`;
+      const tks=el.querySelector('.tks');
+      z.tasks.forEach((t,ti)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
+        d.innerHTML=`<div class="box">${t.done?'✔':''}</div><span>${t.t}</span>`;
+        d.onclick=()=>{ t.done=!t.done; save(); renderZones(); render(); }; tks.appendChild(d); });
+      el.querySelector('.x').onclick=()=>{ S.zones.splice(zi,1); save(); renderZones(); render(); };
+      const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
+      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); render(); };
+      addb.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter')add(); };
+      zonesEl.appendChild(el);
+    });
+  }
 
-  document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
-    const r=new FileReader(); r.onload=()=>{ S.img=r.result; saveMeta(); loadBg(); updHint(); }; r.readAsDataURL(f); };
-  document.getElementById('clear').onclick=()=>{ if(confirm('Limpar desenho, foto e tarefas?')){
-    ctx.clearRect(0,0,cv.width,cv.height); S={img:null,draw:null,pins:[]}; localStorage.setItem(KEY,JSON.stringify(S)); loadBg(); renderPins(); renderTasks(); updHint(); } };
+  document.getElementById('clear').onclick=()=>{ if(confirm('Apagar toda a planta e as áreas?')){ S={built:Array(GW*GH).fill(0),zones:[]}; save(); render(); renderZones(); } };
 
-  loadBg(); loadDraw(); renderPins(); renderTasks(); updHint();
+  render(); renderZones();
 </script>
 </body>
 </html>

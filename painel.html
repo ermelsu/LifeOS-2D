@@ -265,7 +265,29 @@ const moodBody=`<div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.
 
 const dogsBody=`<div class="dogsgrid">`+STATE.dogs.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well,'#54d98c')}</div>`).join('')+`</div>`;
 
-const roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`<div class="room ${r.v<5?'chaos':''}">${r.v<5?'<div class="mon">👾</div>':''}<div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
+/* áreas da casa vindas do Mapa (localStorage) */
+const MAPA_KEY='lifeos_mapa';
+function readZones(){ try{ const m=JSON.parse(localStorage.getItem(MAPA_KEY)||'null'); return (m&&m.zones)||[]; }catch(e){ return []; } }
+function saveZones(z){ try{ const m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); m.zones=z; localStorage.setItem(MAPA_KEY,JSON.stringify(m)); }catch(e){} }
+let ZONES=readZones();
+let roomsBody, roomsRight;
+if(ZONES.length){ roomsRight='do seu mapa';
+  roomsBody=`<div class="rooms">`+ZONES.map(z=>{ const pend=z.tasks.filter(t=>!t.done).length, done=z.tasks.length-pend;
+    const ratio=z.tasks.length?done/z.tasks.length*10:10;
+    return `<div class="room ${pend?'chaos':''}">${pend?'<div class="mon">👾</div>':''}<div class="ic">🏷️</div><div class="nm">${z.name}</div>${bar(ratio,'#7ee0d0')}<div class="sub" style="font-size:10px;margin-top:3px">${pend?pend+' pendente(s)':'em ordem ✨'}</div></div>`;
+  }).join('')+`</div>`;
+} else { roomsRight='conservação';
+  roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`<div class="room ${r.v<5?'chaos':''}">${r.v<5?'<div class="mon">👾</div>':''}<div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
+}
+/* lista "arrumar a casa" — tarefas pendentes por área */
+function houseTasksBody(){ const z=ZONES;
+  if(!z.length) return `<div class="sub">Desenhe sua casa e crie áreas no <a href="mapa.html" style="color:var(--acc)">Mapa</a> pra ver as tarefas aqui. 🗺️</div>`;
+  let rows=''; let anyPend=false;
+  z.forEach((zn,zi)=> zn.tasks.forEach((t,ti)=>{ if(t.done) return; anyPend=true;
+    rows+=`<div class="quest" data-zi="${zi}" data-ti="${ti}"><div class="box"></div><div class="txt">${t.t}</div><div class="rw">${zn.name}</div></div>`; }));
+  return `<div id="housetasks">`+ (anyPend? rows : '<div class="sub">Tudo em ordem na casa ✨🐾</div>') +`</div>`;
+}
+const houseBody=houseTasksBody();
 
 const alliesBody=STATE.allies.map(a=>`<div class="ally"><span class="em">${a.em}</span><div><div class="nm">${a.nm}</div><div class="rl">${a.rl}</div></div></div>`).join('');
 const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('')+`<div class="sub" style="margin-top:8px">🏦 Anote gastos e entradas no <a href="banco.html" style="color:var(--acc)">Banco</a>.</div>`;
@@ -284,16 +306,17 @@ grid.innerHTML =
   panel('col-4','🗺️','Missões de hoje','', questBody) +
   panel('col-4','🌀','Chefão atual','', bossBody) +
   panel('col-4','🙂','Humor da semana','', moodBody) +
+  panel('col-7','🧹','Arrumar a casa','tarefas das áreas', houseBody) +
+  panel('col-5','🏠','Áreas da casa', roomsRight, roomsBody) +
   panel('col-12','🐾','A matilha', STATE.dogs.length+' cães', dogsBody) +
-  panel('col-7','🏠','Cômodos da casa','conservação', roomsBody) +
-  panel('col-5','🤝','Aliados (party)','', alliesBody) +
-  panel('col-3','🪙','Recursos','', resBody) +
+  panel('col-4','🤝','Aliados (party)','', alliesBody) +
+  panel('col-4','🪙','Recursos','', resBody) +
+  panel('col-4','🎒','Inventário','', invBody) +
   panel('col-3','🧊','Geladeira','', listBody(STATE.fridge)) +
   panel('col-3','🥫','Despensa','', listBody(STATE.pantry)) +
   panel('col-3','🔌','Eletrônicos','', applBody) +
-  panel('col-4','🛒','Lista de compras','', shopBody) +
-  panel('col-4','🎒','Inventário','', invBody) +
-  panel('col-4','⭐','Grande missão de vida','', `<div style="font-size:14px;line-height:1.5">Guiar a matilha bem até o fim, ter uma vida confortável e um <b style="color:var(--acc)">sítio 100×100m</b> com um canil de verdade pra eles. 🐾🏡</div>`);
+  panel('col-3','🛒','Lista de compras','', shopBody) +
+  panel('col-12','⭐','Grande missão de vida','', `<div style="font-size:14px;line-height:1.5">Guiar a matilha bem até o fim, ter uma vida confortável e um <b style="color:var(--acc)">sítio 100×100m</b> com um canil de verdade pra eles. 🐾🏡</div>`);
 
 requestAnimationFrame(()=>requestAnimationFrame(()=>{
   document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w);
@@ -302,6 +325,12 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>{
 function bindChecklist(id,arr){ const box=document.getElementById(id); if(!box)return;
   box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i; arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':''; }); }
 bindChecklist('quests',STATE.quests); bindChecklist('shop',STATE.shopping);
+const ht=document.getElementById('housetasks');
+if(ht) ht.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return;
+  const zi=+q.dataset.zi, ti=+q.dataset.ti;
+  if(ZONES[zi]&&ZONES[zi].tasks[ti]){ ZONES[zi].tasks[ti].done=true; saveZones(ZONES); }
+  q.classList.add('done'); q.querySelector('.box').textContent='✔';
+  setTimeout(()=>{ q.remove(); if(!ht.querySelector('.quest')) ht.innerHTML='<div class="sub">Tudo em ordem na casa ✨🐾</div>'; },260); });
 const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
 const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
 function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);
