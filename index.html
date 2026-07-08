@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS RPG · Criação de Personagem</title>
+<style>
+  :root{ --bg:#12141c; --bg2:#1a1e2b; --card:#1b2030; --line:#2c3346; --ink:#e8ebf4;
+    --mut:#8b93a8; --acc:#ffc94d; --acc-ink:#241802; --ok:#54d98c; color-scheme:dark; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:radial-gradient(120% 90% at 50% 0%,#20263a,var(--bg) 60%);
+    color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; line-height:1.5; padding:0 16px 80px; }
+  .wrap{ max-width:760px; margin:0 auto; }
+  header{ text-align:center; padding:36px 0 10px; }
+  h1{ margin:0; font-size:clamp(28px,6vw,44px); letter-spacing:2px; color:var(--acc);
+    text-shadow:0 3px 0 #0006, 0 0 26px #ffc94d44; }
+  header p{ color:var(--mut); margin:8px 0 0; }
+  .intro{ background:var(--card); border:1px solid var(--line); border-left:4px solid var(--acc);
+    border-radius:12px; padding:14px 16px; margin:18px 0; font-size:14px; color:#cdd3e2; }
+  .block{ background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px 18px 6px; margin:16px 0; }
+  .block h2{ margin:0 0 4px; font-size:18px; }
+  .block .sub{ color:var(--mut); font-size:13px; margin-bottom:12px; }
+  .q{ margin:0 0 16px; }
+  .q label{ display:block; font-size:14px; margin-bottom:6px; }
+  .q label b{ color:var(--acc); margin-right:4px; }
+  input[type=text], textarea{ width:100%; background:#12151f; border:1px solid var(--line);
+    color:var(--ink); border-radius:9px; padding:9px 11px; font:inherit; font-size:14px; resize:vertical; }
+  input[type=text]:focus, textarea:focus{ outline:none; border-color:var(--acc); }
+  textarea{ min-height:56px; }
+  .scale{ display:flex; align-items:center; gap:14px; }
+  .scale input[type=range]{ flex:1; accent-color:var(--acc); }
+  .scale .val{ min-width:34px; text-align:center; font-weight:800; font-size:18px; color:var(--acc);
+    background:#12151f; border:1px solid var(--line); border-radius:8px; padding:2px 0; }
+  .scale .muted{ color:var(--mut); font-size:12px; }
+  .bar{ position:fixed; left:0; right:0; bottom:0; background:rgba(18,20,28,.96);
+    border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:10px; justify-content:center;
+    flex-wrap:wrap; backdrop-filter:blur(6px); z-index:10; }
+  button{ font:inherit; cursor:pointer; border-radius:10px; border:1px solid var(--line);
+    background:#232838; color:var(--ink); padding:11px 18px; font-size:14px; }
+  button:hover{ background:#2c3348; }
+  button.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border-color:var(--acc); }
+  #saveMsg{ align-self:center; color:var(--mut); font-size:12px; }
+  dialog{ background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:14px;
+    max-width:680px; width:92%; padding:18px; }
+  dialog h3{ margin:0 0 8px; } dialog textarea{ min-height:320px; font-family:ui-monospace,monospace; font-size:12.5px; }
+  dialog .row{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+  .hint{ color:var(--mut); font-size:12px; }
+  @media print{
+    body{ background:#fff; color:#000; } .bar{ display:none; }
+    .block,.intro{ border-color:#ccc; background:#fff; page-break-inside:avoid; }
+    input,textarea{ background:#fff; color:#000; border-color:#999; }
+    h1{ color:#000; text-shadow:none; } .scale .val{ color:#000; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>LIFEOS RPG</h1>
+    <p>Criação de Personagem — os status reais da sua vida</p>
+  </header>
+  <div class="intro">
+    Responda o que quiser (pode pular qualquer pergunta). Nas notas <b>0–10</b>,
+    0 = péssimo/nada e 10 = ótimo/muito. Suas respostas ficam salvas neste navegador.
+    Ao terminar, clique em <b>“Copiar respostas”</b> e cole no chat pra gente começar a campanha. 🎲
+  </div>
+  <form id="form"></form>
+</div>
+
+<div class="bar">
+  <span id="saveMsg">salvo automaticamente</span>
+  <button type="button" id="btnPrint">🖨️ Imprimir</button>
+  <button type="button" id="btnClear">🗑️ Limpar</button>
+  <button type="button" class="primary" id="btnCopy">📋 Copiar respostas</button>
+</div>
+
+<dialog id="dlg">
+  <h3>Suas respostas</h3>
+  <p class="hint">Copie tudo abaixo e cole no chat. (Já tentei copiar pra área de transferência.)</p>
+  <textarea id="out" readonly></textarea>
+  <div class="row">
+    <button type="button" id="btnCopy2" class="primary">📋 Copiar de novo</button>
+    <button type="button" id="btnClose">Fechar</button>
+  </div>
+</dialog>
+
+<script>
+/* dados do questionário: b=bloco, q=[id, texto, tipo] ; tipo: 'scale' | 'text' | 'area' */
+const BLOCKS=[
+ {t:'🧝 Identidade', s:'Quem é o herói desta história.', q:[
+   [1,'Como quer ser chamado no jogo?','text'],
+   [2,'Idade (ou faixa etária)?','text'],
+   [3,'Em uma frase: quem é você hoje?','area'],
+   [4,'Que classe combina com você? (Guerreiro, Mago/Estudioso, Artista, Explorador, Curandeiro, Empreendedor, Bardo… ou invente)','text'],
+   [5,'Qual o capítulo atual da sua vida? (recomeço, construção, transição, caos, estabilidade…)','text'],
+   [6,'Onde você vive e com quem?','text'],
+ ]},
+ {t:'💪 Corpo (Vitalidade)', s:'Saúde física, sono, energia.', q:[
+   [7,'Saúde física hoje','scale'],
+   [8,'Sono (horas e qualidade)?','text'],
+   [9,'Exercício: com que frequência?','text'],
+   [10,'Alimentação: como descreveria?','text'],
+   [11,'Energia num dia comum','scale'],
+   [12,'Alguma dor/condição de saúde relevante?','text'],
+ ]},
+ {t:'🧠 Mente (Clareza)', s:'Saúde mental, foco, humor.', q:[
+   [13,'Saúde mental/emocional hoje','scale'],
+   [14,'Estresse/ansiedade (0 = calmo, 10 = no talo)','scale'],
+   [15,'Como está seu foco/concentração?','text'],
+   [16,'Humor predominante nas últimas semanas?','text'],
+   [17,'Autoestima/autoconfiança','scale'],
+   [18,'O que mais pesa na sua cabeça ultimamente?','area'],
+ ]},
+ {t:'💰 Recursos (Ouro)', s:'Finanças e estabilidade.', q:[
+   [19,'Situação financeira hoje','scale'],
+   [20,'Tem renda estável? De quê?','text'],
+   [21,'Está com dívidas ou aperto?','text'],
+   [22,'Consegue poupar/investir?','text'],
+   [23,'Um objetivo financeiro concreto?','text'],
+ ]},
+ {t:'⚒️ Ofício (Trabalho/Estudos)', s:'Carreira e propósito profissional.', q:[
+   [24,'Satisfação com trabalho/estudos','scale'],
+   [25,'O que você faz hoje (trabalho/estudo)?','text'],
+   [26,'Sente que está no caminho certo? Por quê?','area'],
+   [27,'Produtividade num dia típico','scale'],
+   [28,'Sonho profissional / próxima conquista?','text'],
+ ]},
+ {t:'❤️ Vínculos (Relações)', s:'Família, amigos, amor.', q:[
+   [29,'Vida social / relacionamentos','scale'],
+   [30,'Família: como está essa relação?','text'],
+   [31,'Amizades: tem uma rede próxima?','text'],
+   [32,'Vida amorosa hoje?','text'],
+   [33,'Se sente mais sozinho ou acompanhado?','text'],
+   [34,'Quem é um aliado que te apoia?','text'],
+ ]},
+ {t:'📚 Sabedoria (Conhecimento)', s:'Aprendizado e crescimento.', q:[
+   [35,'Quanto está aprendendo/crescendo','scale'],
+   [36,'Está estudando/desenvolvendo alguma habilidade?','text'],
+   [37,'Hobbies que te fazem crescer?','text'],
+   [38,'Uma skill que quer destravar?','text'],
+ ]},
+ {t:'🔥 Espírito (Propósito & Lazer)', s:'Sentido, valores, alegria.', q:[
+   [39,'Sentido/propósito na vida','scale'],
+   [40,'O que te dá alegria de verdade?','area'],
+   [41,'Tempo pra lazer/diversão','scale'],
+   [42,'Tem fé, espiritualidade ou valores que te guiam?','text'],
+   [43,'Se a vida fosse um jogo, qual seu objetivo final (a grande missão)?','area'],
+ ]},
+ {t:'⏳ Disciplina (Tempo & Hábitos)', s:'Rotina e hábitos.', q:[
+   [44,'Organização/rotina','scale'],
+   [45,'Um hábito bom que te fortalece (buff ✨)?','text'],
+   [46,'Um hábito ruim que te atrapalha (debuff ☠️)?','text'],
+   [47,'Como é um dia normal seu, resumido?','area'],
+ ]},
+ {t:'🗺️ Missões (Metas)', s:'Onde você quer chegar.', q:[
+   [48,'1 meta pra ESTA semana','text'],
+   [49,'1 meta pros próximos 3 meses','text'],
+   [50,'1 meta grande pro próximo 1–2 anos','text'],
+   [51,'Qual meta, se realizada, mudaria tudo?','area'],
+ ]},
+ {t:'🐉 Chefões (Desafios)', s:'O que está no seu caminho.', q:[
+   [52,'Seu maior chefão atual (o maior obstáculo)?','area'],
+   [53,'O que sempre te faz recuar/procrastinar?','text'],
+   [54,'Um medo que te trava?','text'],
+ ]},
+ {t:'🎒 Inventário & Aliados', s:'O que você já tem a favor.', q:[
+   [55,'Recursos a seu favor (habilidades, apoio, tempo, grana, ferramentas)?','area'],
+   [56,'Aliados e mentores?','text'],
+ ]},
+ {t:'🎛️ Preferências do Jogo', s:'Como você quer jogar.', q:[
+   [57,'Tom do jogo: motivador e leve, ou durão/realista?','text'],
+   [58,'Qual atributo evoluir primeiro?','text'],
+   [59,'Missões diárias curtas ou desafios semanais maiores?','text'],
+   [60,'Algo que eu (o Mestre) preciso saber pra deixar o jogo do seu jeito?','area'],
+ ]},
+];
+
+const KEY='lifeos_rpg_answers';
+const form=document.getElementById('form');
+const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+const Q={}; // id -> {text, type}
+
+BLOCKS.forEach(b=>{
+  const sec=document.createElement('section'); sec.className='block';
+  sec.innerHTML='<h2>'+b.t+'</h2><div class="sub">'+b.s+'</div>';
+  b.q.forEach(([id,text,type])=>{
+    Q[id]={text,type};
+    const d=document.createElement('div'); d.className='q';
+    const lbl='<label><b>'+id+'.</b>'+text+'</label>';
+    let field='';
+    const v=saved[id]||'';
+    if(type==='scale'){
+      const val=v===''?5:v;
+      field='<div class="scale"><span class="muted">0</span>'+
+        '<input type="range" min="0" max="10" step="1" data-id="'+id+'" value="'+val+'">'+
+        '<span class="muted">10</span><span class="val" id="val'+id+'">'+val+'</span></div>';
+    } else if(type==='area'){
+      field='<textarea data-id="'+id+'">'+escapeHtml(v)+'</textarea>';
+    } else {
+      field='<input type="text" data-id="'+id+'" value="'+escapeAttr(v)+'">';
+    }
+    d.innerHTML=lbl+field;
+    sec.appendChild(d);
+  });
+  form.appendChild(sec);
+});
+
+function escapeHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escapeAttr(s){ return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+let saveTimer=0;
+form.addEventListener('input',e=>{
+  const id=e.target.dataset.id; if(!id) return;
+  if(e.target.type==='range'){ document.getElementById('val'+id).textContent=e.target.value; }
+  saved[id]=e.target.value;
+  clearTimeout(saveTimer); saveTimer=setTimeout(()=>localStorage.setItem(KEY,JSON.stringify(saved)),250);
+  document.getElementById('saveMsg').textContent='salvo automaticamente';
+});
+
+function buildText(){
+  let out='📜 FICHA — LifeOS RPG\n\n';
+  BLOCKS.forEach(b=>{
+    out+='== '+b.t+' ==\n';
+    b.q.forEach(([id,text,type])=>{
+      let v=saved[id];
+      if(type==='scale'){ v=(v===undefined||v==='')?'—':(v+'/10'); }
+      else { v=(v===undefined||v==='')?'—':v; }
+      out+=id+'. '+text+'\n   → '+v+'\n';
+    });
+    out+='\n';
+  });
+  return out.trim();
+}
+async function copyOut(text){ try{ await navigator.clipboard.writeText(text); return true; }catch(e){ return false; } }
+
+const dlg=document.getElementById('dlg'), outEl=document.getElementById('out');
+document.getElementById('btnCopy').onclick=async()=>{
+  const t=buildText(); outEl.value=t; dlg.showModal();
+  const ok=await copyOut(t);
+  document.getElementById('saveMsg').textContent = ok?'copiado! ✅':'selecione e copie manualmente';
+};
+document.getElementById('btnCopy2').onclick=async()=>{ const ok=await copyOut(outEl.value); if(!ok){ outEl.focus(); outEl.select(); } };
+document.getElementById('btnClose').onclick=()=>dlg.close();
+document.getElementById('btnPrint').onclick=()=>window.print();
+document.getElementById('btnClear').onclick=()=>{ if(confirm('Apagar todas as respostas?')){ localStorage.removeItem(KEY); location.reload(); } };
+</script>
+</body>
+</html>
