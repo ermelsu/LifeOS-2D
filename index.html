@@ -73,10 +73,6 @@
     <div class="logo">LIFE OS<small>O JOGO DA SUA VIDA</small></div>
     <div class="tag">Transforme sua vida real num RPG: status, missões, sua casa e sua matilha.</div>
 
-    <button class="play" id="btnPlay">▶ JOGAR COMO EMERSON</button>
-
-    <div class="sep">outros jogadores</div>
-
     <div class="tabs">
       <button id="tabLogin" class="on">Entrar</button>
       <button id="tabReg">Criar conta</button>
@@ -109,10 +105,8 @@
   const ACC='lifeos_accounts', CUR='lifeos_user';
   const accs=()=>JSON.parse(localStorage.getItem(ACC)||'{}');
   const save=a=>localStorage.setItem(ACC,JSON.stringify(a));
-  (function seed(){ const a=accs(); if(!a['emerson']){ a['emerson']={name:'Emerson',pass:'',ficha:true}; save(a); } })();
+  (function seed(){ const a=accs(); a['emerson']={name:'Emerson',pass:'12345',ficha:true}; save(a); })();
   const msg=t=>document.getElementById('msg').textContent=t;
-
-  document.getElementById('btnPlay').onclick=()=>{ localStorage.setItem(CUR,'emerson'); location.href='painel.html'; };
 
   const tL=document.getElementById('tabLogin'), tR=document.getElementById('tabReg');
   const fL=document.getElementById('formLogin'), fR=document.getElementById('formReg');
