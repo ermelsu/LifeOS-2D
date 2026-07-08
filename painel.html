@@ -3,382 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LifeOS · Painel</title>
+<title>LifeOS · Painel do Emerson</title>
 <style>
   :root{
     --bg:#0c0e16; --bg2:#12151f; --card:#161a28; --card2:#1b2032; --line:#2a3146;
-    --ink:#e9ecf6; --mut:#8b93aa; --acc:#ffc94d; --acc2:#ffb020;
-    --hp:#54d98c; --mp:#5bb8ff; --gold:#ffcf5c; --dmg:#ff6b6b; --xp:#b98cff;
+    --ink:#e9ecf6; --mut:#8b93aa; --acc:#ffc94d; --acc-ink:#241802;
+    --hp:#54d98c; --mp:#5bb8ff; --gold:#ffcf5c; --dmg:#ff6b6b; --xp:#b98cff; --fire:#ff9f4d;
     color-scheme:dark;
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{ background:
       radial-gradient(120% 80% at 15% -10%, #1a2036, transparent 60%),
-      radial-gradient(120% 80% at 100% 0%, #241a2e, transparent 55%),
-      var(--bg);
+      radial-gradient(120% 80% at 100% 0%, #241a2e, transparent 55%), var(--bg);
     color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:16px; }
-  .app{ max-width:1180px; margin:0 auto; }
-
-  /* topo */
+  .app{ width:100%; max-width:1280px; margin:0 auto; }
+  @media(min-width:1700px){ .app{ max-width:1520px; } }
   .topbar{ display:flex; align-items:center; gap:14px; padding:6px 4px 16px; flex-wrap:wrap; }
   .brand{ font-weight:900; letter-spacing:3px; font-size:22px; color:var(--acc); text-shadow:0 0 20px #ffc94d40; }
   .brand small{ display:block; font-size:10px; letter-spacing:3px; color:var(--mut); font-weight:600; }
   .topbar .sp{ flex:1; }
-  .chip{ font-family:ui-monospace,monospace; font-size:13px; color:var(--ink); background:var(--card);
-    border:1px solid var(--line); border-radius:20px; padding:6px 14px; }
+  .chip{ font-family:ui-monospace,monospace; font-size:13px; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:20px; padding:6px 14px; }
   .chip b{ color:var(--acc); }
-  .dot{ width:8px; height:8px; border-radius:50%; background:var(--hp); display:inline-block; margin-right:6px;
-    box-shadow:0 0 8px var(--hp); animation:pulse 1.6s infinite; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--hp); display:inline-block; margin-right:6px; box-shadow:0 0 8px var(--hp); animation:pulse 1.6s infinite; }
   @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.35} }
 
-  /* grid de painéis */
   .grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:14px; }
-  .panel{ background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
-    border-radius:16px; padding:14px 15px; position:relative; overflow:hidden; }
-  .panel::before{ content:""; position:absolute; inset:0 0 auto 0; height:2px;
-    background:linear-gradient(90deg,transparent,var(--acc),transparent); opacity:.5; }
+  .panel{ background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:16px; padding:14px 15px; position:relative; overflow:hidden; }
+  .panel::before{ content:""; position:absolute; inset:0 0 auto 0; height:2px; background:linear-gradient(90deg,transparent,var(--acc),transparent); opacity:.5; }
   .ph{ display:flex; align-items:center; gap:8px; margin-bottom:12px; }
   .ph .ic{ font-size:18px; } .ph h2{ font-size:14px; letter-spacing:.5px; text-transform:uppercase; color:#cdd4e6; }
   .ph .r{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12px; color:var(--mut); }
-  .col-4{ grid-column:span 4; } .col-5{ grid-column:span 5; } .col-6{ grid-column:span 6; }
-  .col-7{ grid-column:span 7; } .col-8{ grid-column:span 8; } .col-12{ grid-column:span 12; }
-  @media(max-width:820px){ .grid{ grid-template-columns:repeat(6,1fr);} .col-4,.col-5,.col-6,.col-7,.col-8{ grid-column:span 6; } }
+  .col-3{grid-column:span 3} .col-4{grid-column:span 4} .col-5{grid-column:span 5} .col-6{grid-column:span 6}
+  .col-7{grid-column:span 7} .col-8{grid-column:span 8} .col-9{grid-column:span 9} .col-12{grid-column:span 12}
+  /* iPad / telas médias: 6 colunas (grandes = tela cheia, pequenos = metade) */
+  @media(max-width:1080px){ .grid{ grid-template-columns:repeat(6,1fr);}
+    .col-12,.col-9,.col-8,.col-7{ grid-column:span 6; } .col-6,.col-5,.col-4,.col-3{ grid-column:span 3; } }
+  /* celular: tudo empilhado */
+  @media(max-width:680px){ body{ padding:10px; } .grid{ grid-template-columns:1fr; gap:11px; }
+    [class*="col-"]{ grid-column:span 1; } .attrs{ grid-template-columns:1fr; } }
 
-  /* personagem */
   .hero{ display:flex; gap:14px; align-items:center; }
-  .avatar{ width:76px; height:76px; border-radius:14px; background:radial-gradient(circle at 50% 30%,#2b3350,#141828);
-    border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:42px; flex:0 0 auto;
-    animation:bob 2.4s ease-in-out infinite; }
+  .avatar{ width:76px; height:76px; border-radius:14px; background:radial-gradient(circle at 50% 30%,#2b3350,#141828); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:42px; flex:0 0 auto; animation:bob 2.4s ease-in-out infinite; }
   @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-  .hero .who{ flex:1; min-width:0; }
-  .hero .name{ font-size:20px; font-weight:800; }
-  .hero .cls{ color:var(--mut); font-size:13px; margin-bottom:8px; }
+  .hero .who{ flex:1; min-width:0; } .hero .name{ font-size:20px; font-weight:800; } .hero .cls{ color:var(--mut); font-size:13px; margin-bottom:8px; }
   .xp{ height:10px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
-  .xp > i{ display:block; height:100%; width:0; border-radius:20px;
-    background:linear-gradient(90deg,#8a5bff,var(--xp)); transition:width 1.1s ease; }
+  .xp > i{ display:block; height:100%; width:0; border-radius:20px; background:linear-gradient(90deg,#8a5bff,var(--xp)); transition:width 1.1s ease; }
   .xp-lbl{ display:flex; justify-content:space-between; font-size:11px; color:var(--mut); margin-top:3px; font-family:ui-monospace,monospace; }
   .lvl{ background:var(--acc); color:#241802; font-weight:900; border-radius:10px; padding:4px 9px; font-size:13px; }
+  .effects{ display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
+  .eff{ font-size:11px; border:1px solid var(--line); border-radius:20px; padding:3px 9px; }
+  .eff.buff{ color:var(--hp); border-color:#2a5a40; } .eff.debuff{ color:var(--dmg); border-color:#5a2a2a; }
 
-  /* medidores de atributo */
   .attrs{ display:grid; grid-template-columns:1fr 1fr; gap:9px 16px; margin-top:14px; }
   .attr .top{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
-  .attr .top b{ font-weight:600; } .attr .top span{ font-family:ui-monospace,monospace; color:var(--mut); }
+  .attr .top span{ font-family:ui-monospace,monospace; color:var(--mut); }
   .bar{ height:9px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
   .bar > i{ display:block; height:100%; width:0; border-radius:20px; transition:width 1s ease; }
   @media(max-width:560px){ .attrs{ grid-template-columns:1fr; } }
 
-  /* mini stat bars (dogs) */
+  /* streak */
+  .stk{ text-align:center; } .stk .big{ font-size:44px; font-weight:900; color:var(--fire); line-height:1; text-shadow:0 0 22px #ff9f4d55; }
+  .stk .big small{ font-size:14px; color:var(--mut); font-weight:600; }
+  .stkdays{ display:flex; gap:6px; justify-content:center; margin-top:12px; }
+  .sd{ text-align:center; font-size:10px; color:var(--mut); } .sd .f{ font-size:18px; opacity:.25; } .sd.on .f{ opacity:1; filter:drop-shadow(0 0 4px #ff9f4d); }
+
   .mini{ display:flex; align-items:center; gap:7px; font-size:11px; margin:3px 0; }
   .mini .k{ width:56px; color:var(--mut); } .mini .bar{ flex:1; height:7px; }
 
-  .dog{ display:flex; gap:11px; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:9px 11px; margin-bottom:9px; }
-  .dog .face{ font-size:30px; align-self:center; animation:wag 1.8s ease-in-out infinite; }
-  @keyframes wag{ 0%,100%{transform:rotate(-6deg)} 50%{transform:rotate(6deg)} }
-  .dog .info{ flex:1; } .dog .nm{ font-weight:700; font-size:14px; margin-bottom:2px; }
+  /* matilha (20 cães) */
+  .dogsgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:8px; }
+  .dogc{ background:var(--card2); border:1px solid var(--line); border-radius:11px; padding:8px 6px 9px; text-align:center; }
+  .dogc .f{ font-size:22px; display:inline-block; animation:wag 2s ease-in-out infinite; } .dogc:nth-child(even) .f{ animation-delay:.5s; }
+  @keyframes wag{ 0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(7deg)} }
+  .dogc .n{ font-size:11px; margin:3px 0 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dogc .bar{ height:5px; }
 
-  /* cômodos */
-  .rooms{ display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px; }
-  .room{ background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center; }
-  .room .ic{ font-size:24px; } .room .nm{ font-size:12px; margin:4px 0 6px; color:#cdd4e6; }
-  .room .bar{ height:6px; }
+  /* cômodos + monstro do caos */
+  .rooms{ display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:9px; }
+  .room{ position:relative; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center; }
+  .room.chaos{ border-color:#5a2f2f; } .room .ic{ font-size:24px; } .room .nm{ font-size:12px; margin:4px 0 6px; color:#cdd4e6; } .room .bar{ height:6px; }
+  .room .mon{ position:absolute; top:3px; right:5px; font-size:15px; animation:wag 1.4s ease-in-out infinite; }
 
-  /* inventário */
+  /* aliados */
+  .ally{ display:flex; align-items:center; gap:10px; padding:7px 2px; border-bottom:1px dashed #232a3d; } .ally:last-child{ border-bottom:none; }
+  .ally .em{ font-size:22px; } .ally .nm{ font-weight:700; font-size:14px; } .ally .rl{ color:var(--mut); font-size:12px; }
+
   .inv{ display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:8px; }
-  .slot{ aspect-ratio:1; border-radius:11px; border:1px solid var(--line); background:#0f1320;
-    display:flex; align-items:center; justify-content:center; font-size:24px; position:relative; }
-  .slot.empty{ border-style:dashed; color:#39415a; }
-  .slot .q{ position:absolute; right:3px; bottom:1px; font-size:10px; font-family:ui-monospace,monospace; color:var(--mut); }
+  .slot{ aspect-ratio:1; border-radius:11px; border:1px solid var(--line); background:#0f1320; display:flex; align-items:center; justify-content:center; font-size:24px; position:relative; }
+  .slot.empty{ border-style:dashed; color:#39415a; } .slot .q{ position:absolute; right:3px; bottom:1px; font-size:10px; font-family:ui-monospace,monospace; color:var(--mut); }
 
-  /* missões */
-  .quest{ display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px dashed #232a3d; cursor:pointer; }
-  .quest:last-child{ border-bottom:none; }
+  .quest{ display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px dashed #232a3d; cursor:pointer; } .quest:last-child{ border-bottom:none; }
   .box{ width:18px; height:18px; border:2px solid var(--line); border-radius:6px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:12px; }
-  .quest.done .box{ background:var(--hp); border-color:var(--hp); color:#06210f; }
-  .quest.done .txt{ color:var(--mut); text-decoration:line-through; }
+  .quest.done .box{ background:var(--hp); border-color:var(--hp); color:#06210f; } .quest.done .txt{ color:var(--mut); text-decoration:line-through; }
   .quest .rw{ margin-left:auto; font-size:11px; color:var(--acc); font-family:ui-monospace,monospace; }
+  .weekly{ background:#20263a; border:1px solid var(--line); border-radius:10px; padding:9px 11px; margin-bottom:10px; font-size:13px; }
+  .weekly b{ color:var(--acc); }
 
-  .gold-big{ font-size:26px; font-weight:900; color:var(--gold); font-family:ui-monospace,monospace; }
-  .sub{ color:var(--mut); font-size:12px; }
-  .boss{ display:flex; align-items:center; gap:10px; }
-  .boss .hpwrap{ flex:1; } .boss .face2{ font-size:30px; }
-  .note{ text-align:center; color:var(--mut); font-size:12px; margin:18px 0 4px; }
-  .note b{ color:var(--acc); }
-  /* listas de itens (geladeira/despensa/eletro) */
-  .list .li{ display:flex; align-items:center; gap:9px; padding:6px 2px; border-bottom:1px dashed #232a3d; font-size:13px; }
-  .list .li:last-child{ border-bottom:none; }
-  .list .li .ic{ font-size:17px; } .list .li .q{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12px; color:var(--mut); }
-  .sdot{ width:9px; height:9px; border-radius:50%; margin-left:auto; }
+  .sub{ color:var(--mut); font-size:12px; } .boss{ display:flex; align-items:center; gap:10px; } .boss .hpwrap{ flex:1; } .boss .face2{ font-size:32px; }
+  .kv{ display:flex; justify-content:space-between; font-size:13px; padding:5px 0; border-bottom:1px dashed #232a3d; } .kv:last-child{ border-bottom:none; } .kv b{ color:var(--acc); }
+
   /* medidas */
   .meas{ display:flex; align-items:center; gap:10px; margin:9px 0; }
   .meas .ic{ font-size:17px; width:20px; text-align:center; } .meas .mid{ flex:1; min-width:0; }
   .meas .nm{ display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; }
   .meas .nm .cur{ font-family:ui-monospace,monospace; } .meas .nm .cur b{ color:var(--acc); } .meas .nm .cur .g{ color:var(--mut); }
-  .meas .wk{ font-family:ui-monospace,monospace; font-size:11px; min-width:34px; text-align:right; color:var(--hp); }
   /* treino */
-  .wo .exi{ display:flex; align-items:center; gap:9px; padding:6px 2px; border-bottom:1px dashed #232a3d; font-size:13px; }
-  .wo .exi:last-child{ border-bottom:none; } .wo .exi .s{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12px; color:var(--acc); }
-  .wbtn{ width:100%; margin-top:11px; padding:11px; border-radius:10px; border:none; font-weight:800; cursor:pointer; background:var(--acc); color:var(--acc-ink); }
-  .wbtn.done{ background:var(--hp); color:#06210f; }
+  .wo .exi{ display:flex; align-items:center; gap:9px; padding:6px 2px; border-bottom:1px dashed #232a3d; font-size:13px; } .wo .exi:last-child{ border-bottom:none; }
+  .wo .exi .s{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12px; color:var(--acc); }
+  .wbtn{ width:100%; margin-top:11px; padding:11px; border-radius:10px; border:none; font-weight:800; cursor:pointer; background:var(--acc); color:var(--acc-ink); } .wbtn.done{ background:var(--hp); color:#06210f; }
   /* receitas */
   .recs{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
   .rec{ background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:11px; }
-  .rec .rn{ font-weight:700; font-size:13.5px; margin-bottom:6px; padding-right:54px; position:relative; }
-  .rec .tag{ position:absolute; right:0; top:0; font-size:11px; }
-  .rec .ing{ font-size:19px; letter-spacing:3px; margin-bottom:9px; }
-  .rec .mac{ display:flex; gap:7px; font-family:ui-monospace,monospace; font-size:11px; }
-  .rec .mac span{ background:#0f1320; border:1px solid var(--line); border-radius:6px; padding:2px 7px; }
+  .rec .rn{ font-weight:700; font-size:13.5px; margin-bottom:6px; padding-right:60px; position:relative; }
+  .rec .tag{ position:absolute; right:0; top:0; font-size:11px; } .rec .ing{ font-size:19px; letter-spacing:3px; margin-bottom:9px; }
+  .rec .mac{ display:flex; gap:7px; font-family:ui-monospace,monospace; font-size:11px; } .rec .mac span{ background:#0f1320; border:1px solid var(--line); border-radius:6px; padding:2px 7px; }
+  /* listas */
+  .list .li{ display:flex; align-items:center; gap:9px; padding:6px 2px; border-bottom:1px dashed #232a3d; font-size:13px; } .list .li:last-child{ border-bottom:none; }
+  .list .li .ic{ font-size:17px; } .list .li .q{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12px; color:var(--mut); } .sdot{ width:9px; height:9px; border-radius:50%; margin-left:auto; }
   /* humor */
-  .mtoday{ text-align:center; margin-bottom:10px; } .mtoday .big{ font-size:38px; line-height:1; }
-  .mtoday .lbl{ color:var(--mut); font-size:12px; margin-top:2px; }
-  .mweek{ display:flex; gap:6px; align-items:flex-end; }
-  .mday{ flex:1; text-align:center; } .mday .track{ height:48px; background:#0f1320; border:1px solid var(--line); border-radius:8px; display:flex; align-items:flex-end; overflow:hidden; }
-  .mday .fill{ width:100%; background:linear-gradient(180deg,#ffd36e,#ff9f5b); transition:height 1s ease; }
-  .mday .e{ font-size:15px; margin-top:3px; } .mday .d{ font-size:9px; color:var(--mut); }
-  .mpick{ display:flex; gap:6px; justify-content:center; margin-top:10px; }
-  .mpick button{ font-size:20px; background:#0f1320; border:1px solid var(--line); border-radius:9px; padding:3px 7px; cursor:pointer; }
-  .mpick button.on{ border-color:var(--acc); background:#2a2617; }
+  .mtoday{ text-align:center; margin-bottom:10px; } .mtoday .big{ font-size:38px; line-height:1; } .mtoday .lbl{ color:var(--mut); font-size:12px; margin-top:2px; }
+  .mweek{ display:flex; gap:6px; align-items:flex-end; } .mday{ flex:1; text-align:center; }
+  .mday .track{ height:48px; background:#0f1320; border:1px solid var(--line); border-radius:8px; display:flex; align-items:flex-end; overflow:hidden; }
+  .mday .fill{ width:100%; background:linear-gradient(180deg,#ffd36e,#ff9f5b); transition:height 1s ease; } .mday .e{ font-size:15px; margin-top:3px; } .mday .d{ font-size:9px; color:var(--mut); }
+  .mpick{ display:flex; gap:6px; justify-content:center; margin-top:10px; } .mpick button{ font-size:20px; background:#0f1320; border:1px solid var(--line); border-radius:9px; padding:3px 7px; cursor:pointer; } .mpick button.on{ border-color:var(--acc); background:#2a2617; }
+
+  .note{ text-align:center; color:var(--mut); font-size:12px; margin:18px 0 4px; } .note b{ color:var(--acc); } .note a{ color:var(--acc); }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="brand">LIFEOS<small>PAINEL DE CONTROLE DA VIDA</small></div>
+    <div class="brand">LIFEOS<small>O JOGO DA VIDA DO EMERSON</small></div>
     <span class="sp"></span>
-    <span class="chip"><span class="dot"></span>ONLINE</span>
+    <a class="chip" href="mapa.html" style="text-decoration:none">🗺️ Mapa da casa</a>
+    <span class="chip"><span class="dot"></span>VIVO</span>
     <span class="chip">DIA <b id="day">1</b></span>
     <span class="chip" id="clock">00:00:00</span>
+    <a class="chip" href="index.html" style="text-decoration:none" title="Sair">⎋</a>
   </div>
-
   <div class="grid" id="grid"></div>
-
-  <div class="note">Tela de exemplo — quando você terminar o <a href="questionario.html" style="color:var(--acc)"><b>questionário</b></a>, troco tudo pelos seus dados reais.</div>
+  <div class="note">🐾 O painel do <b>Emerson</b> e da matilha. Me passa seus números (peso, cintura, % gordura) e o que tem na geladeira que eu completo o resto. Falta preencher o <a href="questionario.html">questionário de habilidades</a> — logo eu monto.</div>
 </div>
 
 <script>
 /* ============================================================
-   Estado do jogo (EXEMPLO). Troque pelos dados reais depois.
+   Estado REAL do jogo — dados do Emerson (questionário respondido).
    ============================================================ */
+const DOG_NAMES=['Nina','Hector','Sansa','Nymeria','Lua','Max','Marie','Sky','Lady','Hércules',
+  'Margot','Tisha','Dobby','Peppe','Penélope','Jake','Canela','Agostinho','Vhaghar','Princesa'];
+const DOG_EMO=['🐕','🐩','🦮','🐕‍🦺'];
+
 const STATE = {
-  hero:{ name:'Bob', cls:'Empreendedor · cap. Reconstrução', level:3, xp:62, xpMax:100, avatar:'🧑🏻' },
+  hero:{ name:'Emerson', cls:'Explorador · cap. Reorganização da vida', level:1, xp:15, xpMax:100, avatar:'🧑🏻' },
+  effects:[ {t:'✨ Melhorar tudo com IA', k:'buff'}, {t:'☠️ Excesso de maconha', k:'debuff'}, {t:'📱 Celular (distração)', k:'debuff'} ],
   attrs:[
-    {n:'Corpo',    ic:'💪', v:6, c:'#54d98c'},
-    {n:'Mente',    ic:'🧠', v:5, c:'#5bb8ff'},
-    {n:'Recursos', ic:'💰', v:4, c:'#ffcf5c'},
-    {n:'Ofício',   ic:'⚒️', v:7, c:'#ff9f5b'},
-    {n:'Vínculos', ic:'❤️', v:6, c:'#ff7b9c'},
-    {n:'Sabedoria',ic:'📚', v:7, c:'#b98cff'},
-    {n:'Espírito', ic:'🔥', v:5, c:'#ffa24d'},
-    {n:'Disciplina',ic:'⏳',v:4, c:'#7ee0d0'},
+    {n:'💪 Corpo',    v:4, c:'#54d98c'}, {n:'🧠 Mente',     v:5, c:'#5bb8ff'},
+    {n:'💰 Recursos', v:7, c:'#ffcf5c'}, {n:'⚒️ Ofício',    v:5, c:'#ff9f5b'},
+    {n:'❤️ Vínculos', v:5, c:'#ff7b9c'}, {n:'📚 Sabedoria', v:7, c:'#b98cff'},
+    {n:'🔥 Espírito', v:5, c:'#ffa24d'}, {n:'⏳ Disciplina',v:2, c:'#7ee0d0'},
   ],
-  gold:{ amount:1240, renda:'salário + freela', delta:'+180 / semana' },
-  dogs:[
-    {nm:'Cachorro 1', face:'🐕', fome:8, energia:6, feliz:9},
-    {nm:'Cachorro 2', face:'🐩', fome:5, energia:7, feliz:8},
-  ],
-  rooms:[
-    {nm:'Cozinha',  ic:'🍳', v:7}, {nm:'Sala',   ic:'🛋️', v:8},
-    {nm:'Quarto',   ic:'🛏️', v:6}, {nm:'Banheiro',ic:'🚿', v:9},
-    {nm:'Escritório',ic:'💻', v:5}, {nm:'Quintal', ic:'🌳', v:7},
-  ],
-  inv:[ {ic:'☕',q:''},{ic:'📱',q:''},{ic:'🎧',q:''},{ic:'💊',q:'x3'},{ic:'🔑',q:''},{ic:'📖',q:'x2'},{ic:'💧',q:'x5'} ],
-  invSlots:14,
-  fridge:[ {ic:'🥛',nm:'Leite',q:'1L'},{ic:'🥚',nm:'Ovos',q:'x8'},{ic:'🧀',nm:'Queijo',q:''},
-    {ic:'🍗',nm:'Frango',q:'500g'},{ic:'🥦',nm:'Brócolis',q:''},{ic:'🧈',nm:'Manteiga',q:''} ],
-  pantry:[ {ic:'🍚',nm:'Arroz',q:'2kg'},{ic:'🫘',nm:'Feijão',q:'1kg'},{ic:'🍝',nm:'Macarrão',q:'x3'},
-    {ic:'☕',nm:'Café',q:'250g'},{ic:'🧂',nm:'Sal',q:''},{ic:'🫒',nm:'Azeite',q:''} ],
-  appliances:[ {ic:'🍳',nm:'Fogão',ok:true},{ic:'🧊',nm:'Geladeira',ok:true},{ic:'♨️',nm:'Microondas',ok:true},
-    {ic:'🧺',nm:'Máq. de lavar',ok:false},{ic:'📺',nm:'TV',ok:true},{ic:'💻',nm:'Notebook',ok:true} ],
-  shopping:[ {t:'Peito de frango',done:false},{t:'Ovos',done:false},{t:'Aveia',done:true},
-    {t:'Ração dos cães',done:false},{t:'Legumes',done:false} ],
-  goal:'🔥 Perder peso & ganhar massa',
+  streak:{ n:1, week:[{d:'Seg',on:false},{d:'Ter',on:false},{d:'Qua',on:false},{d:'Qui',on:false},{d:'Sex',on:false},{d:'Sáb',on:false},{d:'Hoje',on:true}] },
+  goal:'🏡 Casa nova + o canil dos sonhos',
+  resources:[ {k:'Estabilidade', v:'8/10 ✔'}, {k:'Renda', v:'Líder de almoxarifado (Cecape)'}, {k:'Dívida', v:'Média'}, {k:'Meta', v:'🏠 Comprar a casa'} ],
   measures:[
-    {nm:'Peso',            ic:'⚖️', start:95,  cur:92,  goal:78, unit:'kg', lower:true,  week:'-0,4'},
-    {nm:'Gordura visceral',ic:'🫃', start:16,  cur:14,  goal:9,  unit:'',   lower:true,  week:'-0'},
-    {nm:'Cintura',         ic:'📏', start:110, cur:104, goal:88, unit:'cm', lower:true,  week:'-0,5'},
-    {nm:'% Gordura',       ic:'💧', start:31,  cur:28,  goal:18, unit:'%',  lower:true,  week:'-0,2'},
-    {nm:'Massa magra',     ic:'💪', start:60,  cur:62,  goal:66, unit:'kg', lower:false, week:'+0,1'},
+    {nm:'Peso',          ic:'⚖️', cur:null, goal:null, unit:'kg'},
+    {nm:'Cintura',       ic:'📏', cur:null, goal:null, unit:'cm'},
+    {nm:'% Gordura',     ic:'💧', cur:null, goal:null, unit:'%'},
+    {nm:'Força de core', ic:'🏋️', start:2, cur:2, goal:8, unit:'/10'},
   ],
-  workout:{ nm:'Full Body em casa · sem equipamento', min:25, done:false, ex:[
-    {nm:'Aquecimento (polichinelo)', s:'2× 40s'}, {nm:'Agachamento livre', s:'3× 15'},
-    {nm:'Flexão de braço', s:'3× 10'}, {nm:'Afundo (cada perna)', s:'3× 12'},
-    {nm:'Prancha', s:'3× 40s'}, {nm:'Abdominal', s:'3× 20'},
+  workout:{ nm:'Coluna & Core — seguro pra lombar (L3–L5)', min:20, done:false,
+    warn:'Evite por ora: agachamento pesado e abdominal com flexão da coluna.', ex:[
+    {nm:'Gato-camelo (mobilidade)', s:'2× 10'}, {nm:'Ponte de glúteo', s:'3× 12'},
+    {nm:'Prancha frontal', s:'3× 30s'}, {nm:'Bird-dog (perdigueiro)', s:'3× 10 c/lado'},
+    {nm:'Dead bug (inseto-morto)', s:'3× 10'}, {nm:'Caminhada leve', s:'15–20 min'},
   ]},
   recipes:[
-    {nm:'Omelete de ovos + brócolis', has:['🥚','🥦','🧀'], kcal:280, prot:24, tag:'💪 massa'},
-    {nm:'Frango grelhado + arroz',    has:['🍗','🍚','🫒'], kcal:430, prot:38, tag:'💪 massa'},
-    {nm:'Panqueca proteica de aveia', has:['🥚','🥛'],      kcal:310, prot:22, tag:'🔥 queima'},
-    {nm:'Feijão + frango desfiado',   has:['🫘','🍗'],      kcal:390, prot:34, tag:'💪 massa'},
+    {nm:'Ovos mexidos + pão',            has:['🥚','🍞'],      kcal:300, prot:20, tag:'⚡ rápido'},
+    {nm:'Marmita: frango + arroz + feijão',has:['🍗','🍚','🫘'], kcal:520, prot:40, tag:'💪 massa'},
+    {nm:'Iogurte + aveia + banana',      has:['🥛','🌾','🍌'], kcal:280, prot:16, tag:'⚡ sem fogão'},
+    {nm:'Omelete + legumes',             has:['🥚','🥦'],      kcal:260, prot:22, tag:'🔥 leve'},
   ],
+  weekly:'Organizar o jardim dos cachorros',
   quests:[
-    {t:'Beber 3L de água',       rw:'+2 Corpo',     done:true},
-    {t:'Treino de hoje',         rw:'+3 Corpo',     done:false},
-    {t:'Bater a meta de proteína',rw:'+2 Corpo',    done:false},
-    {t:'10 mil passos',          rw:'+2 Disciplina',done:false},
-    {t:'Passear com os cães',    rw:'+2 Vínculos',  done:false},
+    {t:'Arrumar 1 canto da casa (15 min)', rw:'+3 Disciplina', done:false},
+    {t:'Preparar uma refeição de verdade', rw:'+2 Corpo', done:false},
+    {t:'Alongar a coluna (5 min)',         rw:'+2 Corpo', done:false},
+    {t:'Beber água (3L)',                  rw:'+1 Corpo', done:false},
+    {t:'Cuidar da matilha 🐾',             rw:'+3 Vínculos', done:true},
   ],
-  boss:{ nm:'Gordura Visceral', face:'🫃', hp:70, sub:'Nível 14 → meta 9. Treino + dieta tiram HP dela.' },
-  mood:{ today:2, week:[
-    {d:'Seg',v:5},{d:'Ter',v:7},{d:'Qua',v:6},{d:'Qui',v:8},{d:'Sex',v:4},{d:'Sáb',v:8},{d:'Dom',v:7}
-  ]},
+  boss:{ nm:'O Caos', face:'🌀', hp:78, sub:'Desorganização + falta de energia. Cada tarefa feita tira HP. Deixar pra depois faz ele crescer e invadir cômodos.' },
+  mood:{ today:3, week:[{d:'Seg',v:6},{d:'Ter',v:7},{d:'Qua',v:6},{d:'Qui',v:8},{d:'Sex',v:5},{d:'Sáb',v:8},{d:'Dom',v:7}] },
+  dogs: DOG_NAMES.map((nm,i)=>({ nm, face:DOG_EMO[i%DOG_EMO.length], well: 8 + (i%3) })),  // bem-estar 8–10
+  rooms:[
+    {nm:'Cozinha',ic:'🍳',v:5}, {nm:'Sala',ic:'🛋️',v:5}, {nm:'Quarto',ic:'🛏️',v:4}, {nm:'Banheiro',ic:'🚿',v:6},
+    {nm:'Jardim dos cães',ic:'🌳',v:3}, {nm:'Canil',ic:'🐾',v:3}, {nm:'Quintal',ic:'🧹',v:4}, {nm:'Área externa',ic:'🏗️',v:2},
+  ],
+  allies:[ {nm:'Alisson', rl:'irmão · canal do YouTube', em:'🎬'}, {nm:'João Pedro', rl:'aliado de sempre', em:'🤝'}, {nm:'Clice', rl:'namorada', em:'💗'} ],
+  fridge:[ {ic:'🥚',nm:'Ovos',q:'?'},{ic:'🍗',nm:'Frango',q:'?'},{ic:'🥛',nm:'Leite',q:'?'},{ic:'🧀',nm:'Queijo',q:'?'} ],
+  pantry:[ {ic:'🍚',nm:'Arroz',q:'?'},{ic:'🫘',nm:'Feijão',q:'?'},{ic:'🌾',nm:'Aveia',q:'?'},{ic:'☕',nm:'Café',q:'?'} ],
+  appliances:[ {ic:'🍳',nm:'Fogão',ok:true},{ic:'🧊',nm:'Geladeira',ok:true},{ic:'🎮',nm:'Nintendo Switch',ok:true},{ic:'🖥️',nm:'PC',ok:true},{ic:'📺',nm:'Consoles',ok:true} ],
+  shopping:[ {t:'Peito de frango',done:false},{t:'Ovos',done:false},{t:'Legumes',done:false},{t:'Ração da matilha',done:false} ],
+  inv:[ {ic:'🎮',q:''},{ic:'🖥️',q:''},{ic:'🎧',q:''},{ic:'✏️',q:''},{ic:'💻',q:''},{ic:'📱',q:''},{ic:'🎨',q:''} ], invSlots:12,
 };
-// escala de humor: índice 0..4
 const MOODS=['😫','😕','😐','🙂','😄'];
-const moodEmoji=v=>MOODS[Math.max(0,Math.min(4,Math.round((v-1)/2.25)))]; // 1..10 -> emoji
+const moodEmoji=v=>MOODS[Math.max(0,Math.min(4,Math.round((v-1)/2.25)))];
 
 /* ============================================================ render */
 const grid=document.getElementById('grid');
 const pct=v=>Math.round(v*10);
-function panel(cls,icon,title,right,body){
-  return `<section class="panel ${cls}">
-    <div class="ph"><span class="ic">${icon}</span><h2>${title}</h2>${right?`<span class="r">${right}</span>`:''}</div>
-    ${body}</section>`;
-}
+function panel(cls,icon,title,right,body){ return `<section class="panel ${cls}">
+  <div class="ph"><span class="ic">${icon}</span><h2>${title}</h2>${right?`<span class="r">${right}</span>`:''}</div>${body}</section>`; }
 function bar(v,c){ return `<div class="bar"><i data-w="${pct(v)}%" style="background:linear-gradient(90deg,${c}99,${c})"></i></div>`; }
 
-/* personagem + atributos */
 const h=STATE.hero;
-const attrsHtml=STATE.attrs.map(a=>`
-  <div class="attr"><div class="top"><b>${a.ic} ${a.n}</b><span>${a.v}/10</span></div>${bar(a.v,a.c)}</div>`).join('');
-const heroBody=`
-  <div class="hero">
+const heroBody=`<div class="hero">
     <div class="avatar">${h.avatar}</div>
     <div class="who">
       <div style="display:flex;align-items:center;gap:8px"><span class="name">${h.name}</span><span class="lvl">Nv ${h.level}</span></div>
       <div class="cls">${h.cls}</div>
       <div class="xp"><i data-w="${Math.round(h.xp/h.xpMax*100)}%"></i></div>
       <div class="xp-lbl"><span>XP</span><span>${h.xp}/${h.xpMax}</span></div>
-    </div>
-  </div>
-  <div class="attrs">${attrsHtml}</div>`;
+    </div></div>
+  <div class="effects">${STATE.effects.map(e=>`<span class="eff ${e.k}">${e.t}</span>`).join('')}</div>
+  <div class="attrs">${STATE.attrs.map(a=>`<div class="attr"><div class="top"><b>${a.n}</b><span>${a.v}/10</span></div>${bar(a.v,a.c)}</div>`).join('')}</div>`;
 
-/* ouro */
-const g=STATE.gold;
-const goldBody=`<div class="gold-big">🪙 ${g.amount.toLocaleString('pt-BR')}</div>
-  <div class="sub" style="margin-top:6px">Renda: ${g.renda}</div>
-  <div class="sub" style="color:var(--hp)">${g.delta}</div>`;
+const s=STATE.streak;
+const streakBody=`<div class="stk"><div class="big">🔥 ${s.n}<small> dia</small></div>
+  <div class="stkdays">${s.week.map(d=>`<div class="sd ${d.on?'on':''}"><div class="f">🔥</div>${d.d}</div>`).join('')}</div>
+  <div class="sub" style="text-align:center;margin-top:10px">Faça 1 missão por dia pra manter a chama acesa.</div></div>`;
 
-/* missões */
-const questBody=`<div id="quests">`+STATE.quests.map((q,i)=>`
-  <div class="quest ${q.done?'done':''}" data-i="${i}">
-    <div class="box">${q.done?'✔':''}</div><div class="txt">${q.t}</div><div class="rw">${q.rw}</div>
-  </div>`).join('')+`</div>`;
+const measBody=STATE.measures.map(m=>{
+  const has=m.cur!=null&&m.goal!=null;
+  const p= (has&&m.start!=null)?Math.max(0,Math.min(100,Math.round((m.start-m.cur)/(m.start-m.goal)*100))):0;
+  const val= has? `<b>${m.cur}${m.unit}</b> <span class="g">→ ${m.goal}${m.unit}</span>` : `<span class="g">a definir</span>`;
+  return `<div class="meas"><span class="ic">${m.ic}</span><div class="mid">
+    <div class="nm"><span>${m.nm}</span><span class="cur">${val}</span></div>
+    <div class="bar"><i data-w="${p}%" style="background:linear-gradient(90deg,#54d98c99,#54d98c)"></i></div></div></div>`;
+}).join('')+`<div class="sub" style="margin-top:8px">💡 Me manda peso, cintura e % de gordura que eu começo o acompanhamento.</div>`;
 
-/* cachorros */
-const dogsBody=STATE.dogs.map(d=>`
-  <div class="dog"><div class="face">${d.face}</div><div class="info">
-    <div class="nm">${d.nm}</div>
-    <div class="mini"><span class="k">🍖 Fome</span>${bar(d.fome,'#ff9f5b')}</div>
-    <div class="mini"><span class="k">⚡ Energia</span>${bar(d.energia,'#5bb8ff')}</div>
-    <div class="mini"><span class="k">😊 Feliz</span>${bar(d.feliz,'#54d98c')}</div>
-  </div></div>`).join('');
-
-/* cômodos */
-const roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`
-  <div class="room"><div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
-
-/* inventário */
-let invHtml='';
-for(let i=0;i<STATE.invSlots;i++){ const it=STATE.inv[i];
-  invHtml+= it?`<div class="slot">${it.ic}${it.q?`<span class="q">${it.q}</span>`:''}</div>`:`<div class="slot empty">+</div>`; }
-const invBody=`<div class="inv">${invHtml}</div>`;
-
-/* geladeira / despensa */
-const listBody=arr=>`<div class="list">`+arr.map(it=>`
-  <div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`;
-
-/* eletrodomésticos (com status) */
-const applBody=`<div class="list">`+STATE.appliances.map(a=>`
-  <div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span>
-    <span class="sdot" title="${a.ok?'ok':'precisa de atenção'}" style="background:${a.ok?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`;
-
-/* lista de compras (clicável) */
-const shopBody=`<div id="shop">`+STATE.shopping.map((s,i)=>`
-  <div class="quest ${s.done?'done':''}" data-i="${i}"><div class="box">${s.done?'✔':''}</div><div class="txt">${s.t}</div></div>`).join('')+`</div>`;
-
-/* medidas & progresso */
-const measPct=m=> Math.max(0,Math.min(100, Math.round((m.start-m.cur)/(m.start-m.goal)*100)));
-const measBody=STATE.measures.map(m=>`
-  <div class="meas"><span class="ic">${m.ic}</span><div class="mid">
-    <div class="nm"><span>${m.nm}</span><span class="cur"><b>${m.cur}${m.unit}</b> <span class="g">→ ${m.goal}${m.unit}</span></span></div>
-    <div class="bar"><i data-w="${measPct(m)}%" style="background:linear-gradient(90deg,#54d98c99,#54d98c)"></i></div>
-  </div><span class="wk">${m.week}</span></div>`).join('');
-
-/* treino de hoje */
 const w=STATE.workout;
-const workoutBody=`<div class="wo">`+w.ex.map((x,i)=>`
-  <div class="exi"><b style="color:var(--mut);font-family:ui-monospace,monospace">${i+1}</b><span>${x.nm}</span><span class="s">${x.s}</span></div>`).join('')+
-  `</div><button class="wbtn ${w.done?'done':''}" id="woBtn">${w.done?'✅ Treino concluído':'💪 Concluir treino de hoje'}</button>`;
+const workoutBody=`<div class="wo">`+w.ex.map((x,i)=>`<div class="exi"><b style="color:var(--mut);font-family:ui-monospace,monospace">${i+1}</b><span>${x.nm}</span><span class="s">${x.s}</span></div>`).join('')+
+  `</div><div class="sub" style="margin-top:8px">⚠️ ${w.warn}</div>
+   <button class="wbtn ${w.done?'done':''}" id="woBtn">${w.done?'✅ Treino concluído':'💪 Concluir treino de hoje'}</button>`;
 
-/* receitas com o que você tem */
-const recBody=`<div class="recs">`+STATE.recipes.map(r=>`
-  <div class="rec"><div class="rn">${r.nm}<span class="tag">${r.tag}</span></div>
-    <div class="ing">${r.has.join(' ')}</div>
-    <div class="mac"><span>${r.kcal} kcal</span><span>${r.prot}g proteína</span></div>
-  </div>`).join('')+`</div>`;
+const recBody=`<div class="recs">`+STATE.recipes.map(r=>`<div class="rec"><div class="rn">${r.nm}<span class="tag">${r.tag}</span></div>
+    <div class="ing">${r.has.join(' ')}</div><div class="mac"><span>${r.kcal} kcal</span><span>${r.prot}g proteína</span></div></div>`).join('')+`</div>`;
 
-/* humor */
-const moodBody=`
-  <div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.mood.today]}</div><div class="lbl">como você está hoje?</div></div>
-  <div class="mpick" id="moodPick">${MOODS.map((e,i)=>`<button data-m="${i}" class="${i===STATE.mood.today?'on':''}">${e}</button>`).join('')}</div>
-  <div class="mweek" style="margin-top:12px">${STATE.mood.week.map(d=>`
-    <div class="mday"><div class="track"><div class="fill" data-h="${d.v*10}%"></div></div>
-      <div class="e">${moodEmoji(d.v)}</div><div class="d">${d.d}</div></div>`).join('')}</div>`;
+const questBody=`<div class="weekly">🗓️ <b>Missão da semana:</b> ${STATE.weekly}</div><div id="quests">`+STATE.quests.map((q,i)=>`
+  <div class="quest ${q.done?'done':''}" data-i="${i}"><div class="box">${q.done?'✔':''}</div><div class="txt">${q.t}</div><div class="rw">${q.rw}</div></div>`).join('')+`</div>`;
 
-/* chefão */
 const b=STATE.boss;
 const bossBody=`<div class="boss"><div class="face2">${b.face}</div><div class="hpwrap">
   <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><b>${b.nm}</b><span class="sub">HP ${b.hp}%</span></div>
-  ${bar(b.hp/10,'#ff6b6b')}
-  <div class="sub" style="margin-top:6px">${b.sub}</div>
-</div></div>`;
+  ${bar(b.hp/10,'#ff6b6b')}<div class="sub" style="margin-top:6px">${b.sub}</div></div></div>`;
+
+const moodBody=`<div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.mood.today]}</div><div class="lbl">como você está hoje?</div></div>
+  <div class="mpick" id="moodPick">${MOODS.map((e,i)=>`<button data-m="${i}" class="${i===STATE.mood.today?'on':''}">${e}</button>`).join('')}</div>
+  <div class="mweek" style="margin-top:12px">${STATE.mood.week.map(d=>`<div class="mday"><div class="track"><div class="fill" data-h="${d.v*10}%"></div></div><div class="e">${moodEmoji(d.v)}</div><div class="d">${d.d}</div></div>`).join('')}</div>`;
+
+const dogsBody=`<div class="dogsgrid">`+STATE.dogs.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well,'#54d98c')}</div>`).join('')+`</div>`;
+
+const roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`<div class="room ${r.v<5?'chaos':''}">${r.v<5?'<div class="mon">👾</div>':''}<div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
+
+const alliesBody=STATE.allies.map(a=>`<div class="ally"><span class="em">${a.em}</span><div><div class="nm">${a.nm}</div><div class="rl">${a.rl}</div></div></div>`).join('');
+const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('');
+const listBody=arr=>`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`;
+const applBody=`<div class="list">`+STATE.appliances.map(a=>`<div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span><span class="sdot" style="background:${a.ok?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`;
+const shopBody=`<div id="shop">`+STATE.shopping.map((x,i)=>`<div class="quest ${x.done?'done':''}" data-i="${i}"><div class="box">${x.done?'✔':''}</div><div class="txt">${x.t}</div></div>`).join('')+`</div>`;
+let invHtml=''; for(let i=0;i<STATE.invSlots;i++){ const it=STATE.inv[i]; invHtml+= it?`<div class="slot">${it.ic}${it.q?`<span class="q">${it.q}</span>`:''}</div>`:`<div class="slot empty">+</div>`; }
+const invBody=`<div class="inv">${invHtml}</div>`;
 
 grid.innerHTML =
   panel('col-8','🧝','Personagem','', heroBody) +
-  panel('col-4','🪙','Recursos','', goldBody) +
+  panel('col-4','🔥','Sequência (streak)','', streakBody) +
   panel('col-6','📊','Medidas & Progresso', STATE.goal, measBody) +
   panel('col-6','🏋️','Treino de hoje', w.min+' min · casa', workoutBody) +
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
-  panel('col-4','🙂','Humor da semana','', moodBody) +
   panel('col-4','🗺️','Missões de hoje','', questBody) +
-  panel('col-4','🐉','Chefão atual','', bossBody) +
-  panel('col-5','🐾','Meus cachorros','', dogsBody) +
+  panel('col-4','🌀','Chefão atual','', bossBody) +
+  panel('col-4','🙂','Humor da semana','', moodBody) +
+  panel('col-12','🐾','A matilha', STATE.dogs.length+' cães', dogsBody) +
   panel('col-7','🏠','Cômodos da casa','conservação', roomsBody) +
-  panel('col-4','🧊','Geladeira', STATE.fridge.length+' itens', listBody(STATE.fridge)) +
-  panel('col-4','🥫','Despensa', STATE.pantry.length+' itens', listBody(STATE.pantry)) +
-  panel('col-4','🔌','Eletrodomésticos','', applBody) +
+  panel('col-5','🤝','Aliados (party)','', alliesBody) +
+  panel('col-3','🪙','Recursos','', resBody) +
+  panel('col-3','🧊','Geladeira','', listBody(STATE.fridge)) +
+  panel('col-3','🥫','Despensa','', listBody(STATE.pantry)) +
+  panel('col-3','🔌','Eletrônicos','', applBody) +
   panel('col-4','🛒','Lista de compras','', shopBody) +
-  panel('col-4','🎒','Inventário', STATE.inv.length+' itens', invBody);
+  panel('col-4','🎒','Inventário','', invBody) +
+  panel('col-4','⭐','Grande missão de vida','', `<div style="font-size:14px;line-height:1.5">Guiar a matilha bem até o fim, ter uma vida confortável e um <b style="color:var(--acc)">sítio 100×100m</b> com um canil de verdade pra eles. 🐾🏡</div>`);
 
-/* anima as barras (largura) e o humor (altura) ao carregar */
 requestAnimationFrame(()=>requestAnimationFrame(()=>{
   document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w);
   document.querySelectorAll('[data-h]').forEach(el=>el.style.height=el.dataset.h);
 }));
-
-/* checklists clicáveis (missões e compras) */
-function bindChecklist(id, arr){ const box=document.getElementById(id); if(!box)return;
-  box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i;
-    arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':''; }); }
-bindChecklist('quests', STATE.quests);
-bindChecklist('shop', STATE.shopping);
-
-/* botão de treino */
-const woBtn=document.getElementById('woBtn');
-if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done;
-  woBtn.classList.toggle('done',STATE.workout.done);
-  woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
-
-/* seletor de humor de hoje */
-const moodPick=document.getElementById('moodPick');
-if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return;
-  STATE.mood.today=+btn.dataset.m;
-  moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn));
-  document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
-
-/* relógio + dia */
-function tick(){ const d=new Date();
-  document.getElementById('clock').textContent=d.toLocaleTimeString('pt-BR'); }
-tick(); setInterval(tick,1000);
+function bindChecklist(id,arr){ const box=document.getElementById(id); if(!box)return;
+  box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i; arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':''; }); }
+bindChecklist('quests',STATE.quests); bindChecklist('shop',STATE.shopping);
+const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
+const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
+function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);
 </script>
 </body>
 </html>

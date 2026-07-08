@@ -35,9 +35,15 @@ missões no mundo real e evolui de nível conforme sua vida melhora.
 | 🔥 **Espírito** | sentido de vida, valores, lazer, alegria |
 | ⏳ **Disciplina** | rotina, hábitos, gestão do tempo |
 
-## Estrutura
+## Estrutura (páginas)
 
-- `questionario.md` — o questionário de criação de personagem (comece por aqui).
-- `ficha.md` — a sua ficha (preenchida a partir das respostas — criada depois).
+- `index.html` — **tela de entrada** (Life OS): fundo artístico, botão *Jogar* e login/senha (local).
+- `painel.html` — **o painel do jogo**: status, atributos, matilha, cômodos, treino, medidas, humor, receitas, chefão…
+- `mapa.html` — **mapa da casa**: suba uma imagem e marque as tarefas (o que fazer e onde).
+- `questionario.html` — formulário de criação de personagem.
+- `ficha.md` — a ficha do Emerson (gerada das respostas).
 
-O jogo roda **por conversa**, então a maior parte da "campanha" acontece no chat.
+> Login é **local** (só no navegador, sem servidor) — é um protótipo. O Emerson já tem ficha;
+> novos jogadores criam conta e preenchem o questionário.
+
+O jogo também roda **por conversa** — a "campanha" continua no chat.
