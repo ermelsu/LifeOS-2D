@@ -135,8 +135,9 @@
   <div class="topbar">
     <div class="brand">LIFEOS<small>O JOGO DA VIDA DO EMERSON</small></div>
     <span class="sp"></span>
-    <a class="chip" href="saude.html" style="text-decoration:none">🪞 Espelho da saúde</a>
-    <a class="chip" href="mapa.html" style="text-decoration:none">🗺️ Mapa da casa</a>
+    <a class="chip" href="saude.html" style="text-decoration:none">🪞 Saúde</a>
+    <a class="chip" href="banco.html" style="text-decoration:none">🏦 Banco</a>
+    <a class="chip" href="mapa.html" style="text-decoration:none">🗺️ Mapa</a>
     <span class="chip"><span class="dot"></span>VIVO</span>
     <span class="chip">DIA <b id="day">1</b></span>
     <span class="chip" id="clock">00:00:00</span>
@@ -267,7 +268,7 @@ const dogsBody=`<div class="dogsgrid">`+STATE.dogs.map(d=>`<div class="dogc"><di
 const roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`<div class="room ${r.v<5?'chaos':''}">${r.v<5?'<div class="mon">👾</div>':''}<div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
 
 const alliesBody=STATE.allies.map(a=>`<div class="ally"><span class="em">${a.em}</span><div><div class="nm">${a.nm}</div><div class="rl">${a.rl}</div></div></div>`).join('');
-const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('');
+const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('')+`<div class="sub" style="margin-top:8px">🏦 Anote gastos e entradas no <a href="banco.html" style="color:var(--acc)">Banco</a>.</div>`;
 const listBody=arr=>`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`;
 const applBody=`<div class="list">`+STATE.appliances.map(a=>`<div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span><span class="sdot" style="background:${a.ok?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`;
 const shopBody=`<div id="shop">`+STATE.shopping.map((x,i)=>`<div class="quest ${x.done?'done':''}" data-i="${i}"><div class="box">${x.done?'✔':''}</div><div class="txt">${x.t}</div></div>`).join('')+`</div>`;

@@ -8,36 +8,49 @@
   :root{ --bg:#0c0e16; --card:#161a28; --card2:#1b2032; --line:#2a3146; --ink:#e9ecf6; --mut:#8b93aa;
     --acc:#ffc94d; --acc-ink:#241802; --ok:#54d98c; --dmg:#ff6b6b; color-scheme:dark; }
   *{ box-sizing:border-box; margin:0; padding:0; }
-  body{ background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:14px; }
+  body{ background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:12px; }
   .app{ max-width:1200px; margin:0 auto; }
-  .top{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-  .top .brand{ font-weight:900; letter-spacing:2px; color:var(--acc); font-size:20px; }
-  .top .sp{ flex:1; }
-  a.back{ color:var(--mut); text-decoration:none; font-size:13px; } a.back:hover{ color:var(--ink); }
-  .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:9px 14px; font:inherit; font-size:13px; cursor:pointer; }
-  .btn:hover{ background:#2c3348; } .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border-color:var(--acc); }
-  .btn.danger{ color:#ffb3b3; }
-  .wrap{ display:grid; grid-template-columns:1fr 300px; gap:14px; }
+  .top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .top .brand{ font-weight:900; letter-spacing:1px; color:var(--acc); font-size:19px; }
+  .top .sp{ flex:1; } a.back{ color:var(--mut); text-decoration:none; font-size:13px; } a.back:hover{ color:var(--ink); }
+
+  .toolbar{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:8px; margin-bottom:12px; }
+  .tool{ display:flex; align-items:center; gap:6px; background:var(--card2); border:2px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .tool.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
+  .swatch{ width:22px; height:22px; border-radius:6px; border:2px solid #0006; cursor:pointer; }
+  .swatch.on{ outline:2px solid var(--acc); outline-offset:1px; }
+  input[type=range]{ accent-color:var(--acc); width:90px; }
+  .sp2{ flex:1; }
+  .btn{ background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#2c3348; } .btn.primary{ background:var(--acc); color:var(--acc-ink); font-weight:800; border:none; } .btn.danger{ color:#ffb3b3; }
+
+  .wrap{ display:grid; grid-template-columns:1fr 280px; gap:12px; }
   @media(max-width:820px){ .wrap{ grid-template-columns:1fr; } }
-  .stage{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px; }
-  .mapbox{ position:relative; border-radius:12px; overflow:hidden; background:#0f1320 repeating-linear-gradient(45deg,#0f1320,#0f1320 12px,#11162400 12px,#11162400 24px);
-    min-height:340px; display:flex; align-items:center; justify-content:center; }
-  .mapbox img{ display:block; width:100%; height:auto; }
-  .empty{ color:var(--mut); text-align:center; padding:40px 20px; font-size:14px; }
-  .pin{ position:absolute; transform:translate(-50%,-100%); cursor:pointer; text-align:center; }
-  .pin .head{ width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #0008;
-    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px #0007; }
+  .stage{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px; }
+  .mapbox{ position:relative; width:100%; aspect-ratio:10/7; border-radius:12px; overflow:hidden;
+    background:#0f1320; touch-action:none; }
+  .mapbox img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+  .mapbox canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .hintover{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
+    color:var(--mut); font-size:14px; padding:24px; pointer-events:none; }
+  .pin{ position:absolute; transform:translate(-50%,-100%); cursor:pointer; z-index:3; }
+  .pin .head{ width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #0008; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px #0007; }
   .pin .head span{ transform:rotate(45deg); font-size:12px; font-weight:800; color:#0a0a0a; }
   .pin.todo .head{ background:var(--acc); } .pin.done .head{ background:var(--ok); }
+  .pinput{ position:absolute; transform:translate(-50%,8px); z-index:5; background:var(--card2); border:1px solid var(--acc);
+    border-radius:10px; padding:6px; display:flex; gap:6px; box-shadow:0 8px 20px #0008; }
+  .pinput input{ background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:7px; padding:7px 9px; font:inherit; font-size:13px; width:170px; }
+  .pinput button{ background:var(--acc); color:var(--acc-ink); border:none; border-radius:7px; padding:0 10px; font-weight:800; cursor:pointer; }
+
   .side{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; }
   .side h2{ font-size:14px; text-transform:uppercase; letter-spacing:.5px; color:#cdd4e6; margin-bottom:6px; }
   .hint{ color:var(--mut); font-size:12px; margin-bottom:12px; }
-  .task{ display:flex; gap:9px; align-items:flex-start; padding:9px 6px; border-bottom:1px dashed #232a3d; }
-  .task:last-child{ border-bottom:none; }
-  .task .num{ width:22px; height:22px; border-radius:50%; background:var(--acc); color:#0a0a0a; font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .task{ display:flex; gap:9px; align-items:flex-start; padding:9px 6px; border-bottom:1px dashed #232a3d; } .task:last-child{ border-bottom:none; }
+  .task .num{ width:22px; height:22px; border-radius:50%; background:var(--acc); color:#0a0a0a; font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; cursor:pointer; }
   .task.done .num{ background:var(--ok); } .task.done .t{ text-decoration:line-through; color:var(--mut); }
   .task .t{ flex:1; font-size:13px; } .task .x{ cursor:pointer; color:var(--mut); } .task .x:hover{ color:var(--dmg); }
-  .task .ck{ cursor:pointer; }
 </style>
 </head>
 <body>
@@ -46,19 +59,30 @@
     <span class="brand">🗺️ MAPA DA CASA</span>
     <span class="sp"></span>
     <a class="back" href="painel.html">← voltar ao painel</a>
-    <label class="btn primary" style="cursor:pointer">⬆️ Subir imagem<input type="file" id="file" accept="image/*" hidden></label>
+  </div>
+
+  <div class="toolbar">
+    <button class="tool on" data-tool="pen">✏️ Desenhar</button>
+    <button class="tool" data-tool="erase">🧽 Borracha</button>
+    <button class="tool" data-tool="pin">📌 Tarefa</button>
+    <span style="display:flex;gap:5px;align-items:center" id="colors"></span>
+    <input type="range" id="size" min="2" max="40" value="6" title="Espessura">
+    <span class="sp2"></span>
+    <label class="btn" style="cursor:pointer">🖼️ Foto/planta<input type="file" id="file" accept="image/*" hidden></label>
     <button class="btn danger" id="clear">Limpar</button>
   </div>
 
   <div class="wrap">
     <div class="stage">
       <div class="mapbox" id="mapbox">
-        <div class="empty" id="empty">Suba a planta ou uma foto da sua casa.<br><br>Depois <b>clique num ponto do mapa</b> pra marcar uma tarefa (ex: “organizar o canil”).</div>
+        <img id="bg" style="display:none">
+        <canvas id="cv" width="1000" height="700"></canvas>
+        <div class="hintover" id="hint">✏️ Desenhe a planta da casa com o dedo ou mouse.<br>Escolha <b>📌 Tarefa</b> pra marcar o que fazer e onde.</div>
       </div>
     </div>
     <div class="side">
       <h2>Tarefas no mapa</h2>
-      <div class="hint">Clique no mapa pra adicionar. Clique no número pra concluir.</div>
+      <div class="hint">Ferramenta <b>📌 Tarefa</b> → toque no mapa e escreva. Toque no número pra concluir.</div>
       <div id="tasks"></div>
     </div>
   </div>
@@ -66,47 +90,78 @@
 
 <script>
   const KEY='lifeos_mapa';
-  let data=JSON.parse(localStorage.getItem(KEY)||'{"img":null,"pins":[]}');
-  const mapbox=document.getElementById('mapbox'), empty=document.getElementById('empty'), tasksEl=document.getElementById('tasks');
-  let imgEl=null;
+  let S=JSON.parse(localStorage.getItem(KEY)||'{"img":null,"draw":null,"pins":[]}');
+  const mapbox=document.getElementById('mapbox'), cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  const bg=document.getElementById('bg'), tasksEl=document.getElementById('tasks'), hint=document.getElementById('hint');
+  let tool='pen', color='#ffc94d', size=6, drawing=false, last=null;
 
-  function saveData(){ localStorage.setItem(KEY,JSON.stringify(data)); }
-  function renderImg(){
-    if(imgEl){ imgEl.remove(); imgEl=null; }
-    if(data.img){ empty.style.display='none'; imgEl=document.createElement('img'); imgEl.src=data.img; mapbox.appendChild(imgEl); }
-    else { empty.style.display=''; }
+  const COLORS=['#ffc94d','#ff6b6b','#54d98c','#5bb8ff','#ffffff','#111111'];
+  const colEl=document.getElementById('colors');
+  colEl.innerHTML=COLORS.map((c,i)=>`<span class="swatch ${i===0?'on':''}" data-c="${c}" style="background:${c}"></span>`).join('');
+  colEl.onclick=e=>{ const s=e.target.closest('.swatch'); if(!s)return; color=s.dataset.c;
+    colEl.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on',x===s)); };
+  document.getElementById('size').oninput=e=>size=+e.target.value;
+
+  document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{ tool=b.dataset.tool;
+    document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on',x===b)); });
+
+  function save(){ S.draw=cv.toDataURL(); localStorage.setItem(KEY,JSON.stringify(S)); }
+  function saveMeta(){ localStorage.setItem(KEY,JSON.stringify(S)); }
+
+  function loadDraw(){ if(S.draw){ const im=new Image(); im.onload=()=>ctx.drawImage(im,0,0,cv.width,cv.height); im.src=S.draw; } }
+  function loadBg(){ if(S.img){ bg.src=S.img; bg.style.display=''; } else bg.style.display='none'; }
+  function updHint(){ hint.style.display=(S.draw||S.img||S.pins.length)?'none':''; }
+
+  // coordenadas do ponteiro no canvas (1000x700)
+  function pos(e){ const r=cv.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*cv.width, y:(e.clientY-r.top)/r.height*cv.height,
+    px:(e.clientX-r.left)/r.width*100, py:(e.clientY-r.top)/r.height*100 }; }
+
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); const p=pos(e);
+    if(tool==='pin'){ openPinInput(p.px,p.py); return; }
+    drawing=true; last=p; cv.setPointerCapture(e.pointerId); hint.style.display='none';
+    // ponto inicial
+    stroke(p,p);
+  });
+  cv.addEventListener('pointermove',e=>{ if(!drawing)return; const p=pos(e); stroke(last,p); last=p; });
+  cv.addEventListener('pointerup',e=>{ if(drawing){ drawing=false; save(); updHint(); } });
+  cv.addEventListener('pointercancel',()=>{ if(drawing){ drawing=false; save(); } });
+
+  function stroke(a,b){ ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=size;
+    if(tool==='erase'){ ctx.globalCompositeOperation='destination-out'; ctx.strokeStyle='rgba(0,0,0,1)'; }
+    else { ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=color; }
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.globalCompositeOperation='source-over';
   }
-  function renderPins(){
-    mapbox.querySelectorAll('.pin').forEach(p=>p.remove());
-    data.pins.forEach((p,i)=>{ const el=document.createElement('div'); el.className='pin '+(p.done?'done':'todo');
-      el.style.left=p.x+'%'; el.style.top=p.y+'%';
-      el.innerHTML=`<div class="head"><span>${i+1}</span></div>`;
-      el.title=p.t; el.onclick=(e)=>{ e.stopPropagation(); p.done=!p.done; saveData(); renderAll(); };
-      mapbox.appendChild(el); });
+
+  // input inline pra tarefa (sem prompt)
+  let openInput=null;
+  function openPinInput(px,py){ if(openInput) openInput.remove();
+    const d=document.createElement('div'); d.className='pinput'; d.style.left=px+'%'; d.style.top=py+'%';
+    d.innerHTML='<input placeholder="o que fazer aqui?"><button>OK</button>';
+    mapbox.appendChild(d); openInput=d; const inp=d.querySelector('input'); inp.focus();
+    const done=()=>{ const t=inp.value.trim(); if(t){ S.pins.push({x:+px.toFixed(1),y:+py.toFixed(1),t,done:false}); saveMeta(); renderPins(); renderTasks(); updHint(); } d.remove(); openInput=null; };
+    d.querySelector('button').onclick=done;
+    inp.onkeydown=ev=>{ if(ev.key==='Enter')done(); if(ev.key==='Escape'){ d.remove(); openInput=null; } };
   }
-  function renderTasks(){
-    tasksEl.innerHTML = data.pins.length? '' : '<div class="hint">Nenhuma tarefa ainda.</div>';
-    data.pins.forEach((p,i)=>{ const d=document.createElement('div'); d.className='task '+(p.done?'done':'');
-      d.innerHTML=`<div class="num ck">${i+1}</div><div class="t">${p.t}</div><div class="x">✕</div>`;
-      d.querySelector('.ck').onclick=()=>{ p.done=!p.done; saveData(); renderAll(); };
-      d.querySelector('.x').onclick=()=>{ data.pins.splice(i,1); saveData(); renderAll(); };
-      tasksEl.appendChild(d); });
-  }
-  function renderAll(){ renderImg(); renderPins(); renderTasks(); }
+
+  function renderPins(){ mapbox.querySelectorAll('.pin').forEach(p=>p.remove());
+    S.pins.forEach((p,i)=>{ const el=document.createElement('div'); el.className='pin '+(p.done?'done':'todo');
+      el.style.left=p.x+'%'; el.style.top=p.y+'%'; el.title=p.t; el.innerHTML=`<div class="head"><span>${i+1}</span></div>`;
+      el.onclick=ev=>{ ev.stopPropagation(); p.done=!p.done; saveMeta(); renderPins(); renderTasks(); };
+      mapbox.appendChild(el); }); }
+  function renderTasks(){ tasksEl.innerHTML=S.pins.length?'':'<div class="hint">Nenhuma tarefa ainda.</div>';
+    S.pins.forEach((p,i)=>{ const d=document.createElement('div'); d.className='task '+(p.done?'done':'');
+      d.innerHTML=`<div class="num">${i+1}</div><div class="t">${p.t}</div><div class="x">✕</div>`;
+      d.querySelector('.num').onclick=()=>{ p.done=!p.done; saveMeta(); renderPins(); renderTasks(); };
+      d.querySelector('.x').onclick=()=>{ S.pins.splice(i,1); saveMeta(); renderPins(); renderTasks(); updHint(); };
+      tasksEl.appendChild(d); }); }
 
   document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
-    const r=new FileReader(); r.onload=()=>{ data.img=r.result; saveData(); renderAll(); }; r.readAsDataURL(f); };
+    const r=new FileReader(); r.onload=()=>{ S.img=r.result; saveMeta(); loadBg(); updHint(); }; r.readAsDataURL(f); };
+  document.getElementById('clear').onclick=()=>{ if(confirm('Limpar desenho, foto e tarefas?')){
+    ctx.clearRect(0,0,cv.width,cv.height); S={img:null,draw:null,pins:[]}; localStorage.setItem(KEY,JSON.stringify(S)); loadBg(); renderPins(); renderTasks(); updHint(); } };
 
-  mapbox.addEventListener('click',e=>{
-    if(!data.img) return; // só marca sobre o mapa
-    const b=mapbox.getBoundingClientRect();
-    const x=((e.clientX-b.left)/b.width*100), y=((e.clientY-b.top)/b.height*100);
-    const t=prompt('O que precisa ser feito aqui?'); if(!t) return;
-    data.pins.push({x:+x.toFixed(1), y:+y.toFixed(1), t, done:false}); saveData(); renderAll();
-  });
-  document.getElementById('clear').onclick=()=>{ if(confirm('Limpar mapa e tarefas?')){ data={img:null,pins:[]}; saveData(); renderAll(); } };
-
-  renderAll();
+  loadBg(); loadDraw(); renderPins(); renderTasks(); updHint();
 </script>
 </body>
 </html>
