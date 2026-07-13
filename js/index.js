@@ -10,23 +10,25 @@
   (function seed(){ const a=accs(); a['emerson']={name:'Emerson',pass:'12345',ficha:true}; save(a); })();
   const msg=t=>document.getElementById('msg').textContent=t;
 
-  const tL=document.getElementById('tabLogin'), tR=document.getElementById('tabReg');
-  const fL=document.getElementById('formLogin'), fR=document.getElementById('formReg');
-  tL.onclick=()=>{ tL.classList.add('on'); tR.classList.remove('on'); fL.style.display=''; fR.style.display='none'; msg(''); };
-  tR.onclick=()=>{ tR.classList.add('on'); tL.classList.remove('on'); fR.style.display=''; fL.style.display='none'; msg(''); };
+  const inU=document.getElementById('u'), inP=document.getElementById('p');
 
-  document.getElementById('btnLogin').onclick=()=>{
-    const u=document.getElementById('lu').value.trim().toLowerCase(), p=document.getElementById('lp').value;
-    if(!u){ msg('Digite seu nome de usuário.'); return; }
+  function login(){
+    const u=inU.value.trim().toLowerCase(), p=inP.value;
+    if(!u){ msg('Digite seu nome de usuário.'); inU.focus(); return; }
     const a=accs(), acc=a[u];
-    if(!acc){ msg('Usuário não encontrado. Crie uma conta.'); return; }
+    if(!acc){ msg('Usuário não encontrado. Toque em "Criar conta".'); return; }
     if(acc.pass && acc.pass!==p){ msg('Senha incorreta.'); return; }
     localStorage.setItem(CUR,u); location.href= acc.ficha?'painel.html':'questionario.html';
-  };
-  document.getElementById('btnReg').onclick=()=>{
-    const n=document.getElementById('rn').value.trim(), p=document.getElementById('rp').value;
-    if(!n){ msg('Digite seu nome.'); return; } if(p.length<3){ msg('Senha muito curta.'); return; }
+  }
+  function register(){
+    const n=inU.value.trim(), p=inP.value;
+    if(!n){ msg('Digite um nome de usuário.'); inU.focus(); return; }
+    if(p.length<3){ msg('Crie uma senha (mín. 3 caracteres).'); inP.focus(); return; }
     const a=accs(), key=n.toLowerCase();
-    if(a[key]){ msg('Já existe uma conta com esse nome.'); return; }
+    if(a[key]){ msg('Já existe uma conta com esse nome. Toque em "Entrar".'); return; }
     a[key]={ name:n, pass:p, ficha:false }; save(a); localStorage.setItem(CUR,key); location.href='questionario.html';
-  };
+  }
+  document.getElementById('btnLogin').onclick=login;
+  document.getElementById('btnReg').onclick=register;
+  inP.addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+  inU.addEventListener('keydown',e=>{ if(e.key==='Enter') inP.focus(); });

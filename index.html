@@ -8,6 +8,8 @@
 <meta http-equiv="Expires" content="0">
 
 <title>LifeOS · Entrar</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
 <style>
   :root{ --bg:#0a0c14; --card:rgba(22,26,40,.72); --line:#2a3146; --ink:#eef1fa; --mut:#9aa2b8;
     --acc:#ffc94d; --acc-ink:#241802; --ok:#54d98c; color-scheme:dark; }
@@ -43,11 +45,6 @@
   .play{ width:100%; background:var(--acc); color:var(--acc-ink); font-weight:900; font-size:17px;
     border:none; border-radius:13px; padding:15px; cursor:pointer; box-shadow:0 8px 24px #ffc94d33; }
   .play:hover{ filter:brightness(1.05); }
-  .sep{ display:flex; align-items:center; gap:10px; color:var(--mut); font-size:11px; margin:18px 0; }
-  .sep::before,.sep::after{ content:""; flex:1; height:1px; background:var(--line); }
-  .tabs{ display:flex; gap:8px; margin-bottom:14px; }
-  .tabs button{ flex:1; background:transparent; color:var(--mut); border:1px solid var(--line); border-radius:10px; padding:9px; font:inherit; font-size:13px; cursor:pointer; }
-  .tabs button.on{ background:#20263a; color:var(--ink); border-color:var(--acc); }
   .field{ text-align:left; margin-bottom:12px; }
   .field label{ display:block; font-size:12px; color:var(--mut); margin-bottom:5px; }
   .field input{ width:100%; background:#0f1320; border:1px solid var(--line); color:var(--ink);
@@ -56,6 +53,7 @@
   .go{ width:100%; background:#232a3d; color:var(--ink); border:1px solid var(--line); border-radius:11px;
     padding:12px; font:inherit; font-weight:700; cursor:pointer; }
   .go:hover{ background:#2c3348; }
+  .actions{ display:flex; flex-direction:column; gap:10px; margin-top:4px; }
   .msg{ font-size:12px; min-height:16px; margin-top:10px; color:#ff8a8a; }
   .foot{ color:var(--mut); font-size:11px; margin-top:16px; line-height:1.5; }
   .foot a{ color:var(--acc); }
@@ -87,21 +85,13 @@
     <div class="logo">LIFE OS<small>O JOGO DA SUA VIDA</small></div>
     <div class="tag">Transforme sua vida real num RPG: status, missões, sua casa e sua matilha.</div>
 
-    <div class="tabs">
-      <button id="tabLogin" class="on">Entrar</button>
-      <button id="tabReg">Criar conta</button>
-    </div>
-
-    <div id="formLogin">
-      <div class="field"><label>Nome de usuário</label><input id="lu" autocomplete="username" placeholder="seu nome"></div>
-      <div class="field"><label>Senha</label><input id="lp" type="password" autocomplete="current-password" placeholder="••••••"></div>
-      <button class="go" id="btnLogin">Entrar ▶</button>
-    </div>
-
-    <div id="formReg" style="display:none">
-      <div class="field"><label>Seu nome</label><input id="rn" placeholder="como quer ser chamado"></div>
-      <div class="field"><label>Senha</label><input id="rp" type="password" placeholder="crie uma senha"></div>
-      <button class="go" id="btnReg">Criar conta e responder o questionário ▶</button>
+    <div class="form">
+      <div class="field"><label>Nome de usuário</label><input id="u" autocomplete="username" placeholder="seu nome"></div>
+      <div class="field"><label>Senha</label><input id="p" type="password" autocomplete="current-password" placeholder="••••••"></div>
+      <div class="actions">
+        <button class="play" id="btnLogin">▶ Entrar e jogar</button>
+        <button class="go" id="btnReg">Criar conta</button>
+      </div>
     </div>
 
     <div class="msg" id="msg"></div>
