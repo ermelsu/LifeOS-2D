@@ -20,7 +20,11 @@
     for(const s of SUGG){ if(s.kw.some(k=>n.includes(k))) return s.list; } return DEF_SUGG; }
   const mapbox=document.getElementById('mapbox'), bg=document.getElementById('bg'), ph=document.getElementById('ph'), zonesEl=document.getElementById('zones');
 
-  function loadBg(){ if(S.img){ bg.src=S.img; bg.style.display=''; ph.style.display='none'; } else { bg.style.display='none'; ph.style.display=''; } }
+  let bgLoaded=false;
+  function loadBg(){ const src=S.img||'assets/casa.png';   // mapa oficial do repo como padrão
+    bg.onload=()=>{ bgLoaded=true; bg.style.display=''; ph.style.display='none'; renderAreas(); };
+    bg.onerror=()=>{ bgLoaded=false; bg.style.display='none'; ph.style.display=''; };
+    bg.src=src; }
   document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
     const r=new FileReader(); r.onload=()=>{ S.img=r.result; save(); loadBg(); }; r.readAsDataURL(f); };
   document.getElementById('phUp').onclick=()=>document.getElementById('file').click();
@@ -32,7 +36,7 @@
   mapbox.addEventListener('pointerdown',e=>{
     if(form) return;
     if(e.target.closest('.area')) return;        // clicar numa área é tratado nela
-    if(!S.img) return;                           // precisa de mapa
+    if(!bgLoaded) return;                        // precisa de um mapa carregado
     e.preventDefault(); selectArea(-1);
     const p=pct(e); drag={x0:p.x,y0:p.y,x1:p.x,y1:p.y}; mapbox.setPointerCapture(e.pointerId);
     marq=document.createElement('div'); marq.className='marquee'; mapbox.appendChild(marq); updMarq();

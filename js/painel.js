@@ -188,15 +188,18 @@ function renderHouse(){
   ZONES=readZones();
   let m={}; try{ m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); }catch(e){}
   const wrap=document.getElementById('housemapWrap'), sw=document.getElementById('statusWrap');
+  const mapSrc = m.img || 'assets/casa.png';   // mapa oficial do repo como padrão
   if(wrap){
-    if(m.img){
+    {
       const ov=ZONES.map((z,i)=>{ const pend=(z.tasks||[]).filter(t=>!t.done).length;
         return `<div class="harea ${pend?'pend':''}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color}">
           <span class="lab" style="background:${z.color}">${z.name}</span>
           <span class="bd" style="background:${pend?'rgba(0,0,0,.65)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'👾 '+pend:'✓'}</span></div>`; }).join('');
-      wrap.innerHTML=`<div class="housemap"><img src="${m.img}">${ov}</div>`;
+      wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}">${ov}</div>`;
+      const hm=document.getElementById('hmimg');
+      if(hm) hm.onerror=()=>{ wrap.innerHTML=`<div class="sub">Suba o mapa da casa e crie áreas com tarefas no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`; };
       wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>{ const el=document.getElementById('sz'+a.dataset.z); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
-    } else wrap.innerHTML=`<div class="sub">Suba o mapa da casa e crie áreas com tarefas no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`;
+    }
   }
   if(sw){
     if(!ZONES.length){ sw.innerHTML=`<div class="sub">Crie áreas no <a href="mapa.html" style="color:var(--acc)">Mapa</a> pra responder o status aqui, rapidinho no Sim/Não.</div>`; }
