@@ -1,0 +1,82 @@
+{
+  "_nota": "Zonas oficiais da casa do Emerson, sobre assets/casa.svg. Nomes provisorios - Emerson confirma/renomeia. Carregado pelo painel quando nao ha mapa local.",
+  "zones": [
+    { "name": "Quarto", "color": "#ffc94d", "x": 8.17, "y": 7.00, "w": 14.27, "h": 43.73, "tasks": [
+      {"t":"Arrumar a cama","done":false},
+      {"t":"Recolher roupas do chão","done":false},
+      {"t":"Trocar os lençóis","done":false},
+      {"t":"Varrer/aspirar","done":false},
+      {"t":"Organizar a mesa de cabeceira","done":false},
+      {"t":"Guardar roupas limpas","done":false}
+    ]},
+    { "name": "Banheiro", "color": "#54d98c", "x": 8.17, "y": 50.73, "w": 14.27, "h": 13.41, "tasks": [
+      {"t":"Limpar o vaso","done":false},
+      {"t":"Limpar a pia","done":false},
+      {"t":"Limpar o box/chuveiro","done":false},
+      {"t":"Passar pano no chão","done":false},
+      {"t":"Repor papel higiênico","done":false},
+      {"t":"Trocar a toalha","done":false},
+      {"t":"Recolher lixo","done":false}
+    ]},
+    { "name": "Corredor", "color": "#5bb8ff", "x": 22.33, "y": 7.00, "w": 34.86, "h": 14.58, "tasks": [
+      {"t":"Varrer o corredor","done":false},
+      {"t":"Tirar objetos do caminho","done":false},
+      {"t":"Passar pano no chão","done":false}
+    ]},
+    { "name": "Sala", "color": "#ff6b6b", "x": 22.33, "y": 21.57, "w": 14.71, "h": 43.29, "tasks": [
+      {"t":"Organizar objetos","done":false},
+      {"t":"Passar pano nos móveis","done":false},
+      {"t":"Aspirar o sofá","done":false},
+      {"t":"Varrer o chão","done":false},
+      {"t":"Organizar fios/controles","done":false},
+      {"t":"Regar plantas","done":false}
+    ]},
+    { "name": "Lavanderia", "color": "#b98cff", "x": 37.04, "y": 21.57, "w": 5.01, "h": 43.29, "tasks": [
+      {"t":"Lavar roupa","done":false},
+      {"t":"Estender/recolher","done":false},
+      {"t":"Dobrar e guardar","done":false},
+      {"t":"Limpar o tanque","done":false},
+      {"t":"Varrer o chão","done":false}
+    ]},
+    { "name": "Cozinha", "color": "#ff9f5b", "x": 42.05, "y": 21.57, "w": 15.14, "h": 43.29, "tasks": [
+      {"t":"Lavar a louça","done":false},
+      {"t":"Limpar o fogão","done":false},
+      {"t":"Limpar a bancada","done":false},
+      {"t":"Tirar o lixo","done":false},
+      {"t":"Varrer e passar pano","done":false},
+      {"t":"Guardar comida/organizar geladeira","done":false},
+      {"t":"Preparar marmita/refeição","done":false},
+      {"t":"Checar validade dos alimentos","done":false}
+    ]},
+    { "name": "Escritório", "color": "#7ee0d0", "x": 57.19, "y": 7.00, "w": 24.62, "h": 71.72, "tasks": [
+      {"t":"Organizar a mesa","done":false},
+      {"t":"Fazer backup dos arquivos","done":false},
+      {"t":"Limpar o computador","done":false},
+      {"t":"Organizar cabos","done":false},
+      {"t":"Anotar pendências","done":false}
+    ]},
+    { "name": "Área externa", "color": "#ff8fd0", "x": 81.81, "y": 7.00, "w": 15.74, "h": 86.01, "tasks": [
+      {"t":"Recolher entulho/lixo","done":false},
+      {"t":"Varrer o pátio","done":false},
+      {"t":"Verificar cercas e portões","done":false},
+      {"t":"Organizar ferramentas","done":false},
+      {"t":"Limpar ralos/escoamento","done":false}
+    ]},
+    { "name": "Quintal dos cães", "color": "#ffc94d", "x": 8.17, "y": 64.87, "w": 49.02, "h": 28.57, "tasks": [
+      {"t":"Recolher fezes","done":false},
+      {"t":"Trocar a água dos bebedouros","done":false},
+      {"t":"Encher os potes de ração","done":false},
+      {"t":"Lavar os bebedouros/comedouros","done":false},
+      {"t":"Varrer o chão","done":false},
+      {"t":"Passar pano com desinfetante","done":false},
+      {"t":"Verificar pulgas e carrapatos","done":false},
+      {"t":"Checar se todos estão bem","done":false}
+    ]},
+    { "name": "Jardim", "color": "#54d98c", "x": 2.61, "y": 6.56, "w": 5.56, "h": 86.88, "tasks": [
+      {"t":"Recolher fezes dos cães","done":false},
+      {"t":"Aparar o mato/grama","done":false},
+      {"t":"Regar as plantas","done":false},
+      {"t":"Varrer folhas","done":false}
+    ]}
+  ]
+}

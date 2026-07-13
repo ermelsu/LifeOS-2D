@@ -46,10 +46,6 @@ const STATE = {
   boss:{ nm:'O Caos', face:'🌀', hp:78, sub:'Desorganização + falta de energia. Cada tarefa feita tira HP. Deixar pra depois faz ele crescer e invadir cômodos.' },
   mood:{ today:3, week:[{d:'Seg',v:6},{d:'Ter',v:7},{d:'Qua',v:6},{d:'Qui',v:8},{d:'Sex',v:5},{d:'Sáb',v:8},{d:'Dom',v:7}] },
   dogs: DOG_NAMES.map((nm,i)=>({ nm, face:DOG_EMO[i%DOG_EMO.length], well: 8 + (i%3) })),  // bem-estar 8–10
-  rooms:[
-    {nm:'Cozinha',ic:'🍳',v:5}, {nm:'Sala',ic:'🛋️',v:5}, {nm:'Quarto',ic:'🛏️',v:4}, {nm:'Banheiro',ic:'🚿',v:6},
-    {nm:'Jardim dos cães',ic:'🌳',v:3}, {nm:'Canil',ic:'🐾',v:3}, {nm:'Quintal',ic:'🧹',v:4}, {nm:'Área externa',ic:'🏗️',v:2},
-  ],
   allies:[ {nm:'Alisson', rl:'irmão · canal do YouTube', em:'🎬'}, {nm:'João Pedro', rl:'aliado de sempre', em:'🤝'}, {nm:'Clice', rl:'namorada', em:'💗'} ],
   fridge:[ {ic:'🥚',nm:'Ovos',q:'?'},{ic:'🍗',nm:'Frango',q:'?'},{ic:'🥛',nm:'Leite',q:'?'},{ic:'🧀',nm:'Queijo',q:'?'} ],
   pantry:[ {ic:'🍚',nm:'Arroz',q:'?'},{ic:'🥫',nm:'Feijão',q:'?'},{ic:'🌾',nm:'Aveia',q:'?'},{ic:'☕',nm:'Café',q:'?'} ],
@@ -60,6 +56,25 @@ const STATE = {
 const MOODS=['😫','😕','😐','🙂','😄'];
 const moodEmoji=v=>MOODS[Math.max(0,Math.min(4,Math.round((v-1)/2.25)))];
 
+/* ============================================================
+   Zonas da casa — do Mapa (localStorage) com fallback no repo.
+   ============================================================ */
+const MAPA_KEY='lifeos_mapa';
+function readMapa(){ try{ return JSON.parse(localStorage.getItem(MAPA_KEY)||'{}')||{}; }catch(e){ return {}; } }
+function readZones(){ const m=readMapa(); return Array.isArray(m.zones)?m.zones:[]; }
+function saveZones(z){ const m=readMapa(); m.zones=z; try{ localStorage.setItem(MAPA_KEY,JSON.stringify(m)); }catch(e){} }
+let ZONES=readZones();
+// Sem áreas locais? Carrega as zonas oficiais do repo (planta padrão) e guarda pra edição.
+async function ensureZones(){
+  if(ZONES.length) return;
+  try{ const r=await fetch('assets/casa-zones.json',{cache:'no-store'});
+    if(r.ok){ const j=await r.json();
+      if(j&&Array.isArray(j.zones)&&j.zones.length){ ZONES=j.zones; saveZones(ZONES); } } }catch(e){}
+}
+function houseStats(){ let done=0,total=0;
+  ZONES.forEach(z=>(z.tasks||[]).forEach(t=>{ total++; if(t.done) done++; }));
+  return { done, total, pct: total? Math.round(done/total*100) : 100 }; }
+
 /* ============================================================ render */
 const grid=document.getElementById('grid');
 const pct=v=>Math.round(v*10);
@@ -67,7 +82,18 @@ function panel(cls,icon,title,right,body){ return `<section class="panel ${cls}"
   <div class="ph"><span class="ic">${icon}</span><h2>${title}</h2>${right?`<span class="r">${right}</span>`:''}</div>${body}</section>`; }
 function bar(v,c){ return `<div class="bar"><i data-w="${pct(v)}%" style="background:linear-gradient(90deg,${c}99,${c})"></i></div>`; }
 
-const h=STATE.hero;
+const h=STATE.hero, s=STATE.streak;
+
+/* faixa compacta no topo: herói + streak + meta + progresso da casa */
+const stripBody=`<div class="istrip">
+  <div class="iu"><span class="iav">${h.avatar}</span>
+    <div class="iuinfo"><div class="il"><b>${h.name}</b><span class="lvl">Nv ${h.level}</span></div>
+      <div class="ixp"><i data-w="${Math.round(h.xp/h.xpMax*100)}%"></i></div></div></div>
+  <div class="ik"><span class="ke">🔥</span><b>${s.n}</b><small>dia de sequência</small></div>
+  <div class="ik"><span class="ke">🎯</span><small>${STATE.goal}</small></div>
+  <div class="ik casa"><span class="ke">🏠</span><small>Casa em ordem</small><b id="casaPct">—</b></div>
+</div>`;
+
 const heroBody=`<div class="hero">
     <div class="avatar">${h.avatar}</div>
     <div class="who">
@@ -79,7 +105,6 @@ const heroBody=`<div class="hero">
   <div class="effects">${STATE.effects.map(e=>`<span class="eff ${e.k}">${e.t}</span>`).join('')}</div>
   <div class="attrs">${STATE.attrs.map(a=>`<div class="attr"><div class="top"><b>${a.n}</b><span>${a.v}/10</span></div>${bar(a.v,a.c)}</div>`).join('')}</div>`;
 
-const s=STATE.streak;
 const streakBody=`<div class="stk"><div class="big">🔥 ${s.n}<small> dia</small></div>
   <div class="stkdays">${s.week.map(d=>`<div class="sd ${d.on?'on':''}"><div class="f">🔥</div>${d.d}</div>`).join('')}</div>
   <div class="sub" style="text-align:center;margin-top:10px">Faça 1 missão por dia pra manter a chama acesa.</div></div>`;
@@ -115,30 +140,6 @@ const moodBody=`<div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.
 
 const dogsBody=`<div class="dogsgrid">`+STATE.dogs.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well,'#54d98c')}</div>`).join('')+`</div>`;
 
-/* áreas da casa vindas do Mapa (localStorage) */
-const MAPA_KEY='lifeos_mapa';
-function readZones(){ try{ const m=JSON.parse(localStorage.getItem(MAPA_KEY)||'null'); return (m&&m.zones)||[]; }catch(e){ return []; } }
-function saveZones(z){ try{ const m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); m.zones=z; localStorage.setItem(MAPA_KEY,JSON.stringify(m)); }catch(e){} }
-let ZONES=readZones();
-let roomsBody, roomsRight;
-if(ZONES.length){ roomsRight='do seu mapa';
-  roomsBody=`<div class="rooms">`+ZONES.map(z=>{ const pend=z.tasks.filter(t=>!t.done).length, done=z.tasks.length-pend;
-    const ratio=z.tasks.length?done/z.tasks.length*10:10;
-    return `<div class="room ${pend?'chaos':''}">${pend?'<div class="mon">👾</div>':''}<div class="ic">🏷️</div><div class="nm">${z.name}</div>${bar(ratio,'#7ee0d0')}<div class="sub" style="font-size:10px;margin-top:3px">${pend?pend+' pendente(s)':'em ordem ✨'}</div></div>`;
-  }).join('')+`</div>`;
-} else { roomsRight='conservação';
-  roomsBody=`<div class="rooms">`+STATE.rooms.map(r=>`<div class="room ${r.v<5?'chaos':''}">${r.v<5?'<div class="mon">👾</div>':''}<div class="ic">${r.ic}</div><div class="nm">${r.nm}</div>${bar(r.v,'#7ee0d0')}</div>`).join('')+`</div>`;
-}
-/* lista "arrumar a casa" — tarefas pendentes por área */
-function houseTasksBody(){ const z=ZONES;
-  if(!z.length) return `<div class="sub">Desenhe sua casa e crie áreas no <a href="mapa.html" style="color:var(--acc)">Mapa</a> pra ver as tarefas aqui. 🗺️</div>`;
-  let rows=''; let anyPend=false;
-  z.forEach((zn,zi)=> zn.tasks.forEach((t,ti)=>{ if(t.done) return; anyPend=true;
-    rows+=`<div class="quest" data-zi="${zi}" data-ti="${ti}"><div class="box"></div><div class="txt">${t.t}</div><div class="rw">${zn.name}</div></div>`; }));
-  return `<div id="housetasks">`+ (anyPend? rows : '<div class="sub">Tudo em ordem na casa ✨🐾</div>') +`</div>`;
-}
-const houseBody=houseTasksBody();
-
 const alliesBody=STATE.allies.map(a=>`<div class="ally"><span class="em">${a.em}</span><div><div class="nm">${a.nm}</div><div class="rl">${a.rl}</div></div></div>`).join('');
 const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('')+`<div class="sub" style="margin-top:8px">🏦 Anote gastos e entradas no <a href="banco.html" style="color:var(--acc)">Banco</a>.</div>`;
 const listBody=arr=>`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`;
@@ -148,10 +149,10 @@ let invHtml=''; for(let i=0;i<STATE.invSlots;i++){ const it=STATE.inv[i]; invHtm
 const invBody=`<div class="inv">${invHtml}</div>`;
 
 grid.innerHTML =
+  `<section class="panel col-12 infostrip">${stripBody}</section>` +
+  panel('col-12 maphero','🗺️','Sua casa','toque num cômodo pra ver as tarefas', '<div id="housemapWrap"></div>') +
   panel('col-8','🧝','Personagem','', heroBody) +
   panel('col-4','🔥','Sequência (streak)','', streakBody) +
-  panel('col-8','🗺️','Mapa da casa','toque numa área', '<div id="housemapWrap"></div>') +
-  panel('col-4','✅','Status da casa','já está feito?', '<div id="statusWrap"></div>') +
   panel('col-6','📊','Medidas & Progresso', STATE.goal, measBody) +
   panel('col-6','🏋️','Treino de hoje', w.min+' min · casa', workoutBody) +
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
@@ -175,42 +176,60 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>{
 function bindChecklist(id,arr){ const box=document.getElementById(id); if(!box)return;
   box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i; arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':''; }); }
 bindChecklist('quests',STATE.quests); bindChecklist('shop',STATE.shopping);
-const ht=document.getElementById('housetasks');
-if(ht) ht.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return;
-  const zi=+q.dataset.zi, ti=+q.dataset.ti;
-  if(ZONES[zi]&&ZONES[zi].tasks[ti]){ ZONES[zi].tasks[ti].done=true; saveZones(ZONES); }
-  q.classList.add('done'); q.querySelector('.box').textContent='✔';
-  setTimeout(()=>{ q.remove(); if(!ht.querySelector('.quest')) ht.innerHTML='<div class="sub">Tudo em ordem na casa ✨🐾</div>'; },260); });
 const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
 const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
-/* ===== mapa da casa no painel + status Sim/Não ===== */
+
+/* ============================================================
+   MAPA DA CASA (herói) + modal de tarefas por cômodo
+   ============================================================ */
 function renderHouse(){
   ZONES=readZones();
-  let m={}; try{ m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); }catch(e){}
-  const wrap=document.getElementById('housemapWrap'), sw=document.getElementById('statusWrap');
-  const mapSrc = m.img || 'casa.png';   // mapa oficial do repo como padrão
-  if(wrap){
-    {
-      const ov=ZONES.map((z,i)=>{ const pend=(z.tasks||[]).filter(t=>!t.done).length;
-        return `<div class="harea ${pend?'pend':''}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color}">
-          <span class="lab" style="background:${z.color}">${z.name}</span>
-          <span class="bd" style="background:${pend?'rgba(0,0,0,.65)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'👾 '+pend:'✓'}</span></div>`; }).join('');
-      wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}">${ov}</div>`;
-      const hm=document.getElementById('hmimg');
-      if(hm) hm.onerror=()=>{ wrap.innerHTML=`<div class="sub">Suba o mapa da casa e crie áreas com tarefas no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`; };
-      wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>{ const el=document.getElementById('sz'+a.dataset.z); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
-    }
-  }
-  if(sw){
-    if(!ZONES.length){ sw.innerHTML=`<div class="sub">Crie áreas no <a href="mapa.html" style="color:var(--acc)">Mapa</a> pra responder o status aqui, rapidinho no Sim/Não.</div>`; }
-    else { sw.innerHTML=ZONES.map((z,zi)=>`<div id="sz${zi}">`+(z.tasks||[]).map((t,ti)=>`
-      <div class="ask"><div class="q">${t.t}<small>${z.name}</small></div>
-        <div class="yn"><button class="yes ${t.done?'on':''}" data-zi="${zi}" data-ti="${ti}" data-v="1">Sim</button>
-        <button class="no ${!t.done?'on':''}" data-zi="${zi}" data-ti="${ti}" data-v="0">Não</button></div></div>`).join('')+`</div>`).join('');
-      sw.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{ const zi=+b.dataset.zi,ti=+b.dataset.ti;
-        ZONES=readZones(); if(ZONES[zi]&&ZONES[zi].tasks[ti]){ ZONES[zi].tasks[ti].done=(b.dataset.v==='1'); saveZones(ZONES); renderHouse(); } });
-    }
-  }
+  const m=readMapa();
+  const wrap=document.getElementById('housemapWrap');
+  const mapSrc = m.img || 'assets/casa.png';   // foto do Emerson se subir; senão cai pro SVG oficial
+  const st=houseStats();
+  const pctEl=document.getElementById('casaPct'); if(pctEl) pctEl.textContent = st.total? st.pct+'%' : '—';
+  if(!wrap) return;
+  const ov=ZONES.map((z,i)=>{ const pend=(z.tasks||[]).filter(t=>!t.done).length;
+    return `<button class="harea ${pend?'pend':''}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color}" aria-label="${z.name}">
+      <span class="lab" style="background:${z.color}">${z.name}</span>
+      <span class="bd" style="background:${pend?'rgba(0,0,0,.7)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'👾 '+pend:'✓'}</span></button>`; }).join('');
+  const hint = ZONES.length? '' : `<div class="mhint">Nomeie os cômodos e crie tarefas no <a href="mapa.html">🗺️ Mapa</a> — eles aparecem aqui.</div>`;
+  wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}" alt="planta da casa">${ov}${hint}
+    <div class="hbar"><i style="width:${st.pct}%"></i></div></div>`;
+  const hm=document.getElementById('hmimg');
+  if(hm){ hm.onerror=()=>{ if(hm.src.indexOf('casa.svg')<0){ hm.src='assets/casa.svg'; }   // tenta o SVG oficial
+      else { hm.closest('.housemap').classList.add('noimg'); } }; }
+  wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>openRoom(+a.dataset.z));
 }
-renderHouse();
-function tick(){ document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);
+
+const modal=document.getElementById('roomModal');
+function openRoom(zi){
+  ZONES=readZones(); const z=ZONES[zi]; if(!z) return;
+  const tasks=z.tasks||[];
+  const pend=tasks.filter(t=>!t.done).length;
+  document.getElementById('rmName').textContent=z.name;
+  const dot=modal.querySelector('.mdot'); if(dot) dot.style.background=z.color;
+  document.getElementById('rmSub').textContent = tasks.length? (pend? pend+' pra fazer aqui' : 'tudo em ordem ✨') : 'sem tarefas ainda';
+  const box=document.getElementById('rmTasks');
+  box.innerHTML = tasks.length? tasks.map((t,ti)=>`
+    <div class="ask ${t.done?'ok':''}"><div class="q">${t.t}</div>
+      <div class="yn"><button class="yes ${t.done?'on':''}" data-ti="${ti}" data-v="1">Sim</button>
+      <button class="no ${!t.done?'on':''}" data-ti="${ti}" data-v="0">Não</button></div></div>`).join('')
+    : `<div class="sub">Sem tarefas aqui ainda. Adicione no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`;
+  box.querySelectorAll('.yn button').forEach(bt=>bt.onclick=()=>{
+    ZONES=readZones(); const zz=ZONES[zi]; const ti=+bt.dataset.ti;
+    if(zz&&zz.tasks[ti]){ zz.tasks[ti].done=(bt.dataset.v==='1'); saveZones(ZONES); }
+    openRoom(zi); renderHouse();
+  });
+  modal.hidden=false; document.body.classList.add('mopen');
+}
+function closeRoom(){ modal.hidden=true; document.body.classList.remove('mopen'); }
+if(modal){
+  modal.querySelector('.mback').onclick=closeRoom;
+  modal.querySelector('#rmClose').onclick=closeRoom;
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!modal.hidden) closeRoom(); });
+}
+
+(async()=>{ await ensureZones(); renderHouse(); })();
+function tick(){ const c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);

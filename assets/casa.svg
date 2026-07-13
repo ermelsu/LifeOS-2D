@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1836 686" width="1836" height="686" role="img" aria-label="Planta da casa do Emerson">
+  <defs>
+    <!-- textura de grama -->
+    <pattern id="grass" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="24" height="24" fill="#63bf3d"/>
+      <rect width="12" height="24" fill="#57b134"/>
+      <rect x="6" width="2" height="24" fill="#6fca47" opacity=".7"/>
+    </pattern>
+    <!-- textura das paredes/piso dos cômodos -->
+    <pattern id="floor" width="18" height="18" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="#ece1c6"/>
+      <circle cx="4" cy="5" r="1" fill="#dfd2b0" opacity=".6"/>
+      <circle cx="13" cy="12" r="1" fill="#dfd2b0" opacity=".6"/>
+    </pattern>
+    <!-- piso de tijolinho do pátio -->
+    <pattern id="brick" width="64" height="40" patternUnits="userSpaceOnUse">
+      <rect width="64" height="40" fill="#bcc0c4"/>
+      <g stroke="#dbe0e4" stroke-width="3" fill="none">
+        <path d="M0 0H64M0 20H64"/>
+        <path d="M0 0V20M32 0V20"/>
+        <path d="M16 20V40M48 20V40"/>
+      </g>
+    </pattern>
+    <!-- moldura externa -->
+    <pattern id="frame" width="14" height="14" patternUnits="userSpaceOnUse">
+      <rect width="14" height="14" fill="#d6ccae"/>
+      <rect width="7" height="14" fill="#cfc4a2" opacity=".5"/>
+    </pattern>
+  </defs>
+
+  <!-- fundo cinza escuro -->
+  <rect width="1836" height="686" fill="#4a4a4c"/>
+  <!-- moldura bege -->
+  <rect x="22" y="22" width="1792" height="642" fill="url(#frame)" stroke="#8f866a" stroke-width="2"/>
+  <!-- área interna: grama de base -->
+  <rect x="45" y="45" width="1746" height="596" fill="url(#grass)"/>
+
+  <!-- pátio de tijolinho (direita) -->
+  <rect x="1502" y="45" width="289" height="596" fill="url(#brick)"/>
+
+  <!-- CÔMODOS (bege com parede de madeira) -->
+  <g stroke="#8a6a3f" stroke-width="9" fill="url(#floor)" stroke-linejoin="round">
+    <!-- Quarto (grande sup-esq) -->
+    <rect x="150" y="48" width="262" height="300"/>
+    <!-- Banheiro (estreito abaixo) -->
+    <rect x="150" y="348" width="262" height="92"/>
+    <!-- Corredor (faixa do topo) -->
+    <rect x="410" y="48" width="640" height="100"/>
+    <!-- Sala (A) -->
+    <rect x="410" y="148" width="270" height="297"/>
+    <!-- Lavanderia (estreito do meio) -->
+    <rect x="680" y="148" width="92" height="297"/>
+    <!-- Cozinha (B) -->
+    <rect x="772" y="148" width="278" height="297"/>
+    <!-- Escritório (grande à direita, em L) -->
+    <rect x="1050" y="48" width="452" height="492"/>
+  </g>
+</svg>

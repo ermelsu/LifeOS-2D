@@ -21,9 +21,10 @@
   const mapbox=document.getElementById('mapbox'), bg=document.getElementById('bg'), ph=document.getElementById('ph'), zonesEl=document.getElementById('zones');
 
   let bgLoaded=false;
-  function loadBg(){ const src=S.img||'casa.png';   // mapa oficial do repo como padrão
+  function loadBg(){ const src=S.img||'assets/casa.png';   // foto do Emerson; senão cai pro SVG oficial
     bg.onload=()=>{ bgLoaded=true; bg.style.display=''; ph.style.display='none'; renderAreas(); };
-    bg.onerror=()=>{ bgLoaded=false; bg.style.display='none'; ph.style.display=''; };
+    bg.onerror=()=>{ if(!S.img && bg.src.indexOf('casa.svg')<0){ bg.src='assets/casa.svg'; return; }
+      bgLoaded=false; bg.style.display='none'; ph.style.display=''; };
     bg.src=src; }
   document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
     const r=new FileReader(); r.onload=()=>{ S.img=r.result; save(); loadBg(); }; r.readAsDataURL(f); };
@@ -92,4 +93,8 @@
 
   document.getElementById('clear').onclick=()=>{ if(confirm('Apagar todas as áreas? (o mapa continua)')){ S.zones=[]; sel=-1; save(); renderAreas(); renderZones(); } };
   bg.onload=renderAreas;
-  loadBg(); renderAreas(); renderZones();
+  // sem áreas locais? carrega as zonas oficiais do repo (planta padrão)
+  async function ensureZones(){ if(S.zones.length) return;
+    try{ const r=await fetch('assets/casa-zones.json',{cache:'no-store'}); if(r.ok){ const j=await r.json();
+      if(j&&Array.isArray(j.zones)&&j.zones.length){ S.zones=j.zones; save(); } } }catch(e){} }
+  (async()=>{ await ensureZones(); loadBg(); renderAreas(); renderZones(); })();

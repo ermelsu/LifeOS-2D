@@ -13,34 +13,43 @@ Publicado no **GitHub Pages** a partir de **`main`**. O jogo 2D visual antigo es
 - `mapa.html`+`js/mapa.js` — editor do mapa (sobe imagem/desenha, cria áreas com tarefas; tem sugestões por cômodo).
 - `saude.html`+`js/saude.js` — espelho (humor, medidas, água, peso). `banco.html`+`js/banco.js` — finanças.
 - `questionario.html`+`js/questionario.js` — criação de personagem. `ficha.md` — ficha do Emerson.
-- `assets/casa.png` — **mapa oficial** (padrão do app quando não há upload local). ⚠️ ainda precisa ser commitado.
+- `assets/casa.svg` — **planta oficial** recriada em SVG (padrão do app). `assets/casa.png` — opcional: se o Emerson
+  subir a foto real, ela sobrepõe o SVG (o código tenta `.png` e cai pro `.svg`).
+- `assets/casa-zones.json` — **zonas/cômodos oficiais** sobre a planta (carregado via fetch quando não há áreas locais).
 
 ## localStorage
 - `lifeos_mapa = {img, zones:[{x,y,w,h,name,color,tasks:[{t,done}]}]}` (áreas em %).
 - `lifeos_saude`, `lifeos_banco`, `lifeos_accounts`, `lifeos_user`.
 
 ## ⚠️ Por que o mapa "some" entre aparelhos
-`lifeos_mapa` fica no navegador onde foi criado. Solução: **mapa oficial no repo** (`assets/casa.png`).
-Já há fallback no código: painel e mapa usam `assets/casa.png` quando não há upload local.
+`lifeos_mapa` fica no navegador onde foi criado. Solução: **planta oficial no repo** (`assets/casa.svg` +
+`assets/casa-zones.json`). Painel e mapa carregam o SVG e as zonas por fetch quando não há dados locais.
 
-## ▶️ PRÓXIMA TAREFA (o que o Emerson quer)
-Fazer a **HOME ser o mapa**: a planta da casa é o centro/maior parte da interface; **cada cômodo mostra as
-atividades pra fazer ali** (tocar abre a lista). Infos/streak numa faixa compacta.
-1. Commitar `assets/casa.png` (a planta que o Emerson enviou). Como a imagem veio inline (sem bytes acessíveis
-   ao agente), opções: (a) Emerson arrasta o PNG no GitHub → `assets/casa.png` na `main`; ou (b) recriar a
-   planta como SVG fiel e commitar.
-2. Pré-definir as **zonas/cômodos** sobre o mapa (commit `assets/casa-zones.json`, carregado via fetch quando
-   não há zonas locais). Emerson **nomeia** os cômodos; então pré-preencher atividades por tipo (lib `SUGG`
-   em `js/mapa.js`): Cozinha→tirar lixo/lavar louça; Quarto→arrumar guarda-roupa; Escritório→organizar mesa/
-   backup; Canil→recolher fezes/trocar água; etc. (demanda de escritório só no escritório!).
-3. `js/painel.js`: tornar o mapa o painel principal (grande no topo), áreas clicáveis abrindo suas tarefas (Sim/Não).
+## ✅ FEITO — a HOME agora é o mapa (build v9)
+1. **Planta recriada em SVG** (`assets/casa.svg`, viewBox 1836×686 ≈ 2.7:1) fiel à imagem do Emerson: grama
+   à esquerda + fundo, cômodos bege com parede de madeira, pátio de tijolinho à direita, quintal embaixo.
+2. **10 zonas pré-definidas** em `assets/casa-zones.json`, alinhadas ao SVG, com atividades por tipo (SUGG):
+   Quarto, Banheiro, Corredor, Sala, Lavanderia, Cozinha, Escritório, Área externa (pátio), Quintal dos cães
+   (canil → recolher fezes/trocar água), Jardim.
+3. **`painel.html`/`js/painel.js`**: faixa compacta no topo (herói + streak + meta + "Casa em ordem %"); **mapa
+   herói** grande (col-12) logo abaixo; cada cômodo é clicável e abre um **modal** com as tarefas em Sim/Não
+   (persiste no localStorage). Barra de progresso da casa sob o mapa.
+4. `js/mapa.js`: mesmo fallback (SVG + zones.json); editor mostra as 10 zonas de cara.
+Testado com Playwright (10 áreas, modal, Sim/Não persistindo, % subindo). Sem erros de JS.
 
-## 🗺️ Layout da planta do Emerson (imagem enviada; ~2.7:1, coords aprox. em %)
-Casa comprida, esquerda→direita: grama na borda esq.; **cômodo grande sup-esq** (~x8–22%,y7–48%) e **estreito
-abaixo** (~x8–22%,y48–64%); **faixa/corredor no topo** (~x22–56%,y7–23%); sob ela 3 cômodos **A**(x23–37%),
-**estreito**(x37–42%), **B**(x42–56%), y23–64%; **cômodo grande à direita em L** (~x56–82%,y7–79%); **pátio de
-tijolinho/cinza (externa)** (~x82–98%); **quintal (grama)** embaixo no meio (~x8–56%,y64–92%).
-Nomes dos cômodos: **perguntar ao Emerson**.
+## ▶️ PRÓXIMA TAREFA / pendências
+- **Nomes dos cômodos são provisórios** — o Emerson quer confirmar/renomear. Renomear no editor `mapa.html`
+  **ainda não é suportado** (só criar/excluir); ou (a) editar `assets/casa-zones.json` com os nomes que ele
+  passar (e regenerar as tarefas por tipo via SUGG), ou (b) adicionar botão de renomear zona no `js/mapa.js`.
+- Opcional: Emerson pode subir a **foto real** em `assets/casa.png` (sobrepõe o SVG automaticamente).
+- Ao trocar nomes/zonas oficiais, quem já abriu o app tem as zonas **semeadas no localStorage** — pra pegar as
+  novas precisa limpar as áreas no editor (botão "apagar áreas") ou limpar `lifeos_mapa`.
+
+## 🗺️ Coords das zonas (em % do viewBox, pra referência)
+Quarto x8.17/y7/w14.27/h43.73 · Banheiro x8.17/y50.73/w14.27/h13.41 · Corredor x22.33/y7/w34.86/h14.58 ·
+Sala x22.33/y21.57/w14.71/h43.29 · Lavanderia x37.04/y21.57/w5.01/h43.29 · Cozinha x42.05/y21.57/w15.14/h43.29 ·
+Escritório x57.19/y7/w24.62/h71.72 · Área externa x81.81/y7/w15.74/h86.01 · Quintal dos cães x8.17/y64.87/w49.02/h28.57 ·
+Jardim x2.61/y6.56/w5.56/h86.88.
 
 ## Convenções
 Commits claros + `Co-Authored-By: Claude Opus 4.8`; push em `main`. Sem cache (metas já nas páginas).
