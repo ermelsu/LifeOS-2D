@@ -77,13 +77,14 @@
     S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone';
       const have=z.tasks.map(t=>t.t.toLowerCase());
       const sug=suggFor(z.name).filter(s=>!have.includes(s.toLowerCase()));
-      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="x" title="excluir área">✕</span></div><div class="tks"></div>
+      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="ren" title="renomear cômodo">✎</span><span class="x" title="excluir área">✕</span></div><div class="tks"></div>
         <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>
         ${sug.length?`<div class="suggwrap"><div class="suggh">💡 sugestões (toque pra adicionar):</div><div class="sugg">${sug.map(s=>`<span class="chip" data-s="${s.replace(/"/g,'&quot;')}">+ ${s}</span>`).join('')}</div></div>`:''}`;
       const tks=el.querySelector('.tks');
       z.tasks.forEach((t)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
         d.innerHTML=`<div class="box">${t.done?'✔':''}</div><span>${t.t}</span>`;
         d.onclick=()=>{ t.done=!t.done; save(); renderZones(); renderAreas(); }; tks.appendChild(d); });
+      el.querySelector('.ren').onclick=()=>{ const nv=prompt('Novo nome do cômodo:', z.name); if(nv==null) return; const t=nv.trim(); if(!t) return; z.name=t; save(); renderZones(); renderAreas(); };
       el.querySelector('.x').onclick=()=>{ S.zones.splice(zi,1); sel=-1; save(); renderZones(); renderAreas(); };
       const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
       const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); renderAreas(); };
