@@ -188,7 +188,7 @@ function renderHouse(){
   ZONES=readZones();
   let m={}; try{ m=JSON.parse(localStorage.getItem(MAPA_KEY)||'{}'); }catch(e){}
   const wrap=document.getElementById('housemapWrap'), sw=document.getElementById('statusWrap');
-  const mapSrc = m.img || 'assets/casa.png';   // mapa oficial do repo como padrão
+  const mapSrc = m.img || 'casa.png';   // mapa oficial do repo como padrão
   if(wrap){
     {
       const ov=ZONES.map((z,i)=>{ const pend=(z.tasks||[]).filter(t=>!t.done).length;

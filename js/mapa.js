@@ -21,7 +21,7 @@
   const mapbox=document.getElementById('mapbox'), bg=document.getElementById('bg'), ph=document.getElementById('ph'), zonesEl=document.getElementById('zones');
 
   let bgLoaded=false;
-  function loadBg(){ const src=S.img||'assets/casa.png';   // mapa oficial do repo como padrão
+  function loadBg(){ const src=S.img||'casa.png';   // mapa oficial do repo como padrão
     bg.onload=()=>{ bgLoaded=true; bg.style.display=''; ph.style.display='none'; renderAreas(); };
     bg.onerror=()=>{ bgLoaded=false; bg.style.display='none'; ph.style.display=''; };
     bg.src=src; }
