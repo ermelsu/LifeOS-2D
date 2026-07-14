@@ -1,82 +1,160 @@
 {
-  "_nota": "Zonas oficiais da casa do Emerson, sobre assets/casa.svg. Nomes provisorios - Emerson confirma/renomeia. Carregado pelo painel quando nao ha mapa local.",
   "zones": [
-    { "name": "Quarto", "color": "#ffc94d", "x": 8.17, "y": 7.00, "w": 14.27, "h": 43.73, "tasks": [
-      {"t":"Arrumar a cama","done":false},
-      {"t":"Recolher roupas do chão","done":false},
-      {"t":"Trocar os lençóis","done":false},
-      {"t":"Varrer/aspirar","done":false},
-      {"t":"Organizar a mesa de cabeceira","done":false},
-      {"t":"Guardar roupas limpas","done":false}
-    ]},
-    { "name": "Banheiro", "color": "#54d98c", "x": 8.17, "y": 50.73, "w": 14.27, "h": 13.41, "tasks": [
-      {"t":"Limpar o vaso","done":false},
-      {"t":"Limpar a pia","done":false},
-      {"t":"Limpar o box/chuveiro","done":false},
-      {"t":"Passar pano no chão","done":false},
-      {"t":"Repor papel higiênico","done":false},
-      {"t":"Trocar a toalha","done":false},
-      {"t":"Recolher lixo","done":false}
-    ]},
-    { "name": "Corredor", "color": "#5bb8ff", "x": 22.33, "y": 7.00, "w": 34.86, "h": 14.58, "tasks": [
-      {"t":"Varrer o corredor","done":false},
-      {"t":"Tirar objetos do caminho","done":false},
-      {"t":"Passar pano no chão","done":false}
-    ]},
-    { "name": "Sala", "color": "#ff6b6b", "x": 22.33, "y": 21.57, "w": 14.71, "h": 43.29, "tasks": [
-      {"t":"Organizar objetos","done":false},
-      {"t":"Passar pano nos móveis","done":false},
-      {"t":"Aspirar o sofá","done":false},
-      {"t":"Varrer o chão","done":false},
-      {"t":"Organizar fios/controles","done":false},
-      {"t":"Regar plantas","done":false}
-    ]},
-    { "name": "Lavanderia", "color": "#b98cff", "x": 37.04, "y": 21.57, "w": 5.01, "h": 43.29, "tasks": [
-      {"t":"Lavar roupa","done":false},
-      {"t":"Estender/recolher","done":false},
-      {"t":"Dobrar e guardar","done":false},
-      {"t":"Limpar o tanque","done":false},
-      {"t":"Varrer o chão","done":false}
-    ]},
-    { "name": "Cozinha", "color": "#ff9f5b", "x": 42.05, "y": 21.57, "w": 15.14, "h": 43.29, "tasks": [
-      {"t":"Lavar a louça","done":false},
-      {"t":"Limpar o fogão","done":false},
-      {"t":"Limpar a bancada","done":false},
-      {"t":"Tirar o lixo","done":false},
-      {"t":"Varrer e passar pano","done":false},
-      {"t":"Guardar comida/organizar geladeira","done":false},
-      {"t":"Preparar marmita/refeição","done":false},
-      {"t":"Checar validade dos alimentos","done":false}
-    ]},
-    { "name": "Escritório", "color": "#7ee0d0", "x": 57.19, "y": 7.00, "w": 24.62, "h": 71.72, "tasks": [
-      {"t":"Organizar a mesa","done":false},
-      {"t":"Fazer backup dos arquivos","done":false},
-      {"t":"Limpar o computador","done":false},
-      {"t":"Organizar cabos","done":false},
-      {"t":"Anotar pendências","done":false}
-    ]},
-    { "name": "Área externa", "color": "#ff8fd0", "x": 81.81, "y": 7.00, "w": 15.74, "h": 86.01, "tasks": [
-      {"t":"Recolher entulho/lixo","done":false},
-      {"t":"Varrer o pátio","done":false},
-      {"t":"Verificar cercas e portões","done":false},
-      {"t":"Organizar ferramentas","done":false},
-      {"t":"Limpar ralos/escoamento","done":false}
-    ]},
-    { "name": "Quintal dos cães", "color": "#ffc94d", "x": 8.17, "y": 64.87, "w": 49.02, "h": 28.57, "tasks": [
-      {"t":"Recolher fezes","done":false},
-      {"t":"Trocar a água dos bebedouros","done":false},
-      {"t":"Encher os potes de ração","done":false},
-      {"t":"Lavar os bebedouros/comedouros","done":false},
-      {"t":"Varrer o chão","done":false},
-      {"t":"Passar pano com desinfetante","done":false},
-      {"t":"Verificar pulgas e carrapatos","done":false},
-      {"t":"Checar se todos estão bem","done":false}
-    ]},
-    { "name": "Jardim", "color": "#54d98c", "x": 2.61, "y": 6.56, "w": 5.56, "h": 86.88, "tasks": [
-      {"t":"Recolher fezes dos cães","done":false},
-      {"t":"Aparar o mato/grama","done":false},
-      {"t":"Regar as plantas","done":false},
-      {"t":"Varrer folhas","done":false}
-    ]}
+    {
+      "x": 21.67019027484144,
+      "y": 20.490575781048285,
+      "w": 10.04228329809725,
+      "h": 32.0578363026078,
+      "name": "Escritório",
+      "color": "#ffc94d",
+      "tasks": [
+        {
+          "t": "Organizar Guarda-Roupas",
+          "done": false
+        },
+        {
+          "t": "Limpar o Chão",
+          "done": false
+        }
+      ]
+    },
+    {
+      "x": 10.50328227571116,
+      "y": 6.49919828968466,
+      "w": 8.424507658643327,
+      "h": 32.49599144842331,
+      "name": "Quarto",
+      "color": "#54d98c",
+      "tasks": [
+        {
+          "t": "Organizar a Cama",
+          "done": false
+        },
+        {
+          "t": "Tirar o Lixo",
+          "done": false
+        },
+        {
+          "t": "Organizar mesa do PC",
+          "done": false
+        },
+        {
+          "t": "Limpar o Chão",
+          "done": false
+        }
+      ]
+    },
+    {
+      "x": 10.831509846827133,
+      "y": 47.20470336718333,
+      "w": 8.205689277899344,
+      "h": 12.314270443613033,
+      "name": "Banheiro",
+      "color": "#5bb8ff",
+      "tasks": [
+        {
+          "t": "Lavar Banheiro",
+          "done": false
+        },
+        {
+          "t": "Pegar Roupas Sujas",
+          "done": false
+        },
+        {
+          "t": "Organizar Bancada",
+          "done": false
+        }
+      ]
+    },
+    {
+      "x": 19.13236929922136,
+      "y": 5.912079552246916,
+      "w": 34.149054505005566,
+      "h": 7.3031570939520725,
+      "name": "Corredor",
+      "color": "#ff6b6b",
+      "tasks": []
+    },
+    {
+      "x": 34.705228031145715,
+      "y": 20.86616312557735,
+      "w": 3.448275862068968,
+      "h": 30.951475302939734,
+      "name": "Banheiro Social",
+      "color": "#b98cff",
+      "tasks": []
+    },
+    {
+      "x": 40.48943270300334,
+      "y": 20.86616312557735,
+      "w": 10.456062291434932,
+      "h": 30.951475302939734,
+      "name": "Quarto da Mudança",
+      "color": "#ff9f5b",
+      "tasks": []
+    },
+    {
+      "x": 53.39265850945495,
+      "y": 34.77693854262892,
+      "w": 12.458286985539488,
+      "h": 30.603705917513444,
+      "name": "Cozinha",
+      "color": "#7ee0d0",
+      "tasks": []
+    },
+    {
+      "x": 53.61512791991101,
+      "y": 6.955387708525784,
+      "w": 22.914349276974427,
+      "h": 25.039395750692822,
+      "name": "Sala",
+      "color": "#ff8fd0",
+      "tasks": []
+    },
+    {
+      "x": 1.7797552836484982,
+      "y": 6.259848937673206,
+      "w": 6.562847608453836,
+      "h": 59.81633429332174,
+      "name": "Area Dos Chihuahuas",
+      "color": "#ffc94d",
+      "tasks": []
+    },
+    {
+      "x": 2.0022246941045605,
+      "y": 64.68510568928978,
+      "w": 50.94549499443826,
+      "h": 28.169320219529425,
+      "name": "Area dos cachorros Grandes",
+      "color": "#54d98c",
+      "tasks": []
+    },
+    {
+      "x": 67.96440489432703,
+      "y": 40.341248709449545,
+      "w": 9.34371523915462,
+      "h": 53.208715970222244,
+      "name": "Area Dos Cachorros Frágeis",
+      "color": "#5bb8ff",
+      "tasks": []
+    },
+    {
+      "x": 78.86540600667408,
+      "y": 6.607618323099494,
+      "w": 19.021134593993324,
+      "h": 72.33603216866814,
+      "name": "Jardim",
+      "color": "#ff6b6b",
+      "tasks": []
+    },
+    {
+      "x": 91.43492769744161,
+      "y": 80.68249741889909,
+      "w": 6.451612903225794,
+      "h": 11.824159104493845,
+      "name": "Deck",
+      "color": "#b98cff",
+      "tasks": []
+    }
   ]
 }
