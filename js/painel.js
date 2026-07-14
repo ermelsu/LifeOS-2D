@@ -203,8 +203,10 @@ function renderHouse(){
   wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}" alt="planta da casa">${ov}${hint}
     <div class="hbar"><i style="width:${st.pct}%"></i></div></div>`;
   const hm=document.getElementById('hmimg');
-  if(hm){ hm.onerror=()=>{ if(hm.src.indexOf('casa.svg')<0){ hm.src='assets/casa.svg'; }   // tenta o SVG oficial
-      else { hm.closest('.housemap').classList.add('noimg'); } }; }
+  if(hm){ hm.onerror=()=>{ const s=hm.getAttribute('src')||'';   // foto real (png/jpg) → SVG → placeholder
+      if(s.indexOf('casa.png')>=0) hm.src='assets/casa.jpg';
+      else if(s.indexOf('casa.jpg')>=0) hm.src='assets/casa.svg';
+      else hm.closest('.housemap').classList.add('noimg'); }; }
   wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>openRoom(+a.dataset.z));
 }
 

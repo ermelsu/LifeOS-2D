@@ -23,7 +23,9 @@
   let bgLoaded=false;
   function loadBg(){ const src=S.img||'assets/casa.png';   // foto do Emerson; senão cai pro SVG oficial
     bg.onload=()=>{ bgLoaded=true; bg.style.display=''; ph.style.display='none'; renderAreas(); };
-    bg.onerror=()=>{ if(!S.img && bg.src.indexOf('casa.svg')<0){ bg.src='assets/casa.svg'; return; }
+    bg.onerror=()=>{ if(!S.img){ const s=bg.getAttribute('src')||'';
+        if(s.indexOf('casa.png')>=0){ bg.src='assets/casa.jpg'; return; }
+        if(s.indexOf('casa.jpg')>=0){ bg.src='assets/casa.svg'; return; } }
       bgLoaded=false; bg.style.display='none'; ph.style.display=''; };
     bg.src=src; }
   document.getElementById('file').onchange=e=>{ const f=e.target.files[0]; if(!f)return;
@@ -102,6 +104,18 @@
       zonesEl.appendChild(el); }); }
 
   document.getElementById('clear').onclick=()=>{ if(confirm('Apagar todas as áreas? (o mapa continua)')){ S.zones=[]; sel=-1; save(); renderAreas(); renderZones(); } };
+
+  // ---- exportar / importar (pra levar o mapa+zonas pro repositório) ----
+  function download(name, blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
+  function dataURLtoBlob(d){ const parts=d.split(','); const mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/png'; const bin=atob(parts[1]); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new Blob([u],{type:mime}); }
+  document.getElementById('exp').onclick=()=>{
+    download('casa-zones.json', new Blob([JSON.stringify({zones:S.zones},null,2)],{type:'application/json'}));
+    if(S.img){ const ext=((S.img.match(/^data:image\/(\w+)/)||[])[1]||'png').toLowerCase(); download('casa.'+(ext==='jpeg'?'jpg':ext), dataURLtoBlob(S.img)); }
+    else alert('Você ainda não subiu uma imagem sua (está usando o mapa padrão). Suba o seu mapa antes, se quiser exportar o casa.png.');
+  };
+  document.getElementById('imp').onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
+    r.onload=()=>{ try{ const j=JSON.parse(r.result); if(Array.isArray(j.zones)){ S.zones=j.zones; if(j.img) S.img=j.img; openZones.clear(); save(); loadBg(); renderAreas(); renderZones(); alert('Backup importado ✔'); } else alert('Arquivo sem "zones".'); }catch(err){ alert('JSON inválido.'); } };
+    r.readAsText(f); e.target.value=''; };
   bg.onload=renderAreas;
   // sem áreas locais? carrega as zonas oficiais do repo (planta padrão)
   async function ensureZones(){ if(S.zones.length) return;

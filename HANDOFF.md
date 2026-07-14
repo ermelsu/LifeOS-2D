@@ -37,6 +37,14 @@ Publicado no **GitHub Pages** a partir de **`main`**. O jogo 2D visual antigo es
 4. `js/mapa.js`: mesmo fallback (SVG + zones.json); editor mostra as 10 zonas de cara.
 Testado com Playwright (10 áreas, modal, Sim/Não persistindo, % subindo). Sem erros de JS.
 
+## 📤 Mapa real do Emerson (export/import)
+O Emerson subiu a **planta real (RPG Maker)** e redesenhou/renomeou os cômodos — mas isso ficou só no
+`localStorage` do PC dele (não no repo). Por isso outros aparelhos caíam no SVG. Solução no editor `mapa.html`:
+botão **💾 Exportar** baixa `casa.png` (a imagem subida) + `casa-zones.json` (as zonas dele); ele commita os
+dois em `assets/` na `main` e vira o mapa oficial em todo lugar. **📂 Importar** carrega um backup `.json`.
+Fallback de imagem no código: `assets/casa.png` → `assets/casa.jpg` → `assets/casa.svg` → placeholder.
+⏳ Pendente: Emerson exportar e commitar `assets/casa.png` + `assets/casa-zones.json` reais.
+
 ## ▶️ PRÓXIMA TAREFA / pendências
 - **Nomes dos cômodos são provisórios** — o Emerson quer confirmar/renomear. Renomear no editor `mapa.html`
   **ainda não é suportado** (só criar/excluir); ou (a) editar `assets/casa-zones.json` com os nomes que ele
