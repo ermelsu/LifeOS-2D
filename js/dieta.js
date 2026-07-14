@@ -9,21 +9,21 @@ const TARGET = { kcal:1700, prot:160, water:3000, fiber:30 };
 
 /* refeições do dia (porções pequenas — o remédio reduz a fome) */
 const MEALS = [
-  { id:'m1', time:'07:30', ic:'🍳', name:'Café da manhã', appl:'Fogão', kcal:340, prot:27,
-    items:['3 ovos mexidos','1 fatia de pão integral (ou 2 c. sopa de tapioca)','Café preto sem açúcar'],
-    prep:['Aqueça a frigideira antiaderente com um fio de azeite.','Bata os ovos com uma pitada de sal e mexa em fogo médio até ficar cremoso.','Torre o pão. Café sem açúcar (adoçante se quiser).','Comece pelos ovos (proteína primeiro).'] },
-  { id:'m2', time:'10:30', ic:'🥤', name:'Lanche da manhã', appl:'Geladeira', kcal:200, prot:30,
-    items:['1 pote de iogurte grego natural (170g)','1 scoop de whey','(ou 1 banana batida com whey e gelo)'],
-    prep:['Misture o whey no iogurte até dissolver.','Se preferir shake: bata whey + água/gelo (+ banana se quiser).'] },
-  { id:'m3', time:'13:00', ic:'🍗', name:'Almoço', appl:'Fogão', kcal:520, prot:50,
-    items:['180g de filé de frango grelhado','4 colheres de arroz integral','1 concha de feijão','Salada crua à vontade + legumes'],
-    prep:['Tempere o frango (alho, sal, limão, páprica).','Grelhe 4–5 min de cada lado até dourar.','Sirva com arroz, feijão e bastante salada.','Coma a proteína e a salada primeiro; mastigue devagar.'] },
-  { id:'m4', time:'16:30', ic:'🥚', name:'Lanche da tarde', appl:'Nenhum', kcal:220, prot:16,
-    items:['2 ovos cozidos','1 fruta (maçã ou pera)','(ou iogurte + poucas castanhas)'],
-    prep:['Cozinhe os ovos por 9 min e resfrie.','Pique a fruta. Se usar castanhas, no máximo um punhado pequeno.'] },
-  { id:'m5', time:'20:00', ic:'🐟', name:'Jantar', appl:'Fogão', kcal:430, prot:42,
-    items:['150g de peixe ou frango','Legumes no vapor/refogados à vontade','½ batata-doce pequena'],
-    prep:['Tempere e grelhe o peixe/frango.','Cozinhe a batata-doce e os legumes.','Jante pelo menos 2h antes de deitar (evita refluxo).'] },
+  { id:'m1', time:'06:45', ic:'🍳', name:'Café da manhã', appl:'Fogão', kcal:300, prot:20,
+    items:['3 ovos mexidos','1 fruta (banana ou mamão)','Café preto sem açúcar'],
+    prep:['Mexa os ovos na antiaderente com pouquíssimo óleo (3 min).','Comece pelos ovos. Café sem açúcar.','Simples e rápido antes do trabalho.'] },
+  { id:'m2', time:'10:30', ic:'🥤', name:'Lanche no trabalho', appl:'Leva de casa', kcal:220, prot:28,
+    items:['1 iogurte grego natural + 1 scoop de whey','(ou 2 ovos cozidos + 1 fruta)'],
+    prep:['Já sai pronto de casa — leve na bolsa.','Zero preparo no trabalho: só abrir e comer.'] },
+  { id:'m3', time:'15:00', ic:'🍗', name:'Almoço (ao chegar)', appl:'Fogão', kcal:550, prot:50,
+    items:['180g de frango ou carne magra','3–4 colheres de arroz','1 concha de feijão','Salada + legumes à vontade'],
+    prep:['DICA: grelhe a proteína em lote (2–3 dias) pra ganhar tempo.','Tempere e grelhe o frango; sirva com arroz, feijão e bastante salada.','Coma a proteína e a salada primeiro, devagar.'] },
+  { id:'m4', time:'17:30', ic:'🥚', name:'Lanche da tarde', appl:'Nenhum', kcal:200, prot:26,
+    items:['1 iogurte grego + 1 fruta','(ou shake de whey na água)'],
+    prep:['Sem preparo. Se a fome estiver baixa, só o whey já resolve a proteína.'] },
+  { id:'m5', time:'20:30', ic:'🐟', name:'Jantar (leve)', appl:'Fogão', kcal:430, prot:40,
+    items:['150g de frango ou peixe','Legumes no vapor/refogados à vontade','½ batata-doce pequena (opcional)'],
+    prep:['Grelhe a proteína, cozinhe os legumes.','Jante pelo menos 2h antes de deitar.'] },
 ];
 
 const RULES = [
