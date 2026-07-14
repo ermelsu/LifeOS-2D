@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<title>LifeOS · Nutrição — Projeto 6 Semanas</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+<style>
+  :root{
+    --bg:#0c0e16; --bg2:#12151f; --card:#161a28; --card2:#1b2032; --line:#2a3146;
+    --ink:#e9ecf6; --mut:#8b93aa; --acc:#ffc94d; --acc-ink:#241802;
+    --hp:#54d98c; --mp:#5bb8ff; --gold:#ffcf5c; --dmg:#ff6b6b; --water:#4dd0e1;
+    color-scheme:dark;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:
+      radial-gradient(120% 80% at 15% -10%, #1a2036, transparent 60%),
+      radial-gradient(120% 80% at 100% 0%, #241a2e, transparent 55%), var(--bg);
+    color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; padding:16px; font-size:16px; }
+  .app{ width:100%; max-width:1280px; margin:0 auto; }
+  .topbar{ display:flex; align-items:center; gap:12px; padding:6px 4px 16px; flex-wrap:wrap; }
+  .brand{ font-weight:900; letter-spacing:2px; font-size:24px; color:var(--acc); text-shadow:0 0 20px #ffc94d40; }
+  .brand small{ display:block; font-size:10px; letter-spacing:3px; color:var(--mut); font-weight:600; }
+  .topbar .sp{ flex:1; }
+  .chip{ font-family:ui-monospace,monospace; font-size:14px; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:20px; padding:8px 14px; text-decoration:none; }
+  .chip b{ color:var(--acc); }
+
+  .grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:14px; }
+  .panel{ background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:16px; padding:15px 16px; position:relative; overflow:hidden; }
+  .panel::before{ content:""; position:absolute; inset:0 0 auto 0; height:2px; background:linear-gradient(90deg,transparent,var(--acc),transparent); opacity:.5; }
+  .ph{ display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+  .ph .ic{ font-size:20px; } .ph h2{ font-size:16px; letter-spacing:.4px; text-transform:uppercase; color:#cdd4e6; }
+  .ph .r{ margin-left:auto; font-family:ui-monospace,monospace; font-size:12.5px; color:var(--mut); }
+  .col-4{grid-column:span 4} .col-6{grid-column:span 6} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
+  @media(max-width:1080px){ .grid{ grid-template-columns:repeat(6,1fr);} .col-12,.col-8{ grid-column:span 6;} .col-6,.col-4{ grid-column:span 3;} }
+  @media(max-width:680px){ body{ padding:10px; } .grid{ grid-template-columns:1fr; gap:11px; } [class*="col-"]{ grid-column:span 1; } }
+
+  .sub{ color:var(--mut); font-size:13.5px; line-height:1.5; } .sub b{ color:var(--ink); }
+  .bar{ height:9px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+  .bar.big{ height:13px; } .bar > i{ display:block; height:100%; width:0; border-radius:20px; background:linear-gradient(90deg,var(--acc),#ffe08a); transition:width 1s ease; }
+
+  /* hero */
+  .dherop::before{ background:linear-gradient(90deg,transparent,var(--hp),transparent); }
+  .dhero{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .dbadge{ background:#2a1f3a; border:1px solid #5b3a7a; color:#d9b8ff; font-weight:800; font-size:14px; padding:9px 14px; border-radius:12px; }
+  .dstat{ background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:8px 14px; text-align:center; }
+  .dstat b{ display:block; font-size:19px; color:var(--acc); } .dstat small{ color:var(--mut); font-size:12px; }
+  .dprog{ margin-top:13px; } .dpline{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px; } .dpline b{ color:var(--hp); }
+
+  /* agora / próxima refeição */
+  .agora{ }
+  .atop{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .apill{ font-weight:800; font-size:13px; padding:5px 11px; border-radius:20px; background:#20263a; color:var(--mut); border:1px solid var(--line); }
+  .apill.now{ background:#3a2a12; color:var(--acc); border-color:#6a5220; animation:pulse 1.8s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.55} }
+  .atime{ font-size:17px; font-weight:800; } .amac{ margin-left:auto; font-family:ui-monospace,monospace; font-size:13px; color:var(--acc); }
+  .acols{ display:grid; grid-template-columns:1fr 1.3fr; gap:16px; }
+  @media(max-width:680px){ .acols{ grid-template-columns:1fr; } }
+  .asub{ font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut); margin:2px 0 6px; }
+  .alist{ list-style:none; display:flex; flex-direction:column; gap:5px; } .alist li{ font-size:14.5px; padding-left:18px; position:relative; } .alist li::before{ content:"•"; color:var(--hp); position:absolute; left:2px; }
+  .aprep{ padding-left:18px; display:flex; flex-direction:column; gap:5px; } .aprep li{ font-size:14px; line-height:1.4; }
+  .eatbtn{ width:100%; margin-top:14px; padding:13px; border-radius:12px; border:none; font-weight:800; font-size:16px; cursor:pointer; background:var(--hp); color:#06210f; }
+  .eatbtn.done{ background:#233; color:var(--hp); border:1px solid var(--line); }
+
+  /* rings / metas */
+  .rings{ display:flex; gap:10px; justify-content:space-around; flex-wrap:wrap; }
+  .ring{ --p:0; --c:var(--hp); width:104px; height:104px; border-radius:50%;
+    background:conic-gradient(var(--c) calc(var(--p)*1%), #0e1220 0); display:flex; align-items:center; justify-content:center; }
+  .ring .rc{ width:80px; height:80px; border-radius:50%; background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .ring .rc b{ font-size:16px; } .ring .rc b i{ font-style:normal; font-size:11px; color:var(--mut); } .ring .rc small{ font-size:11px; color:var(--mut); }
+  .water{ display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .water button{ background:var(--water); color:#00252b; border:none; border-radius:10px; padding:8px 12px; font-weight:800; cursor:pointer; font-size:14px; }
+  .water button.minus{ background:#20263a; color:var(--mut); border:1px solid var(--line); }
+
+  /* plano do dia (acordeão) */
+  #plano{ display:flex; flex-direction:column; gap:9px; }
+  .meal{ background:var(--card2); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .meal.done{ border-color:#2a5a40; } .meal.done .mtitle b{ color:var(--hp); }
+  .mhead{ display:flex; align-items:center; gap:11px; padding:11px 13px; cursor:pointer; }
+  .mchk{ width:26px; height:26px; flex:0 0 auto; border-radius:8px; border:2px solid var(--line); background:#0f1320; color:#06210f; font-weight:900; cursor:pointer; }
+  .meal.done .mchk{ background:var(--hp); border-color:var(--hp); }
+  .mtitle{ flex:1; } .mtitle b{ font-size:15.5px; } .mtitle small{ display:block; color:var(--mut); font-size:12.5px; font-family:ui-monospace,monospace; }
+  .caret{ color:var(--mut); transition:transform .15s; } .meal.open .caret{ transform:rotate(90deg); }
+  .mbody{ display:none; padding:0 13px 13px 50px; } .meal.open .mbody{ display:block; }
+
+  /* regras */
+  .rules{ padding-left:20px; display:flex; flex-direction:column; gap:8px; } .rules li{ font-size:14.5px; line-height:1.45; }
+  .kv2{ padding:9px 0; border-bottom:1px dashed #232a3d; } .kv2:last-of-type{ border-bottom:none; } .kv2 b{ display:block; font-size:14.5px; margin-bottom:2px; } .kv2 span{ color:var(--mut); font-size:13.5px; }
+  .alert{ margin-top:12px; background:#2a1414; border:1px solid #5a2a2a; border-radius:12px; padding:11px 13px; } .alert b{ color:#ff9b9b; font-size:14px; } .alert ul{ padding-left:18px; margin-top:6px; } .alert li{ font-size:13.5px; color:#ffd0d0; line-height:1.4; margin:3px 0; }
+
+  /* semanas */
+  .weeks{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; }
+  .wk{ background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:11px 12px; }
+  .wk.on{ border-color:var(--acc); box-shadow:0 0 0 1px #ffc94d55; }
+  .wkh{ display:flex; justify-content:space-between; align-items:baseline; gap:4px 8px; flex-wrap:wrap; margin-bottom:5px; } .wkh b{ font-size:15px; white-space:nowrap; } .wkh span{ font-size:11.5px; color:var(--acc); font-family:ui-monospace,monospace; text-align:right; }
+
+  .disc::before{ background:linear-gradient(90deg,transparent,var(--dmg),transparent); }
+  .note{ text-align:center; color:var(--mut); font-size:13px; margin:18px 0 4px; } .note a{ color:var(--acc); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">LIFEOS<small>NUTRIÇÃO · PROJETO 6 SEMANAS MAIS MAGRO</small></div>
+    <span class="sp"></span>
+    <a class="chip" href="painel.html">🏠 Painel</a>
+    <a class="chip" href="saude.html">🪞 Saúde</a>
+    <a class="chip" href="mapa.html">🗺️ Mapa</a>
+    <span class="chip" id="clock">00:00:00</span>
+    <a class="chip" href="index.html" title="Sair">⎋</a>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="note">🥗 Seu nutricionista de bolso. Me diga o que tem na despensa e na geladeira que eu ajusto as receitas — o <b>módulo de estoque</b> é o próximo passo.</div>
+</div>
+<script src="js/dieta.js"></script>
+</body>
+</html>
