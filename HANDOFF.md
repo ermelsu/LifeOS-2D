@@ -10,11 +10,17 @@ Publicado no **GitHub Pages** a partir de **`main`**. O jogo 2D visual antigo es
 
 ## Arquivos (branch main)
 - `index.html`+`js/index.js` — login. `painel.html`+`js/painel.js` — painel principal.
-- `dieta.html`+`js/dieta.js` — **Nutrição: Projeto 6 Semanas Mais Magro** (foco tirzepatida). Refeição time-aware
-  ("agora/próxima" com preparo), metas do dia (kcal/proteína/água em anéis), plano de 5 refeições (acordeão),
-  regras de ouro + manejo de efeitos + alertas, progressão semana 1–6, exercício seguro p/ lombar, disclaimer.
+- `dieta.html`+`js/dieta.js` — **Nutrição: Projeto 6 Semanas Mais Magro** (foco tirzepatida). Abas **Hoje / Semana**.
+  Hoje: refeição time-aware ("agora/próxima" com preparo), metas (kcal/proteína/água em anéis), plano de 5 refeições
+  (acordeão), regras de ouro + manejo de efeitos + alertas, progressão semana 1–6, exercício seguro p/ lombar, disclaimer.
+  Semana: plano base de 7 dias (rotação frango/carne/peixe) + meal prep. Horários p/ rotina 8h–15h (06:45/10:30/15:00/17:30/20:30).
   Alvos: ~1700 kcal, ~160g proteína, 3L água. localStorage `lifeos_dieta={start,done{date:{mealId}},water{date}}`.
   ⏳ Próximo: **módulo de estoque** (despensa/geladeira/eletrodomésticos → o que tem × o que comprar p/ as receitas).
+  Emerson vai mandar áudio com o que tem em casa → aí trocar os itens das receitas pelo que ele tem.
+
+## 🚀 v1.0 — marco zero
+App em uso diário a partir de agora. Painel = mapa da casa (real, do Emerson) + módulos. Nutrição no ar.
+Próximo módulo: **estoque/despensa** ligado às receitas da dieta (gera lista de compras do que falta p/ as 6 semanas).
 - `mapa.html`+`js/mapa.js` — editor do mapa (sobe imagem/desenha, cria áreas com tarefas; tem sugestões por cômodo).
 - `saude.html`+`js/saude.js` — espelho (humor, medidas, água, peso). `banco.html`+`js/banco.js` — finanças.
 - `questionario.html`+`js/questionario.js` — criação de personagem. `ficha.md` — ficha do Emerson.

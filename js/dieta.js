@@ -144,17 +144,57 @@ function exerBody(){ return `<div class="sub" style="margin-bottom:8px">Começar
     <li>O treino completo e seguro está no <a href="painel.html" style="color:var(--acc)">Painel → Treino de hoje</a>.</li>
   </ul>`; }
 
+/* ---------------- plano da semana (base, simples e repetível) ---------------- */
+const DAYS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const W_CAFE =['3 ovos + fruta','3 ovos + fruta','Omelete + tapioca','3 ovos + fruta','3 ovos + fruta','Omelete + tapioca','3 ovos + fruta'];
+const W_ALM  =['Frango grelhado','Carne magra (patinho)','Frango grelhado','Peixe (tilápia)','Frango grelhado','Carne magra','Frango desfiado'];
+const W_JAN  =['Frango + legumes','Omelete 3 ovos + legumes','Peixe + legumes','Frango + legumes','Omelete 3 ovos + legumes','Peixe + legumes','Frango + legumes'];
+const W_L1=['Iogurte grego + whey','2 ovos cozidos + fruta'];
+const W_L2=['Iogurte + fruta','Shake de whey'];
+function weekMeals(i){ return [
+  {ic:'🍳',name:'06:45 Café',   desc:W_CAFE[i],                              kcal:300, prot:20},
+  {ic:'🥤',name:'10:30 Lanche', desc:W_L1[i%2],                             kcal:220, prot:28},
+  {ic:'🍗',name:'15:00 Almoço', desc:W_ALM[i]+' + arroz + feijão + salada', kcal:550, prot:50},
+  {ic:'🥚',name:'17:30 Lanche', desc:W_L2[i%2],                             kcal:200, prot:26},
+  {ic:'🐟',name:'20:30 Jantar', desc:W_JAN[i]+' (+ ½ batata-doce opc.)',    kcal:430, prot:40},
+]; }
+const WEEK=DAYS.map((d,i)=>({d, meals:weekMeals(i)}));
+function weekBody(){ const ti=(new Date().getDay()+6)%7;
+  return `<div class="sub" style="margin-bottom:11px">Plano base que vamos seguir — simples, limpo e repetível. Quando você mandar o que tem na despensa/geladeira, eu troco os itens pelo que você tem. Alvo diário: <b style="color:var(--acc)">~1700 kcal · ~160g de proteína · 3L de água</b>.</div>
+  <div class="wdays">`+WEEK.map((w,i)=>{ const k=w.meals.reduce((a,m)=>a+m.kcal,0), pr=w.meals.reduce((a,m)=>a+m.prot,0);
+    return `<div class="wday ${i===ti?'today':''}"><div class="wdh"><b>${w.d}</b>${i===ti?'<span class="badge">HOJE</span>':''}<span class="tot">${k} kcal · ${pr}g P</span></div>
+      <div class="wmeals">`+w.meals.map(m=>`<div class="wm"><span class="wi">${m.ic}</span><div><span class="wn">${m.name}</span><span class="wd">${m.desc}</span><span class="wmac">${m.kcal} kcal · ${m.prot}g P</span></div></div>`).join('')+`</div></div>`; }).join('')+`</div>`; }
+function prepBody(){ return `<div class="sub" style="margin-bottom:8px">Faça 1×/semana (ex: domingo) e a semana toda fica no automático:</div>
+  <ul class="alist">
+    <li>Grelhe frango/carne em lote (2–3 dias) e guarde em potes.</li>
+    <li>Cozinhe arroz e feijão pra vários dias.</li>
+    <li>Deixe ~6 ovos cozidos na geladeira.</li>
+    <li>Porcione iogurte + whey e frutas pro lanche do trabalho (já sai pronto).</li>
+    <li>Lave e guarde salada e legumes em potes.</li>
+    <li>Congele porções extras do almoço pros dias corridos.</li>
+  </ul>`; }
+
+const tabbar=`<div class="col-12 tabbar" id="tabbar"><button class="tab on" data-v="hoje">📅 Hoje</button><button class="tab" data-v="semana">🗓️ Semana</button></div>`;
+grid.classList.add('show-hoje');
 grid.innerHTML =
   panel('col-12 dherop','🔥','Projeto 6 Semanas Mais Magro','tirzepatida · perder gordura', heroBody()) +
-  panel('col-8 agorap','🍽️','Sua refeição agora','o que comer e como preparar', '<div id="agoraWrap"></div>') +
-  panel('col-4','🎯','Metas de hoje','', metasBody()) +
-  panel('col-12','🗓️','Plano do dia (toque pra ver o preparo)', TARGET.kcal+' kcal · '+TARGET.prot+'g proteína', planoBody()) +
-  panel('col-6','✅','Regras de ouro (tirzepatida)','', rulesBody()) +
-  panel('col-6','🩺','Efeitos & manejo','', sideBody()) +
-  panel('col-12','📈','Progressão das 6 semanas','', weeksBody()) +
-  panel('col-6','🏃','Começar a se exercitar','seguro p/ lombar', exerBody()) +
-  panel('col-6','📏','Acompanhar o corpo','', `<div class="sub">Registre <b>peso</b>, <b>cintura</b> e <b>% de gordura</b> no <a href="saude.html" style="color:var(--acc)">🪞 Espelho da Saúde</a> — 1× por semana, no mesmo horário. A cintura caindo é o melhor sinal de perda de gordura visceral.</div>`) +
-  panel('col-12 disc','⚠️','Aviso importante','', `<div class="sub">Este módulo é <b>apoio educativo</b> e <b>não substitui seu médico prescritor</b>. A tirzepatida exige acompanhamento clínico: ajuste de dose, exames e sintomas são responsabilidade do seu médico. Se surgir qualquer sinal de alerta acima, procure atendimento. Feito com carinho pra te ajudar a chegar mais leve e saudável. 🐾</div>`);
+  tabbar +
+  panel('col-8 agorap vhoje','🍽️','Sua refeição agora','o que comer e como preparar', '<div id="agoraWrap"></div>') +
+  panel('col-4 vhoje','🎯','Metas de hoje','', metasBody()) +
+  panel('col-12 vhoje','🗓️','Plano do dia (toque pra ver o preparo)', TARGET.kcal+' kcal · '+TARGET.prot+'g proteína', planoBody()) +
+  panel('col-6 vhoje','✅','Regras de ouro (tirzepatida)','', rulesBody()) +
+  panel('col-6 vhoje','🩺','Efeitos & manejo','', sideBody()) +
+  panel('col-12 vhoje','📈','Progressão das 6 semanas','', weeksBody()) +
+  panel('col-6 vhoje','🏃','Começar a se exercitar','seguro p/ lombar', exerBody()) +
+  panel('col-6 vhoje','📏','Acompanhar o corpo','', `<div class="sub">Registre <b>peso</b>, <b>cintura</b> e <b>% de gordura</b> no <a href="saude.html" style="color:var(--acc)">🪞 Espelho da Saúde</a> — 1× por semana, no mesmo horário. A cintura caindo é o melhor sinal de perda de gordura visceral.</div>`) +
+  panel('col-12 disc vhoje','⚠️','Aviso importante','', `<div class="sub">Este módulo é <b>apoio educativo</b> e <b>não substitui seu médico prescritor</b>. A tirzepatida exige acompanhamento clínico: ajuste de dose, exames e sintomas são responsabilidade do seu médico. Se surgir qualquer sinal de alerta acima, procure atendimento. Feito com carinho pra te ajudar a chegar mais leve e saudável. 🐾</div>`) +
+  panel('col-12 vsemana','🗓️','Plano alimentar da semana','base · ~1700 kcal/dia', weekBody()) +
+  panel('col-12 vsemana','🧑‍🍳','Preparar a semana (meal prep)','ganhe tempo', prepBody());
+
+document.querySelectorAll('#tabbar .tab').forEach(t=>t.onclick=()=>{ const v=t.dataset.v;
+  grid.classList.toggle('show-hoje',v==='hoje'); grid.classList.toggle('show-semana',v==='semana');
+  document.querySelectorAll('#tabbar .tab').forEach(x=>x.classList.toggle('on',x===t));
+  window.scrollTo({top:0,behavior:'smooth'}); });
 
 function renderAgora(){ const w=document.getElementById('agoraWrap'); if(w) w.innerHTML=agoraBody();
   const c=consumed(), wa=S.water[dk];
