@@ -32,6 +32,7 @@
 
   // ---- desenhar área (marquee) ----
   let drag=null, marq=null, sel=-1, form=null;
+  const openZones=new Set();
   function pct(e){ const r=mapbox.getBoundingClientRect();
     return { x:Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100)), y:Math.max(0,Math.min(100,(e.clientY-r.top)/r.height*100)) }; }
   mapbox.addEventListener('pointerdown',e=>{
@@ -64,32 +65,40 @@
 
   function selectArea(i){ sel=i; mapbox.querySelectorAll('.area').forEach((el,idx)=>el.classList.toggle('sel',idx===i)); }
   function renderAreas(){ mapbox.querySelectorAll('.area').forEach(a=>a.remove());
-    S.zones.forEach((z,i)=>{ const pend=z.tasks.filter(t=>!t.done).length;
-      const el=document.createElement('div'); el.className='area'+(i===sel?' sel':''); el.style.borderColor=z.color;
-      el.style.left=z.x+'%'; el.style.top=z.y+'%'; el.style.width=z.w+'%'; el.style.height=z.h+'%'; el.style.background=z.color+'22';
-      el.innerHTML=`<span class="tag" style="background:${z.color}">${z.name}</span>${pend?`<span class="badge">👾 ${pend}</span>`:''}<div class="del">✕</div>`;
+    S.zones.forEach((z,i)=>{ const pl=z.tasks.filter(t=>!t.done); const pend=pl.length;
+      const el=document.createElement('div'); el.className='area'+(i===sel?' sel':'')+(pend?' pend':' done'); el.style.borderColor=z.color;
+      el.style.left=z.x+'%'; el.style.top=z.y+'%'; el.style.width=z.w+'%'; el.style.height=z.h+'%';
+      el.style.background= pend? `rgba(255,86,86,${Math.min(.18+pend*0.05,.5).toFixed(2)})` : 'rgba(84,217,140,.16)';
+      const items = pend? pl.slice(0,7).map(t=>`<i>${t.t}</i>`).join('')+(pend>7?`<i class="more">+${pend-7}…</i>`:'') : '<i class="ok">em ordem ✨</i>';
+      el.innerHTML=`<span class="tag" style="background:${z.color}">${z.name}</span><span class="badge ${pend?'':'ok'}">${pend?'⚠ '+pend:'✓'}</span><span class="atasks">${items}</span><div class="del">✕</div>`;
       el.onclick=ev=>{ ev.stopPropagation(); selectArea(i); };
       el.querySelector('.del').onclick=ev=>{ ev.stopPropagation(); S.zones.splice(i,1); sel=-1; save(); renderAreas(); renderZones(); };
       mapbox.appendChild(el); }); }
 
   function renderZones(){ if(!S.zones.length){ zonesEl.innerHTML='<div class="hint">Nenhuma área ainda.</div>'; return; }
     zonesEl.innerHTML='';
-    S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone';
+    S.zones.forEach((z,zi)=>{ const el=document.createElement('div'); el.className='zone'+(openZones.has(zi)?' open':'');
       const have=z.tasks.map(t=>t.t.toLowerCase());
       const sug=suggFor(z.name).filter(s=>!have.includes(s.toLowerCase()));
-      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span><span class="ren" title="renomear cômodo">✎</span><span class="x" title="excluir área">✕</span></div><div class="tks"></div>
+      const pend=z.tasks.filter(t=>!t.done).length;
+      el.innerHTML=`<div class="zh"><span class="dot" style="background:${z.color}"></span><span class="nm">${z.name}</span>
+        <span class="cnt ${pend?'pend':'ok'}">${pend?'⚠ '+pend:'✓'}</span>
+        <span class="ren" title="renomear cômodo">✎</span><span class="x" title="excluir área">✕</span><span class="cx">▸</span></div>
+        <div class="zbody"><div class="tks"></div>
         <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>
-        ${sug.length?`<div class="suggwrap"><div class="suggh">💡 sugestões (toque pra adicionar):</div><div class="sugg">${sug.map(s=>`<span class="chip" data-s="${s.replace(/"/g,'&quot;')}">+ ${s}</span>`).join('')}</div></div>`:''}`;
+        ${sug.length?`<div class="suggwrap"><div class="suggh">💡 sugestões (toque pra adicionar):</div><div class="sugg">${sug.map(s=>`<span class="chip" data-s="${s.replace(/"/g,'&quot;')}">+ ${s}</span>`).join('')}</div></div>`:''}</div>`;
       const tks=el.querySelector('.tks');
       z.tasks.forEach((t)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
         d.innerHTML=`<div class="box">${t.done?'✔':''}</div><span>${t.t}</span>`;
         d.onclick=()=>{ t.done=!t.done; save(); renderZones(); renderAreas(); }; tks.appendChild(d); });
+      el.querySelector('.zh').onclick=(e)=>{ if(e.target.closest('.ren')||e.target.closest('.x')) return;
+        if(openZones.has(zi)) openZones.delete(zi); else openZones.add(zi); el.classList.toggle('open'); };
       el.querySelector('.ren').onclick=()=>{ const nv=prompt('Novo nome do cômodo:', z.name); if(nv==null) return; const t=nv.trim(); if(!t) return; z.name=t; save(); renderZones(); renderAreas(); };
-      el.querySelector('.x').onclick=()=>{ S.zones.splice(zi,1); sel=-1; save(); renderZones(); renderAreas(); };
+      el.querySelector('.x').onclick=()=>{ openZones.delete(zi); S.zones.splice(zi,1); sel=-1; save(); renderZones(); renderAreas(); };
       const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
-      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; save(); renderZones(); renderAreas(); };
+      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; openZones.add(zi); save(); renderZones(); renderAreas(); };
       addb.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter')add(); };
-      el.querySelectorAll('.sugg .chip').forEach(c=>c.onclick=()=>{ z.tasks.push({t:c.dataset.s,done:false}); save(); renderZones(); renderAreas(); });
+      el.querySelectorAll('.sugg .chip').forEach(c=>c.onclick=()=>{ z.tasks.push({t:c.dataset.s,done:false}); openZones.add(zi); save(); renderZones(); renderAreas(); });
       zonesEl.appendChild(el); }); }
 
   document.getElementById('clear').onclick=()=>{ if(confirm('Apagar todas as áreas? (o mapa continua)')){ S.zones=[]; sel=-1; save(); renderAreas(); renderZones(); } };
