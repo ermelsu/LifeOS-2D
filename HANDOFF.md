@@ -18,6 +18,19 @@ Publicado no **GitHub Pages** a partir de **`main`**. O jogo 2D visual antigo es
   ⏳ Próximo: **módulo de estoque** (despensa/geladeira/eletrodomésticos → o que tem × o que comprar p/ as receitas).
   Emerson vai mandar áudio com o que tem em casa → aí trocar os itens das receitas pelo que ele tem.
 
+## 📱 REFATORAÇÃO MOBILE (iPhone 12) — em fases (decisões do Emerson)
+Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **mantém 20 cães** c/ emoji único.
+- **F1 ✅ (feito):** Home reordenada (1º Ficha, 2º Sua Casa, 3º resto). Mapa saiu da Home → **Sua Casa vira lista
+  priorizada** (🔥≥3 / 🟡1-2 / 🟢0 pendentes, ordenada por urgência, tarefas como chips, toque abre modal Sim/Não).
+  Mapa/planta continua interno em `mapa.html`. Removidos **Aliados** e **Recursos**. Cada cão com **emoji único** (`DOG_EMOJIS`).
+- **F2 (próx):** Financeiro — substituir `banco.*` pelo `livro-caixa.html` do ZIP (`scratchpad/zips/fin/`), re-tematizado
+  pro dark do LifeOS, persistência localStorage `livro-caixa:data`, **manter os dados** do seed. Chip 🏦 Financeiro.
+- **F3:** Onboarding `setup.html` "Vamos começar do zero" (wizard: casa→eletrodom.→eletrôn.→ferramentas→limpeza→
+  alimentos→pets) que monta a base e libera a Home só depois. Desligar auto-seed do `casa-zones.json`.
+- **F4:** Inventário separar **Eletrônicos** × **Eletrodomésticos** (hoje o painel "Eletrônicos" mistura fogão/geladeira).
+- **F5:** Geladeira/Despensa/Estoque **vazios** (marco zero) + botão **"Recomeçar do zero"** limpando tudo.
+Anexos do Emerson em `scratchpad/zips/` (screenshots + modulo-financeiro). ZIP financeiro é tema claro → re-tematizar.
+
 ## 🚀 v1.0 — marco zero
 App em uso diário a partir de agora. Painel = mapa da casa (real, do Emerson) + módulos. Nutrição no ar.
 Próximo módulo: **estoque/despensa** ligado às receitas da dieta (gera lista de compras do que falta p/ as 6 semanas).

@@ -3,7 +3,9 @@
    ============================================================ */
 const DOG_NAMES=['Nina','Hector','Sansa','Nymeria','Lua','Max','Marie','Sky','Lady','Hércules',
   'Margot','Tisha','Dobby','Peppe','Penélope','Jake','Canela','Agostinho','Vhaghar','Princesa'];
-const DOG_EMO=['🐕','🐩','🐶'];
+// emoji único pra cada cão da matilha (20)
+const DOG_EMOJIS=['🐕','🐶','🐩','🦮','🐕‍🦺','🐺','🦊','🐾','🐻','🐨',
+  '🐼','🦝','🐯','🦁','🐰','🐹','🐭','🐱','🐮','🐷'];
 
 const STATE = {
   hero:{ name:'Emerson', cls:'Explorador · cap. Reorganização da vida', level:1, xp:15, xpMax:100, avatar:'🧑🏻' },
@@ -45,7 +47,7 @@ const STATE = {
   ],
   boss:{ nm:'O Caos', face:'🌀', hp:78, sub:'Desorganização + falta de energia. Cada tarefa feita tira HP. Deixar pra depois faz ele crescer e invadir cômodos.' },
   mood:{ today:3, week:[{d:'Seg',v:6},{d:'Ter',v:7},{d:'Qua',v:6},{d:'Qui',v:8},{d:'Sex',v:5},{d:'Sáb',v:8},{d:'Dom',v:7}] },
-  dogs: DOG_NAMES.map((nm,i)=>({ nm, face:DOG_EMO[i%DOG_EMO.length], well: 8 + (i%3) })),  // bem-estar 8–10
+  dogs: DOG_NAMES.map((nm,i)=>({ nm, face:DOG_EMOJIS[i]||'🐶', well: 8 + (i%3) })),  // bem-estar 8–10 · emoji único
   allies:[ {nm:'Alisson', rl:'irmão · canal do YouTube', em:'🎬'}, {nm:'João Pedro', rl:'aliado de sempre', em:'🤝'}, {nm:'Clice', rl:'namorada', em:'💗'} ],
   fridge:[ {ic:'🥚',nm:'Ovos',q:'?'},{ic:'🍗',nm:'Frango',q:'?'},{ic:'🥛',nm:'Leite',q:'?'},{ic:'🧀',nm:'Queijo',q:'?'} ],
   pantry:[ {ic:'🍚',nm:'Arroz',q:'?'},{ic:'🥫',nm:'Feijão',q:'?'},{ic:'🌾',nm:'Aveia',q:'?'},{ic:'☕',nm:'Café',q:'?'} ],
@@ -149,19 +151,19 @@ let invHtml=''; for(let i=0;i<STATE.invSlots;i++){ const it=STATE.inv[i]; invHtm
 const invBody=`<div class="inv">${invHtml}</div>`;
 
 grid.innerHTML =
-  `<section class="panel col-12 infostrip">${stripBody}</section>` +
-  panel('col-12 maphero','🗺️','Sua casa','toque num cômodo pra ver as tarefas', '<div id="housemapWrap"></div>') +
-  panel('col-8','🧝','Personagem','', heroBody) +
+  /* 1º Ficha do Personagem */
+  panel('col-12','🧝','Ficha do personagem','', heroBody) +
+  /* 2º Sua Casa — lista priorizada (mapa fica interno na página 🗺️ Mapa) */
+  panel('col-12','🏠','Sua casa','<span id="casaPct">—</span> arrumado', '<div id="casaListWrap"></div>') +
+  /* 3º demais módulos */
   panel('col-4','🔥','Sequência (streak)','', streakBody) +
+  panel('col-4','🗺️','Missões de hoje','', questBody) +
+  panel('col-4','🙂','Humor da semana','', moodBody) +
   panel('col-6','📊','Medidas & Progresso', STATE.goal, measBody) +
   panel('col-6','🏋️','Treino de hoje', w.min+' min · casa', workoutBody) +
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
-  panel('col-4','🗺️','Missões de hoje','', questBody) +
   panel('col-4','🌀','Chefão atual','', bossBody) +
-  panel('col-4','🙂','Humor da semana','', moodBody) +
   panel('col-12','🐾','A matilha', STATE.dogs.length+' cães', dogsBody) +
-  panel('col-4','🤝','Aliados (party)','', alliesBody) +
-  panel('col-4','💰','Recursos','', resBody) +
   panel('col-4','🎒','Inventário','', invBody) +
   panel('col-3','🧊','Geladeira','', listBody(STATE.fridge)) +
   panel('col-3','🥫','Despensa','', listBody(STATE.pantry)) +
@@ -180,34 +182,27 @@ const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STAT
 const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
 
 /* ============================================================
-   MAPA DA CASA (herói) + modal de tarefas por cômodo
+   SUA CASA — lista priorizada (mobile-first) + modal por cômodo
+   (o mapa/planta continua interno na página 🗺️ Mapa)
    ============================================================ */
-function renderHouse(){
+function casaLevel(pend){ return pend>=3?{ic:'🔥',cls:'hot'}: pend>=1?{ic:'🟡',cls:'warn'}:{ic:'🟢',cls:'ok'}; }
+function renderCasaList(){
   ZONES=readZones();
-  const m=readMapa();
-  const wrap=document.getElementById('housemapWrap');
-  const mapSrc = m.img || 'assets/casa.png';   // foto do Emerson se subir; senão cai pro SVG oficial
   const st=houseStats();
   const pctEl=document.getElementById('casaPct'); if(pctEl) pctEl.textContent = st.total? st.pct+'%' : '—';
-  if(!wrap) return;
-  const ov=ZONES.map((z,i)=>{ const tasks=z.tasks||[]; const pl=tasks.filter(t=>!t.done); const pend=pl.length;
-    const fill = pend? `rgba(255,86,86,${Math.min(.18+pend*0.05,.5).toFixed(2)})` : 'rgba(84,217,140,.16)';
-    const items = pend
-      ? pl.slice(0,7).map(t=>`<i>${t.t}</i>`).join('')+(pend>7?`<i class="more">+${pend-7}…</i>`:'')
-      : `<i class="ok">tudo em ordem ✨</i>`;
-    return `<button class="harea ${pend?'pend':'done'}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color};background:${fill}" aria-label="${z.name}: ${pend} pendente(s)">
-      <span class="lab" style="background:${z.color}">${z.name}</span>
-      <span class="bd" style="background:${pend?'rgba(120,0,0,.82)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'⚠ '+pend:'✓'}</span>
-      <span class="htasks">${items}</span></button>`; }).join('');
-  const hint = ZONES.length? '' : `<div class="mhint">Nomeie os cômodos e crie tarefas no <a href="mapa.html">🗺️ Mapa</a> — eles aparecem aqui.</div>`;
-  wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}" alt="planta da casa">${ov}${hint}
-    <div class="hbar"><i style="width:${st.pct}%"></i></div></div>`;
-  const hm=document.getElementById('hmimg');
-  if(hm){ hm.onerror=()=>{ const s=hm.getAttribute('src')||'';   // foto real (png/jpg) → SVG → placeholder
-      if(s.indexOf('casa.png')>=0) hm.src='assets/casa.jpg';
-      else if(s.indexOf('casa.jpg')>=0) hm.src='assets/casa.svg';
-      else hm.closest('.housemap').classList.add('noimg'); }; }
-  wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>openRoom(+a.dataset.z));
+  const wrap=document.getElementById('casaListWrap'); if(!wrap) return;
+  if(!ZONES.length){ wrap.innerHTML=`<div class="sub">Nenhum cômodo ainda. Crie no <a href="mapa.html" style="color:var(--acc)">🗺️ Mapa</a>.</div>`; return; }
+  const rows=ZONES.map((z,i)=>({z,i,pend:(z.tasks||[]).filter(t=>!t.done).length})).sort((a,b)=>b.pend-a.pend);
+  wrap.innerHTML=`<div class="cbar"><i style="width:${st.pct}%"></i></div>
+    <div class="casalist">`+rows.map(({z,i,pend})=>{ const lv=casaLevel(pend);
+      const pl=(z.tasks||[]).filter(t=>!t.done);
+      const tks= pend? `<div class="ctasks">`+pl.slice(0,6).map(t=>`<span class="ct">${t.t}</span>`).join('')+(pend>6?`<span class="ct more">+${pend-6}</span>`:'')+`</div>` : `<div class="cok">tudo em ordem ✨</div>`;
+      return `<button class="croom ${lv.cls}" data-z="${i}">
+        <div class="crh"><span class="cico">${lv.ic}</span><span class="cname" style="color:${z.color}">${z.name}</span>
+          <span class="ccount">${pend? pend+' pendente'+(pend>1?'s':''):'ok'}</span></div>
+        ${tks}</button>`; }).join('')+`</div>
+    <div class="sub" style="margin-top:11px">🗺️ Ver a planta completa no <a href="mapa.html" style="color:var(--acc)">Mapa</a>.</div>`;
+  wrap.querySelectorAll('.croom').forEach(b=>b.onclick=()=>openRoom(+b.dataset.z));
 }
 
 const modal=document.getElementById('roomModal');
@@ -227,7 +222,7 @@ function openRoom(zi){
   box.querySelectorAll('.yn button').forEach(bt=>bt.onclick=()=>{
     ZONES=readZones(); const zz=ZONES[zi]; const ti=+bt.dataset.ti;
     if(zz&&zz.tasks[ti]){ zz.tasks[ti].done=(bt.dataset.v==='1'); saveZones(ZONES); }
-    openRoom(zi); renderHouse();
+    openRoom(zi); renderCasaList();
   });
   modal.hidden=false; document.body.classList.add('mopen');
 }
@@ -238,5 +233,5 @@ if(modal){
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!modal.hidden) closeRoom(); });
 }
 
-(async()=>{ await ensureZones(); renderHouse(); })();
+(async()=>{ await ensureZones(); renderCasaList(); })();
 function tick(){ const c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);

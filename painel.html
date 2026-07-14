@@ -163,6 +163,22 @@
   @media(max-width:680px){ body{ font-size:17px; } .ph h2{ font-size:17px; } .quest{ font-size:16px; }
     .chip{ font-size:15px; } .attr .top{ font-size:15.5px; } .list .li{ font-size:16px; } }
 
+  /* ====== SUA CASA — LISTA PRIORIZADA (mobile) ====== */
+  .cbar{ height:9px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; margin-bottom:11px; }
+  .cbar > i{ display:block; height:100%; background:linear-gradient(90deg,#54d98c99,#54d98c); transition:width .9s ease; }
+  .casalist{ display:flex; flex-direction:column; gap:9px; }
+  .croom{ width:100%; text-align:left; font:inherit; color:var(--ink); background:var(--card2); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:12px; padding:13px 14px; cursor:pointer; }
+  .croom:active{ transform:scale(.995); }
+  .croom.hot{ border-left-color:#ff6b6b; } .croom.warn{ border-left-color:var(--acc); } .croom.ok{ border-left-color:var(--hp); opacity:.82; }
+  .croom .crh{ display:flex; align-items:center; gap:10px; }
+  .croom .cico{ font-size:19px; } .croom .cname{ font-weight:800; font-size:16.5px; }
+  .croom .ccount{ margin-left:auto; font-size:12.5px; color:var(--mut); font-family:ui-monospace,monospace; }
+  .croom.hot .ccount{ color:#ff9b9b; } .croom.warn .ccount{ color:var(--acc); }
+  .ctasks{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .ct{ font-size:13px; background:#0f1320; border:1px solid var(--line); border-radius:8px; padding:6px 10px; }
+  .ct.more{ color:var(--acc); border-style:dashed; }
+  .cok{ margin-top:6px; color:var(--hp); font-size:13px; }
+
   /* ====== MAPA DA CASA NO PAINEL ====== */
   .housemap{ position:relative; width:100%; border-radius:12px; overflow:hidden; background:#0f1320; }
   .housemap img{ display:block; width:100%; height:auto; }
