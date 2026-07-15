@@ -23,8 +23,11 @@ Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **man
 - **F1 ✅ (feito):** Home reordenada (1º Ficha, 2º Sua Casa, 3º resto). Mapa saiu da Home → **Sua Casa vira lista
   priorizada** (🔥≥3 / 🟡1-2 / 🟢0 pendentes, ordenada por urgência, tarefas como chips, toque abre modal Sim/Não).
   Mapa/planta continua interno em `mapa.html`. Removidos **Aliados** e **Recursos**. Cada cão com **emoji único** (`DOG_EMOJIS`).
-- **F2 (próx):** Financeiro — substituir `banco.*` pelo `livro-caixa.html` do ZIP (`scratchpad/zips/fin/`), re-tematizado
-  pro dark do LifeOS, persistência localStorage `livro-caixa:data`, **manter os dados** do seed. Chip 🏦 Financeiro.
+- **F1.1 ✅ correção:** o mapa saía **só no mobile** — na Home o "Sua Casa" é responsivo: `.casa-map` (planta) no
+  desktop e `.casa-list` (lista priorizada) em ≤680px. Ambos usam o mesmo modal. Botão **🔄 Atualizar app** no login (`index.html`).
+- **F2 ✅ (feito):** Financeiro — `banco.html` reescrito (dark LifeOS, fontes do sistema, topbar de nav) + `js/banco.js`
+  (IIFE do `livro-caixa`, intacto). Persistência localStorage `livro-caixa:data`, **dados do seed mantidos** (saldo R$400,16,
+  25 lançamentos jul, 6 contas fixas). Abas Lançamentos/Contas Fixas. Chip **🏦 Financeiro** no painel.
 - **F3:** Onboarding `setup.html` "Vamos começar do zero" (wizard: casa→eletrodom.→eletrôn.→ferramentas→limpeza→
   alimentos→pets) que monta a base e libera a Home só depois. Desligar auto-seed do `casa-zones.json`.
 - **F4:** Inventário separar **Eletrônicos** × **Eletrodomésticos** (hoje o painel "Eletrônicos" mistura fogão/geladeira).

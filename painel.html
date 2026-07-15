@@ -163,6 +163,9 @@
   @media(max-width:680px){ body{ font-size:17px; } .ph h2{ font-size:17px; } .quest{ font-size:16px; }
     .chip{ font-size:15px; } .attr .top{ font-size:15.5px; } .list .li{ font-size:16px; } }
 
+  /* ====== SUA CASA — mapa no desktop, lista no mobile ====== */
+  .casa-list{ display:none; }
+  @media(max-width:680px){ .casa-map{ display:none; } .casa-list{ display:block; } }
   /* ====== SUA CASA — LISTA PRIORIZADA (mobile) ====== */
   .cbar{ height:9px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; margin-bottom:11px; }
   .cbar > i{ display:block; height:100%; background:linear-gradient(90deg,#54d98c99,#54d98c); transition:width .9s ease; }
@@ -248,7 +251,7 @@
     <span class="sp"></span>
     <a class="chip" href="dieta.html" style="text-decoration:none">🥗 Dieta</a>
     <a class="chip" href="saude.html" style="text-decoration:none">🪞 Saúde</a>
-    <a class="chip" href="banco.html" style="text-decoration:none">🏦 Banco</a>
+    <a class="chip" href="banco.html" style="text-decoration:none">🏦 Financeiro</a>
     <a class="chip" href="mapa.html" style="text-decoration:none">🗺️ Mapa</a>
     <span class="chip"><span class="dot"></span>VIVO</span>
     <span class="chip">DIA <b id="day">1</b></span>

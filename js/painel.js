@@ -153,8 +153,8 @@ const invBody=`<div class="inv">${invHtml}</div>`;
 grid.innerHTML =
   /* 1º Ficha do Personagem */
   panel('col-12','🧝','Ficha do personagem','', heroBody) +
-  /* 2º Sua Casa — lista priorizada (mapa fica interno na página 🗺️ Mapa) */
-  panel('col-12','🏠','Sua casa','<span id="casaPct">—</span> arrumado', '<div id="casaListWrap"></div>') +
+  /* 2º Sua Casa — mapa no desktop / lista priorizada no mobile */
+  panel('col-12','🏠','Sua casa','<span id="casaPct">—</span> arrumado', '<div class="casa-map" id="housemapWrap"></div><div class="casa-list" id="casaListWrap"></div>') +
   /* 3º demais módulos */
   panel('col-4','🔥','Sequência (streak)','', streakBody) +
   panel('col-4','🗺️','Missões de hoje','', questBody) +
@@ -185,6 +185,34 @@ const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEve
    SUA CASA — lista priorizada (mobile-first) + modal por cômodo
    (o mapa/planta continua interno na página 🗺️ Mapa)
    ============================================================ */
+/* mapa (desktop) — a planta com os cômodos, tarefas e calor de atenção */
+function renderHouse(){
+  ZONES=readZones();
+  const m=readMapa();
+  const wrap=document.getElementById('housemapWrap');
+  const mapSrc = m.img || 'assets/casa.png';
+  const st=houseStats();
+  const pctEl=document.getElementById('casaPct'); if(pctEl) pctEl.textContent = st.total? st.pct+'%' : '—';
+  if(!wrap) return;
+  const ov=ZONES.map((z,i)=>{ const tasks=z.tasks||[]; const pl=tasks.filter(t=>!t.done); const pend=pl.length;
+    const fill = pend? `rgba(255,86,86,${Math.min(.18+pend*0.05,.5).toFixed(2)})` : 'rgba(84,217,140,.16)';
+    const items = pend
+      ? pl.slice(0,7).map(t=>`<i>${t.t}</i>`).join('')+(pend>7?`<i class="more">+${pend-7}…</i>`:'')
+      : `<i class="ok">tudo em ordem ✨</i>`;
+    return `<button class="harea ${pend?'pend':'done'}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color};background:${fill}" aria-label="${z.name}: ${pend} pendente(s)">
+      <span class="lab" style="background:${z.color}">${z.name}</span>
+      <span class="bd" style="background:${pend?'rgba(120,0,0,.82)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'⚠ '+pend:'✓'}</span>
+      <span class="htasks">${items}</span></button>`; }).join('');
+  const hint = ZONES.length? '' : `<div class="mhint">Nomeie os cômodos e crie tarefas no <a href="mapa.html">🗺️ Mapa</a> — eles aparecem aqui.</div>`;
+  wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}" alt="planta da casa">${ov}${hint}
+    <div class="hbar"><i style="width:${st.pct}%"></i></div></div>`;
+  const hm=document.getElementById('hmimg');
+  if(hm){ hm.onerror=()=>{ const s=hm.getAttribute('src')||'';
+      if(s.indexOf('casa.png')>=0) hm.src='assets/casa.jpg';
+      else if(s.indexOf('casa.jpg')>=0) hm.src='assets/casa.svg';
+      else hm.closest('.housemap').classList.add('noimg'); }; }
+  wrap.querySelectorAll('.harea').forEach(a=>a.onclick=()=>openRoom(+a.dataset.z));
+}
 function casaLevel(pend){ return pend>=3?{ic:'🔥',cls:'hot'}: pend>=1?{ic:'🟡',cls:'warn'}:{ic:'🟢',cls:'ok'}; }
 function renderCasaList(){
   ZONES=readZones();
@@ -222,7 +250,7 @@ function openRoom(zi){
   box.querySelectorAll('.yn button').forEach(bt=>bt.onclick=()=>{
     ZONES=readZones(); const zz=ZONES[zi]; const ti=+bt.dataset.ti;
     if(zz&&zz.tasks[ti]){ zz.tasks[ti].done=(bt.dataset.v==='1'); saveZones(ZONES); }
-    openRoom(zi); renderCasaList();
+    openRoom(zi); renderHouse(); renderCasaList();
   });
   modal.hidden=false; document.body.classList.add('mopen');
 }
@@ -233,5 +261,5 @@ if(modal){
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!modal.hidden) closeRoom(); });
 }
 
-(async()=>{ await ensureZones(); renderCasaList(); })();
+(async()=>{ await ensureZones(); renderHouse(); renderCasaList(); })();
 function tick(){ const c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);
