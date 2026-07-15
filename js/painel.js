@@ -1,4 +1,20 @@
 /* ============================================================
+   MARCO ZERO — reset único (uma vez por aparelho).
+   Zera TUDO menos a matilha (lifeos_dogs) e o Financeiro (livro-caixa:data).
+   Depois força refazer o questionário/setup. Roda uma única vez, travado
+   pelo token abaixo. Mude o token pra disparar um novo "recomeço" no futuro.
+   ============================================================ */
+const RESET_TOKEN='marco-zero-2026-07-16';
+(function(){ try{
+  if(localStorage.getItem('lifeos_reset')===RESET_TOKEN) return;
+  ['lifeos_mapa','lifeos_inv','lifeos_tools','lifeos_cleaning','lifeos_fridge',
+   'lifeos_pantry','lifeos_onboarded','lifeos_saude','lifeos_streak','lifeos_shopping']
+    .forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  // NÃO apaga: lifeos_dogs (matilha), livro-caixa:data (financeiro), lifeos_accounts/lifeos_user.
+  localStorage.setItem('lifeos_reset',RESET_TOKEN);
+}catch(e){} })();
+
+/* ============================================================
    Gate de onboarding: primeira utilização vai pro "Vamos começar do zero".
    Usuário que já tem casa montada é migrado (grandfather) sem passar de novo.
    ============================================================ */
@@ -19,22 +35,21 @@ const DOG_EMOJIS=['🐕','🐶','🐩','🦮','🐕‍🦺','🐺','🦊','🐾'
   '🐼','🦝','🐯','🦁','🐰','🐹','🐭','🐱','🐮','🐷'];
 
 const STATE = {
-  hero:{ name:'Emerson', cls:'Explorador · cap. Reorganização da vida', level:1, xp:15, xpMax:100, avatar:'🧑🏻' },
+  hero:{ name:'Emerson', cls:'Explorador · cap. Reorganização da vida', level:1, xp:0, xpMax:100, avatar:'🧑🏻' },
   effects:[ {t:'✨ Melhorar tudo com IA', k:'buff'}, {t:'☠️ Excesso de maconha', k:'debuff'}, {t:'📱 Celular (distração)', k:'debuff'} ],
   attrs:[
-    {n:'💪 Corpo',    v:4, c:'#54d98c'}, {n:'🧠 Mente',     v:5, c:'#5bb8ff'},
-    {n:'💰 Recursos', v:7, c:'#ffcf5c'}, {n:'⚒️ Ofício',    v:5, c:'#ff9f5b'},
-    {n:'❤️ Vínculos', v:5, c:'#ff7b9c'}, {n:'📚 Sabedoria', v:7, c:'#b98cff'},
-    {n:'🔥 Espírito', v:5, c:'#ffa24d'}, {n:'⏳ Disciplina',v:2, c:'#7ee0d0'},
+    {n:'💪 Corpo',    v:0, c:'#54d98c'}, {n:'🧠 Mente',     v:0, c:'#5bb8ff'},
+    {n:'💰 Recursos', v:0, c:'#ffcf5c'}, {n:'⚒️ Ofício',    v:0, c:'#ff9f5b'},
+    {n:'❤️ Vínculos', v:0, c:'#ff7b9c'}, {n:'📚 Sabedoria', v:0, c:'#b98cff'},
+    {n:'🔥 Espírito', v:0, c:'#ffa24d'}, {n:'⏳ Disciplina',v:0, c:'#7ee0d0'},
   ],
-  streak:{ n:1, week:[{d:'Seg',on:false},{d:'Ter',on:false},{d:'Qua',on:false},{d:'Qui',on:false},{d:'Sex',on:false},{d:'Sáb',on:false},{d:'Hoje',on:true}] },
   goal:'🏡 Casa nova + o canil dos sonhos',
   resources:[ {k:'Estabilidade', v:'8/10 ✔'}, {k:'Renda', v:'Líder de almoxarifado (Cecape)'}, {k:'Dívida', v:'Média'}, {k:'Meta', v:'🏠 Comprar a casa'} ],
   measures:[
     {nm:'Peso',          ic:'⚖️', cur:null, goal:null, unit:'kg'},
     {nm:'Cintura',       ic:'📏', cur:null, goal:null, unit:'cm'},
     {nm:'% Gordura',     ic:'💧', cur:null, goal:null, unit:'%'},
-    {nm:'Força de core', ic:'🏋️', start:2, cur:2, goal:8, unit:'/10'},
+    {nm:'Força de core', ic:'🏋️', start:null, cur:null, goal:8, unit:'/10'},
   ],
   workout:{ nm:'Coluna & Core — seguro pra lombar (L3–L5)', min:20, done:false,
     warn:'Evite por ora: agachamento pesado e abdominal com flexão da coluna.', ex:[
@@ -54,16 +69,15 @@ const STATE = {
     {t:'Preparar uma refeição de verdade', rw:'+2 Corpo', done:false},
     {t:'Alongar a coluna (5 min)',         rw:'+2 Corpo', done:false},
     {t:'Beber água (3L)',                  rw:'+1 Corpo', done:false},
-    {t:'Cuidar da matilha 🐾',             rw:'+3 Vínculos', done:true},
+    {t:'Cuidar da matilha 🐾',             rw:'+3 Vínculos', done:false},
   ],
-  boss:{ nm:'O Caos', face:'🌀', hp:78, sub:'Desorganização + falta de energia. Cada tarefa feita tira HP. Deixar pra depois faz ele crescer e invadir cômodos.' },
-  mood:{ today:3, week:[{d:'Seg',v:6},{d:'Ter',v:7},{d:'Qua',v:6},{d:'Qui',v:8},{d:'Sex',v:5},{d:'Sáb',v:8},{d:'Dom',v:7}] },
+  boss:{ nm:'O Caos', face:'🌀', hp:100, sub:'Desorganização + falta de energia. Cada tarefa feita tira HP. Deixar pra depois faz ele crescer e invadir cômodos.' },
+  mood:{ today:2, week:[] },
   dogs: DOG_NAMES.map((nm,i)=>({ nm, face:DOG_EMOJIS[i]||'🐶', well: 8 + (i%3) })),  // bem-estar 8–10 · emoji único
   allies:[ {nm:'Alisson', rl:'irmão · canal do YouTube', em:'🎬'}, {nm:'João Pedro', rl:'aliado de sempre', em:'🤝'}, {nm:'Clice', rl:'namorada', em:'💗'} ],
-  fridge:[ {ic:'🥚',nm:'Ovos',q:'?'},{ic:'🍗',nm:'Frango',q:'?'},{ic:'🥛',nm:'Leite',q:'?'},{ic:'🧀',nm:'Queijo',q:'?'} ],
-  pantry:[ {ic:'🍚',nm:'Arroz',q:'?'},{ic:'🥫',nm:'Feijão',q:'?'},{ic:'🌾',nm:'Aveia',q:'?'},{ic:'☕',nm:'Café',q:'?'} ],
+  fridge:[], pantry:[],
   appliances:[ {ic:'🍳',nm:'Fogão',ok:true},{ic:'🧊',nm:'Geladeira',ok:true},{ic:'🎮',nm:'Nintendo Switch',ok:true},{ic:'🖥️',nm:'PC',ok:true},{ic:'📺',nm:'Consoles',ok:true} ],
-  shopping:[ {t:'Peito de frango',done:false},{t:'Ovos',done:false},{t:'Legumes',done:false},{t:'Ração da matilha',done:false} ],
+  shopping:[],
   inv:[ {ic:'🎮',q:''},{ic:'🖥️',q:''},{ic:'🎧',q:''},{ic:'✏️',q:''},{ic:'💻',q:''},{ic:'📱',q:''},{ic:'🎨',q:''} ], invSlots:12,
 };
 const MOODS=['😫','😕','😐','🙂','😄'];
@@ -84,6 +98,30 @@ const CLEAN_L=lsGet('lifeos_cleaning',[{ic:'🧴',nm:'Detergente'},{ic:'🧹',nm
 const FRIDGE_L=lsGet('lifeos_fridge',STATE.fridge);
 const PANTRY_L=lsGet('lifeos_pantry',STATE.pantry);
 const DOGS_L=lsGet('lifeos_dogs',STATE.dogs);
+const SHOP=lsGet('lifeos_shopping',STATE.shopping);
+
+/* ============================================================
+   Calendário do jogo — o app "entra no ar" amanhã (marco zero).
+   Hoje é o dia 0 (streak 0); o 1º dia que conta é o START_DATE.
+   ============================================================ */
+const START_DATE='2026-07-16';
+function ymd(d){ const z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000); }
+function shiftYmd(k,delta){ const d=new Date(k+'T00:00:00'); d.setDate(d.getDate()+delta); return ymd(d); }
+function brDate(k){ const [Y,M,D]=k.split('-'); return `${D}/${M}`; }
+const TODAY=ymd(new Date());
+const IS_LIVE=daysBetween(START_DATE,TODAY)>=0;         // já chegou o marco zero?
+const DAY_NUM=Math.max(0,daysBetween(START_DATE,TODAY)+1); // 0 antes de começar, 1 no 1º dia
+
+/* streak persistido — cada dia "cumprido" fica marcado */
+function loadStreak(){ try{ return JSON.parse(localStorage.getItem('lifeos_streak')||'{}')||{}; }catch(e){ return {}; } }
+function streakChecks(){ return loadStreak().checks||{}; }
+function checkInToday(){ if(!IS_LIVE) return; const s=loadStreak(); s.checks=s.checks||{}; if(!s.checks[TODAY]){ s.checks[TODAY]=true; try{ localStorage.setItem('lifeos_streak',JSON.stringify(s)); }catch(e){} } }
+function computeStreak(){ const c=streakChecks(); let cur=TODAY;
+  if(!c[cur]){ cur=shiftYmd(TODAY,-1); if(!c[cur]) return 0; }
+  let n=0; while(c[cur]){ n++; cur=shiftYmd(cur,-1); } return n; }
+function streakWeek(){ const c=streakChecks(); const out=[]; const WD=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  for(let i=6;i>=0;i--){ const k=shiftYmd(TODAY,-i); out.push({ d:WD[new Date(k+'T00:00:00').getDay()], on:!!c[k], today:k===TODAY }); } return out; }
 
 /* ============================================================
    Zonas da casa — do Mapa (localStorage) com fallback no repo.
@@ -112,14 +150,15 @@ function panel(cls,icon,title,right,body){ return `<section class="panel ${cls}"
   <div class="ph"><span class="ic">${icon}</span><h2>${title}</h2>${right?`<span class="r">${right}</span>`:''}</div>${body}</section>`; }
 function bar(v,c){ return `<div class="bar"><i data-w="${pct(v)}%" style="background:linear-gradient(90deg,${c}99,${c})"></i></div>`; }
 
-const h=STATE.hero, s=STATE.streak;
+const h=STATE.hero;
+let SN=computeStreak();
 
 /* faixa compacta no topo: herói + streak + meta + progresso da casa */
 const stripBody=`<div class="istrip">
   <div class="iu"><span class="iav">${h.avatar}</span>
     <div class="iuinfo"><div class="il"><b>${h.name}</b><span class="lvl">Nv ${h.level}</span></div>
       <div class="ixp"><i data-w="${Math.round(h.xp/h.xpMax*100)}%"></i></div></div></div>
-  <div class="ik"><span class="ke">🔥</span><b>${s.n}</b><small>dia de sequência</small></div>
+  <div class="ik"><span class="ke">🔥</span><b>${SN}</b><small>dia${SN===1?'':'s'} de sequência</small></div>
   <div class="ik"><span class="ke">🎯</span><small>${STATE.goal}</small></div>
   <div class="ik casa"><span class="ke">🏠</span><small>Casa em ordem</small><b id="casaPct">—</b></div>
 </div>`;
@@ -135,9 +174,18 @@ const heroBody=`<div class="hero">
   <div class="effects">${STATE.effects.map(e=>`<span class="eff ${e.k}">${e.t}</span>`).join('')}</div>
   <div class="attrs">${STATE.attrs.map(a=>`<div class="attr"><div class="top"><b>${a.n}</b><span>${a.v}/10</span></div>${bar(a.v,a.c)}</div>`).join('')}</div>`;
 
-const streakBody=`<div class="stk"><div class="big">🔥 ${s.n}<small> dia</small></div>
-  <div class="stkdays">${s.week.map(d=>`<div class="sd ${d.on?'on':''}"><div class="f">🔥</div>${d.d}</div>`).join('')}</div>
-  <div class="sub" style="text-align:center;margin-top:10px">Faça 1 missão por dia pra manter a chama acesa.</div></div>`;
+function streakInner(){ SN=computeStreak(); const done=!!streakChecks()[TODAY];
+  return `<div class="stk"><div class="big">🔥 ${SN}<small> dia${SN===1?'':'s'}</small></div>
+  <div class="stkdays">${streakWeek().map(d=>`<div class="sd ${d.on?'on':''} ${d.today?'now':''}"><div class="f">🔥</div>${d.d}</div>`).join('')}</div>
+  ${ IS_LIVE
+    ? `<button class="wbtn ${done?'done':''}" id="checkinBtn">${done?'✅ Dia registrado':'🔥 Registrar hoje'}</button>`
+    : `<div class="sub" style="text-align:center;margin-top:12px">🚀 Sua jornada começa <b style="color:var(--acc)">amanhã (${brDate(START_DATE)})</b>. Hoje é o dia 0.</div>` }
+  <div class="sub" style="text-align:center;margin-top:9px">Faça 1 missão por dia pra manter a chama acesa.</div></div>`; }
+const streakBody=`<div id="streakWrap">${streakInner()}</div>`;
+function renderStreak(){ const w=document.getElementById('streakWrap'); if(!w) return; w.innerHTML=streakInner();
+  const b=document.getElementById('checkinBtn'); if(b) b.onclick=()=>{ checkInToday(); renderStreak(); };
+  const topSN=document.querySelector('.istrip .ik b'); if(topSN) topSN.textContent=SN;
+  document.querySelectorAll('[data-w]').forEach(el=>{ if(el.dataset.w) el.style.width=el.dataset.w; }); }
 
 const measBody=STATE.measures.map(m=>{
   const has=m.cur!=null&&m.goal!=null;
@@ -170,13 +218,35 @@ const moodBody=`<div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.
 
 const dogsBody=`<div class="dogsgrid">`+DOGS_L.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well!=null?d.well:9,'#54d98c')}</div>`).join('')+`</div>`;
 
-const listBody=arr=>arr&&arr.length?`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`:`<div class="sub">Vazio. Adicione seus itens. 🧺</div>`;
-const dotList=arr=>arr&&arr.length?`<div class="list">`+arr.map(a=>`<div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span><span class="sdot" style="background:${a.ok!==false?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok!==false?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`:`<div class="sub">Nenhum item.</div>`;
-const elecBody=listBody(INV.electronics||[]);
-const applBody=dotList(INV.appliances||[]);
-const toolsBody=listBody(TOOLS_L);
-const cleanBody=listBody(CLEAN_L);
-const shopBody=`<div id="shop">`+STATE.shopping.map((x,i)=>`<div class="quest ${x.done?'done':''}" data-i="${i}"><div class="box">${x.done?'✔':''}</div><div class="txt">${x.t}</div></div>`).join('')+`</div>`;
+/* ============================================================
+   Coleções editáveis (inventário/alimentos): adicionar em massa
+   colando texto (voz→transcrição) e remover item a item. Persistem
+   no localStorage. O Financeiro NÃO usa isto (fica no banco.html).
+   ============================================================ */
+function saveInv(){ try{ localStorage.setItem('lifeos_inv',JSON.stringify(INV)); }catch(e){} }
+const COLL={
+  electronics:{title:'Eletrônicos', def:'🎮', get:()=>INV.electronics||(INV.electronics=[]), persist:saveInv},
+  appliances :{title:'Eletrodomésticos', def:'🔌', dot:true, get:()=>INV.appliances||(INV.appliances=[]), persist:saveInv},
+  tools      :{title:'Ferramentas', def:'🧰', key:'lifeos_tools',   get:()=>TOOLS_L},
+  cleaning   :{title:'Produtos de limpeza', def:'🧼', key:'lifeos_cleaning', get:()=>CLEAN_L},
+  fridge     :{title:'Geladeira', def:'🧊', q:true, key:'lifeos_fridge', get:()=>FRIDGE_L},
+  pantry     :{title:'Despensa',  def:'🥫', q:true, key:'lifeos_pantry', get:()=>PANTRY_L},
+};
+function persistColl(name){ const c=COLL[name]; if(c.persist) c.persist(); else if(c.key){ try{ localStorage.setItem(c.key,JSON.stringify(c.get())); }catch(e){} } }
+function collBody(name){ return `<div id="coll-${name}"></div>
+  <button class="addbtn" data-add="${name}">＋ adicionar <small>(pode colar uma lista)</small></button>`; }
+function renderColl(name){ const c=COLL[name], arr=c.get(); const box=document.getElementById('coll-'+name); if(!box) return;
+  box.innerHTML = arr.length ? `<div class="list">`+arr.map((it,i)=>{
+      const rt = c.dot ? `<span class="sdot" style="background:${it.ok!==false?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${it.ok!==false?'var(--hp)':'var(--dmg)'}"></span>`
+                       : (it.q?`<span class="q">${it.q}</span>`:'');
+      return `<div class="li"><span class="ic">${it.ic||c.def}</span><span class="nm">${it.nm}</span>${rt}<button class="lidel" data-i="${i}" title="remover">✕</button></div>`;
+    }).join('')+`</div>`
+    : `<div class="sub">Vazio. Toque em ＋ pra adicionar — pode colar uma lista grande. 🎙️</div>`;
+  const cnt=document.getElementById('cnt-'+name); if(cnt) cnt.textContent=arr.length+' '+(arr.length===1?'item':'itens');
+  box.querySelectorAll('.lidel').forEach(b=>b.onclick=()=>{ arr.splice(+b.dataset.i,1); persistColl(name); renderColl(name); });
+}
+function cntSpan(name,arr){ return `<span id="cnt-${name}">${arr.length} ${arr.length===1?'item':'itens'}</span>`; }
+const shopBody=`<div id="shop"></div><button class="addbtn" id="addShop">＋ adicionar <small>(pode colar uma lista)</small></button>`;
 
 grid.innerHTML =
   /* 1º Ficha do Personagem */
@@ -192,12 +262,12 @@ grid.innerHTML =
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
   panel('col-4','🌀','Chefão atual','', bossBody) +
   panel('col-12','🐾','A matilha', DOGS_L.length+' cães', dogsBody) +
-  panel('col-4','🎮','Eletrônicos',(INV.electronics||[]).length+' itens', elecBody) +
-  panel('col-4','🔌','Eletrodomésticos',(INV.appliances||[]).length+' itens', applBody) +
-  panel('col-4','🧰','Ferramentas',TOOLS_L.length+' itens', toolsBody) +
-  panel('col-4','🧼','Produtos de limpeza',CLEAN_L.length+' itens', cleanBody) +
-  panel('col-4','🧊','Geladeira','', listBody(FRIDGE_L)) +
-  panel('col-4','🥫','Despensa','', listBody(PANTRY_L)) +
+  panel('col-4','🎮','Eletrônicos', cntSpan('electronics',INV.electronics||[]), collBody('electronics')) +
+  panel('col-4','🔌','Eletrodomésticos', cntSpan('appliances',INV.appliances||[]), collBody('appliances')) +
+  panel('col-4','🧰','Ferramentas', cntSpan('tools',TOOLS_L), collBody('tools')) +
+  panel('col-4','🧼','Produtos de limpeza', cntSpan('cleaning',CLEAN_L), collBody('cleaning')) +
+  panel('col-4','🧊','Geladeira', cntSpan('fridge',FRIDGE_L), collBody('fridge')) +
+  panel('col-4','🥫','Despensa', cntSpan('pantry',PANTRY_L), collBody('pantry')) +
   panel('col-4','🛒','Lista de compras','', shopBody) +
   panel('col-12','⭐','Grande missão de vida','', `<div style="font-size:14px;line-height:1.5">Guiar a matilha bem até o fim, ter uma vida confortável e um <b style="color:var(--acc)">sítio 100×100m</b> com um canil de verdade pra eles. 🐾🏡</div>`);
 
@@ -205,11 +275,60 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>{
   document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w);
   document.querySelectorAll('[data-h]').forEach(el=>el.style.height=el.dataset.h);
 }));
+/* DIA do jogo (data-driven) */
+const dayEl=document.getElementById('day'); if(dayEl) dayEl.textContent=DAY_NUM;
+
+/* Cumprir uma missão do dia marca o streak (a partir do marco zero) */
 function bindChecklist(id,arr){ const box=document.getElementById(id); if(!box)return;
-  box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i; arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':''; }); }
-bindChecklist('quests',STATE.quests); bindChecklist('shop',STATE.shopping);
-const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; };
+  box.addEventListener('click',e=>{ const q=e.target.closest('.quest'); if(!q)return; const i=+q.dataset.i; arr[i].done=!arr[i].done; q.classList.toggle('done'); q.querySelector('.box').textContent=arr[i].done?'✔':'';
+    if(arr[i].done){ checkInToday(); renderStreak(); } }); }
+bindChecklist('quests',STATE.quests);
+const woBtn=document.getElementById('woBtn'); if(woBtn) woBtn.onclick=()=>{ STATE.workout.done=!STATE.workout.done; woBtn.classList.toggle('done',STATE.workout.done); woBtn.textContent=STATE.workout.done?'✅ Treino concluído':'💪 Concluir treino de hoje'; if(STATE.workout.done){ checkInToday(); renderStreak(); } };
 const moodPick=document.getElementById('moodPick'); if(moodPick) moodPick.addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn)return; STATE.mood.today=+btn.dataset.m; moodPick.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn)); document.getElementById('moodBig').textContent=MOODS[STATE.mood.today]; });
+
+/* streak — botão registrar hoje */
+(function(){ const b=document.getElementById('checkinBtn'); if(b) b.onclick=()=>{ checkInToday(); renderStreak(); }; })();
+
+/* ============================================================
+   ENTRADA DE TEXTO GRANDE (colar) — modal reutilizável.
+   Usado em todo lugar que precisa dar entrada (menos o Financeiro):
+   grava voz → transcreve → cola aqui → vira lista de itens.
+   ============================================================ */
+function splitItems(s){ return (s||'').split(/[\n,;]+/).map(x=>x.replace(/^[\s•\-\*•\d.)]+/,'').trim()).filter(Boolean); }
+const imodal=document.getElementById('inputModal');
+function askItems(title, placeholder){ return new Promise(res=>{
+  if(!imodal){ const v=prompt(title); res(v?splitItems(v):[]); return; }
+  const ta=document.getElementById('imText');
+  document.getElementById('imTitle').textContent=title;
+  ta.value=''; ta.placeholder=placeholder||'Um item por linha…';
+  imodal.hidden=false; document.body.classList.add('mopen'); setTimeout(()=>ta.focus(),30);
+  const okB=document.getElementById('imOk'), cB=document.getElementById('imCancel'), xB=document.getElementById('imClose'), back=imodal.querySelector('.mback');
+  function done(val){ imodal.hidden=true; document.body.classList.remove('mopen'); okB.onclick=cB.onclick=xB.onclick=back.onclick=null; res(val); }
+  okB.onclick=()=>done(splitItems(ta.value)); cB.onclick=xB.onclick=back.onclick=()=>done([]);
+}); }
+
+/* coleções: render inicial + botão adicionar (colar) */
+Object.keys(COLL).forEach(renderColl);
+document.querySelectorAll('[data-add]').forEach(btn=>btn.onclick=async()=>{ const name=btn.dataset.add, c=COLL[name];
+  const items=await askItems('Adicionar · '+c.title, 'Cole aqui — um item por linha.\nEx.:\nArroz\nFeijão 1kg\nCafé');
+  if(!items.length) return; const arr=c.get();
+  items.forEach(nm=>{ const it={ic:c.def, nm}; if(c.q) it.q='?'; if(c.dot) it.ok=true; arr.push(it); });
+  persistColl(name); renderColl(name);
+});
+
+/* lista de compras — editável e persistida */
+function saveShop(){ try{ localStorage.setItem('lifeos_shopping',JSON.stringify(SHOP)); }catch(e){} }
+function renderShop(){ const box=document.getElementById('shop'); if(!box) return;
+  box.innerHTML = SHOP.length ? SHOP.map((x,i)=>`<div class="quest ${x.done?'done':''}" data-i="${i}"><div class="box">${x.done?'✔':''}</div><div class="txt">${x.t}</div><button class="lidel" data-i="${i}" title="remover">✕</button></div>`).join('')
+    : `<div class="sub">Lista vazia. Toque em ＋ pra adicionar — pode colar. 🛒</div>`;
+  box.querySelectorAll('.quest').forEach(q=>q.onclick=e=>{ if(e.target.closest('.lidel'))return; const i=+q.dataset.i; SHOP[i].done=!SHOP[i].done; saveShop(); renderShop(); });
+  box.querySelectorAll('.lidel').forEach(b=>b.onclick=e=>{ e.stopPropagation(); SHOP.splice(+b.dataset.i,1); saveShop(); renderShop(); });
+}
+renderShop();
+const addShop=document.getElementById('addShop'); if(addShop) addShop.onclick=async()=>{
+  const items=await askItems('Adicionar · Lista de compras','Cole aqui — um item por linha.\nEx.:\nPeito de frango\nOvos\nRação da matilha');
+  if(!items.length) return; items.forEach(t=>SHOP.push({t,done:false})); saveShop(); renderShop();
+};
 
 /* ============================================================
    SUA CASA — lista priorizada (mobile-first) + modal por cômodo
@@ -225,13 +344,14 @@ function renderHouse(){
   const pctEl=document.getElementById('casaPct'); if(pctEl) pctEl.textContent = st.total? st.pct+'%' : '—';
   if(!wrap) return;
   const ov=ZONES.map((z,i)=>{ const tasks=z.tasks||[]; const pl=tasks.filter(t=>!t.done); const pend=pl.length;
-    const fill = pend? `rgba(255,86,86,${Math.min(.18+pend*0.05,.5).toFixed(2)})` : 'rgba(84,217,140,.16)';
+    // atenção pendente = âmbar suave (bem menos vermelho); em ordem = verde suave
+    const fill = pend? `rgba(255,180,90,${Math.min(.07+pend*0.025,.22).toFixed(3)})` : 'rgba(84,217,140,.12)';
     const items = pend
       ? pl.slice(0,7).map(t=>`<i>${t.t}</i>`).join('')+(pend>7?`<i class="more">+${pend-7}…</i>`:'')
       : `<i class="ok">tudo em ordem ✨</i>`;
     return `<button class="harea ${pend?'pend':'done'}" data-z="${i}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%;border-color:${z.color};background:${fill}" aria-label="${z.name}: ${pend} pendente(s)">
       <span class="lab" style="background:${z.color}">${z.name}</span>
-      <span class="bd" style="background:${pend?'rgba(120,0,0,.82)':'#153a29'};color:${pend?'#fff':'#54d98c'}">${pend?'⚠ '+pend:'✓'}</span>
+      <span class="bd" style="background:${pend?'rgba(150,95,25,.82)':'#153a29'};color:${pend?'#ffe0a8':'#54d98c'}">${pend?'⚠ '+pend:'✓'}</span>
       <span class="htasks">${items}</span></button>`; }).join('');
   const hint = ZONES.length? '' : `<div class="mhint">Nomeie os cômodos e crie tarefas no <a href="mapa.html">🗺️ Mapa</a> — eles aparecem aqui.</div>`;
   wrap.innerHTML=`<div class="housemap"><img id="hmimg" src="${mapSrc}" alt="planta da casa">${ov}${hint}

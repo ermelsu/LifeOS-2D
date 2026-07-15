@@ -57,7 +57,10 @@ const A = {   // respostas
   appliances:new Set(['Geladeira','Fogão']),
   electronics:new Set(['Celular']),
   tools:new Set(), cleaning:new Set(), fridge:new Set(), pantry:new Set(),
-  dogs: DOG_NAMES.map((nm,i)=>({nm, face:DOG_EMOJIS[i]||'🐶'})),
+  // matilha: mantém os cães já salvos (o "recomeço" preserva a matilha); senão, os 20 padrão.
+  dogs:(function(){ try{ const d=JSON.parse(localStorage.getItem('lifeos_dogs')||'null');
+    if(Array.isArray(d)&&d.length) return d.map((x,i)=>({nm:x.nm||('Cão '+(i+1)), face:x.face||DOG_EMOJIS[i%DOG_EMOJIS.length]})); }catch(e){}
+    return DOG_NAMES.map((nm,i)=>({nm, face:DOG_EMOJIS[i]||'🐶'})); })(),
   customRooms:[],                 // usado no modo "colar listas"
   pasteRaw:{},                    // texto cru de cada campo do modo paste
 };
@@ -162,7 +165,9 @@ function bind(){
   el.querySelectorAll('[data-cnt]').forEach(b=>b.onclick=()=>{ const k=b.dataset.cnt; A.rooms[k]=Math.max(0,Math.min(9,A.rooms[k]+ +b.dataset.d)); document.getElementById('cnt-'+k).textContent=A.rooms[k]; });
   el.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{ const k=b.dataset.tog; A.rooms[k]=!A.rooms[k]; b.classList.toggle('on',A.rooms[k]); });
   el.querySelectorAll('[data-chips] .chip:not(.add)').forEach(b=>b.onclick=()=>{ const set=A[b.closest('[data-chips]').dataset.chips]; const nm=b.dataset.nm; if(set.has(nm))set.delete(nm);else set.add(nm); b.classList.toggle('on'); });
-  el.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const k=b.dataset.add; const v=prompt('Nome do item:'); if(v&&v.trim()){ A[k].add(v.trim()); render(); } });
+  el.querySelectorAll('[data-add]').forEach(b=>b.onclick=async()=>{ const k=b.dataset.add;
+    const items=await askItems('Adicionar item(s)','Cole aqui — um item por linha (pode ser texto grande, ex.: transcrição de voz).\nEx.:\nBatedeira\nGrill');
+    if(items.length){ items.forEach(nm=>A[k].add(nm)); render(); } });
   el.querySelectorAll('[data-pta]').forEach(t=>t.oninput=()=>{ A.pasteRaw[t.dataset.pta]=t.value; });
   const pets=document.getElementById('pets');
   if(pets){ pets.querySelectorAll('input[data-pi]').forEach(inp=>inp.oninput=()=>{ A.dogs[+inp.dataset.pi].nm=inp.value; });
@@ -170,6 +175,20 @@ function bind(){
     const ap=document.getElementById('addpet'); if(ap) ap.onclick=()=>{ A.dogs.push({nm:'Novo cão', face:DOG_EMOJIS[A.dogs.length%DOG_EMOJIS.length]}); render(); };
   }
 }
+
+/* ---------------- entrada por colagem (modal) ---------------- */
+function splitItems(s){ return (s||'').split(/[\n,;]+/).map(x=>x.replace(/^[\s•\-\*\d.)]+/,'').trim()).filter(Boolean); }
+const imodal=document.getElementById('inputModal');
+function askItems(title, placeholder){ return new Promise(res=>{
+  if(!imodal){ const v=prompt(title); res(v?splitItems(v):[]); return; }
+  const ta=document.getElementById('imText');
+  document.getElementById('imTitle').textContent=title;
+  ta.value=''; ta.placeholder=placeholder||'Um item por linha…';
+  imodal.hidden=false; document.body.classList.add('mopen'); setTimeout(()=>ta.focus(),30);
+  const okB=document.getElementById('imOk'), cB=document.getElementById('imCancel'), xB=document.getElementById('imClose'), back=imodal.querySelector('.mback');
+  function done(val){ imodal.hidden=true; document.body.classList.remove('mopen'); okB.onclick=cB.onclick=xB.onclick=back.onclick=null; res(val); }
+  okB.onclick=()=>done(splitItems(ta.value)); cB.onclick=xB.onclick=back.onclick=()=>done([]);
+}); }
 
 /* ---------------- parsing do modo "colar listas" ---------------- */
 function splitLines(s){ return (s||'').split(/\r?\n/).map(x=>x.replace(/^[\s•\-\*\d.)]+/,'').trim()).filter(Boolean); }

@@ -70,7 +70,7 @@
     S.zones.forEach((z,i)=>{ const pl=z.tasks.filter(t=>!t.done); const pend=pl.length;
       const el=document.createElement('div'); el.className='area'+(i===sel?' sel':'')+(pend?' pend':' done'); el.style.borderColor=z.color;
       el.style.left=z.x+'%'; el.style.top=z.y+'%'; el.style.width=z.w+'%'; el.style.height=z.h+'%';
-      el.style.background= pend? `rgba(255,86,86,${Math.min(.18+pend*0.05,.5).toFixed(2)})` : 'rgba(84,217,140,.16)';
+      el.style.background= pend? `rgba(255,180,90,${Math.min(.07+pend*0.025,.22).toFixed(3)})` : 'rgba(84,217,140,.12)';
       const items = pend? pl.slice(0,7).map(t=>`<i>${t.t}</i>`).join('')+(pend>7?`<i class="more">+${pend-7}…</i>`:'') : '<i class="ok">em ordem ✨</i>';
       el.innerHTML=`<span class="tag" style="background:${z.color}">${z.name}</span><span class="badge ${pend?'':'ok'}">${pend?'⚠ '+pend:'✓'}</span><span class="atasks">${items}</span><div class="del">✕</div>`;
       el.onclick=ev=>{ ev.stopPropagation(); selectArea(i); };
@@ -87,7 +87,7 @@
         <span class="cnt ${pend?'pend':'ok'}">${pend?'⚠ '+pend:'✓'}</span>
         <span class="ren" title="renomear cômodo">✎</span><span class="x" title="excluir área">✕</span><span class="cx">▸</span></div>
         <div class="zbody"><div class="tks"></div>
-        <div class="addt"><input placeholder="+ nova tarefa"><button>+</button></div>
+        <div class="addt"><textarea rows="1" placeholder="+ nova tarefa (pode colar várias, uma por linha)"></textarea><button>+</button></div>
         ${sug.length?`<div class="suggwrap"><div class="suggh">💡 sugestões (toque pra adicionar):</div><div class="sugg">${sug.map(s=>`<span class="chip" data-s="${s.replace(/"/g,'&quot;')}">+ ${s}</span>`).join('')}</div></div>`:''}</div>`;
       const tks=el.querySelector('.tks');
       z.tasks.forEach((t)=>{ const d=document.createElement('div'); d.className='zt '+(t.done?'done':'');
@@ -97,9 +97,12 @@
         if(openZones.has(zi)) openZones.delete(zi); else openZones.add(zi); el.classList.toggle('open'); };
       el.querySelector('.ren').onclick=()=>{ const nv=prompt('Novo nome do cômodo:', z.name); if(nv==null) return; const t=nv.trim(); if(!t) return; z.name=t; save(); renderZones(); renderAreas(); };
       el.querySelector('.x').onclick=()=>{ openZones.delete(zi); S.zones.splice(zi,1); sel=-1; save(); renderZones(); renderAreas(); };
-      const inp=el.querySelector('.addt input'), addb=el.querySelector('.addt button');
-      const add=()=>{ const v=inp.value.trim(); if(!v)return; z.tasks.push({t:v,done:false}); inp.value=''; openZones.add(zi); save(); renderZones(); renderAreas(); };
-      addb.onclick=add; inp.onkeydown=e=>{ if(e.key==='Enter')add(); };
+      const inp=el.querySelector('.addt textarea'), addb=el.querySelector('.addt button');
+      const add=()=>{ const items=inp.value.split(/[\n,;]+/).map(s=>s.replace(/^[\s•\-\*\d.)]+/,'').trim()).filter(Boolean);
+        if(!items.length)return; items.forEach(t=>z.tasks.push({t,done:false})); inp.value=''; openZones.add(zi); save(); renderZones(); renderAreas(); };
+      addb.onclick=add;
+      // Enter envia; Shift+Enter quebra linha (pra colar várias de uma vez)
+      inp.onkeydown=e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); add(); } };
       el.querySelectorAll('.sugg .chip').forEach(c=>c.onclick=()=>{ z.tasks.push({t:c.dataset.s,done:false}); openZones.add(zi); save(); renderZones(); renderAreas(); });
       zonesEl.appendChild(el); }); }
 

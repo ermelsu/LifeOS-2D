@@ -66,6 +66,21 @@
   .wbtn.primary{ background:var(--acc); color:var(--acc-ink); flex:1; box-shadow:0 8px 22px #ffc94d33; }
   .wbtn.ghost{ background:transparent; color:var(--mut); border:1px solid var(--line); }
   .foot{ max-width:560px; width:100%; text-align:center; color:var(--mut); font-size:12px; margin-top:16px; }
+
+  /* modal de entrada (colar texto grande) */
+  body.mopen{ overflow:hidden; }
+  .modal[hidden]{ display:none; }
+  .modal{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .modal .mback{ position:absolute; inset:0; background:rgba(4,6,12,.72); backdrop-filter:blur(3px); }
+  .modal .mcard{ position:relative; width:100%; max-width:480px; background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line); border-radius:18px; padding:16px 17px 18px; box-shadow:0 24px 60px rgba(0,0,0,.55); }
+  .modal .mhead{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .modal .mhead h3{ font-size:19px; } .modal .mhead .imx{ margin-left:auto; background:#0f1320; border:1px solid var(--line); color:var(--mut); border-radius:10px; width:34px; height:34px; font-size:16px; cursor:pointer; }
+  .imsub{ color:var(--mut); font-size:13.5px; margin:2px 0 11px; }
+  .imta{ width:100%; min-height:150px; resize:vertical; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:12px; padding:12px 13px; font:inherit; font-size:16px; line-height:1.55; }
+  .imta::placeholder{ color:#495072; }
+  .imactions{ display:flex; gap:10px; margin-top:13px; }
+  .imactions button{ flex:1; border:none; border-radius:13px; padding:14px; font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
+  .imactions .ok{ background:var(--acc); color:var(--acc-ink); } .imactions .ghost{ background:transparent; color:var(--mut); border:1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -76,6 +91,16 @@
   </div>
   <div class="wcard" id="wiz"></div>
   <div class="foot">🐾 Configuração inicial · você pode ajustar tudo depois na Home e no 🗺️ Mapa.</div>
+
+  <div class="modal" id="inputModal" hidden>
+    <div class="mback"></div>
+    <div class="mcard">
+      <div class="mhead"><h3 id="imTitle">Adicionar item(s)</h3><button class="imx" id="imClose" aria-label="fechar">✕</button></div>
+      <div class="imsub">🎙️ Grave por voz, transcreva e cole aqui. Um item por linha (também aceita vírgula).</div>
+      <textarea id="imText" class="imta" placeholder="Um item por linha…"></textarea>
+      <div class="imactions"><button class="ghost" id="imCancel">Cancelar</button><button class="ok" id="imOk">Adicionar</button></div>
+    </div>
+  </div>
 <script src="js/setup.js"></script>
 </body>
 </html>

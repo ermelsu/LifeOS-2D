@@ -39,6 +39,17 @@ Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **man
 - **F5 ✅ (feito):** botão **"⟲ Recomeçar do zero"** no rodapé do painel — limpa lifeos_mapa/inv/tools/cleaning/fridge/
   pantry/dogs/onboarded e volta pro setup. **Financeiro (`livro-caixa:data`) NÃO é afetado.** Testado.
   ✅ Refatoração mobile (F1–F5) concluída. Anexos originais em `scratchpad/zips/` (podem ser limpos).
+- **F6 ✅ (feito) — MARCO ZERO real:** reset único por aparelho no topo do `painel.js` (token `marco-zero-2026-07-16`,
+  chave `lifeos_reset`). Zera **tudo menos a matilha** (`lifeos_dogs`) **e o Financeiro** (`livro-caixa:data`):
+  limpa mapa/inv/tools/cleaning/fridge/pantry/**saude**/**streak**/**shopping**/onboarded → força refazer o `setup.html`.
+  Painel começa do zero: XP 0, atributos 0, medidas "a definir", chefão HP 100, missões/compras vazias.
+  **Calendário do jogo:** `START_DATE='2026-07-16'` — hoje (15/07) é o **dia 0** (streak 0); o app "entra no ar" amanhã.
+  Streak **persistido** (`lifeos_streak.checks{date}`): cumprir missão/treino ou botão "🔥 Registrar hoje" marca o dia;
+  `computeStreak` conta dias consecutivos (com dia de graça). `setup.js` agora **preserva** `lifeos_dogs` ao re-onboardar.
+  **Entrada por colagem (voz→transcrição):** modal `#inputModal` (`askItems`) em Geladeira/Despensa/Ferramentas/Limpeza/
+  Eletro/Eletrônicos/Compras (painel) + "＋ outro" do setup + tarefas por cômodo no mapa — cola texto grande, 1 item/linha
+  (aceita vírgula/`;`, tira bullets). Itens editáveis (✕ remove) e persistidos. **Financeiro fica fora disso.**
+  **Mapa da casa:** vermelho de pendência trocado por **âmbar suave** (opacidade bem menor) no painel e no editor.
 Anexos do Emerson em `scratchpad/zips/` (screenshots + modulo-financeiro). ZIP financeiro é tema claro → re-tematizar.
 
 ## 🚀 v1.0 — marco zero
