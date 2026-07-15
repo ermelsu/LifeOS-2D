@@ -48,6 +48,13 @@
   .chip.add{ border-style:dashed; color:var(--mut); }
   .fgrp{ margin-bottom:16px; } .glabel{ font-size:13px; color:var(--mut); text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px; }
 
+  .modes{ display:flex; flex-direction:column; gap:12px; margin:14px 0; }
+  .modecard{ display:flex; flex-direction:column; gap:5px; text-align:left; background:#0f1320; border:1.5px solid var(--line); color:var(--ink); border-radius:16px; padding:16px; cursor:pointer; font:inherit; transition:border-color .15s, background .15s; }
+  .modecard:hover, .modecard:active{ border-color:var(--acc); background:#141827; }
+  .modecard .mi{ font-size:26px; } .modecard b{ font-size:17px; } .modecard .ms{ color:var(--mut); font-size:13.5px; line-height:1.45; }
+  .pta{ width:100%; min-height:82px; resize:vertical; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:12px; padding:11px 12px; font:inherit; font-size:15px; line-height:1.5; }
+  .pta::placeholder{ color:#495072; }
+
   .pets{ display:flex; flex-direction:column; gap:8px; max-height:46vh; overflow:auto; padding-right:4px; }
   .pet{ display:flex; align-items:center; gap:10px; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:8px 10px; }
   .pet .pf{ font-size:22px; } .pet input{ flex:1; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:9px; padding:10px; font:inherit; font-size:15px; }
