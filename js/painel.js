@@ -292,4 +292,11 @@ if(modal){
 }
 
 (async()=>{ await ensureZones(); renderHouse(); renderCasaList(); })();
+/* Recomeçar do zero — limpa a base (financeiro NÃO é afetado) e volta pro onboarding */
+const resetBtn=document.getElementById('resetBtn');
+if(resetBtn) resetBtn.onclick=()=>{
+  if(!confirm('Recomeçar do zero?\n\nIsso apaga a SUA CASA, tarefas, inventário, ferramentas, produtos de limpeza, geladeira, despensa e a matilha DESTE app. O Financeiro (banco) NÃO é afetado. Você vai refazer a configuração inicial.')) return;
+  ['lifeos_mapa','lifeos_inv','lifeos_tools','lifeos_cleaning','lifeos_fridge','lifeos_pantry','lifeos_dogs','lifeos_onboarded'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  location.replace('setup.html');
+};
 function tick(){ const c=document.getElementById('clock'); if(c) c.textContent=new Date().toLocaleTimeString('pt-BR'); } tick(); setInterval(tick,1000);

@@ -36,8 +36,9 @@ Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **man
 - **F4 ✅ (feito):** painel lê do localStorage (`lsGet`, com fallback grandfather). Inventário separado em painéis
   **Eletrônicos** e **Eletrodomésticos** + **Ferramentas** + **Produtos de limpeza** (do onboarding). Removido o grid
   "Inventário" genérico e o painel "Eletrônicos" que misturava fogão/geladeira. Geladeira/Despensa/matilha também via localStorage.
-- **F5 (próx):** botão **"Recomeçar do zero"** (limpa lifeos_mapa/inv/tools/cleaning/fridge/pantry/dogs/onboarded → volta pro setup).
-  Geladeira/Despensa já começam vazias pra quem passou pelo onboarding (feito na F4).
+- **F5 ✅ (feito):** botão **"⟲ Recomeçar do zero"** no rodapé do painel — limpa lifeos_mapa/inv/tools/cleaning/fridge/
+  pantry/dogs/onboarded e volta pro setup. **Financeiro (`livro-caixa:data`) NÃO é afetado.** Testado.
+  ✅ Refatoração mobile (F1–F5) concluída. Anexos originais em `scratchpad/zips/` (podem ser limpos).
 Anexos do Emerson em `scratchpad/zips/` (screenshots + modulo-financeiro). ZIP financeiro é tema claro → re-tematizar.
 
 ## 🚀 v1.0 — marco zero
