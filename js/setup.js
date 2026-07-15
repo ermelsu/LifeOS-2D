@@ -48,6 +48,38 @@ function matchRoomType(label){
   return null;
 }
 
+/* ---------------- "colar tudo de uma vez" (parser inteligente) ----------------
+   Reconhece títulos de seção (por emoji ou palavra-chave), separa os itens
+   (linhas com marcador), ignora sub-títulos e a lista de "prioridade/consumo". */
+const SECTION_MATCH=[
+  {re:/despensa|pantry|mantimento/i, k:'pantry'},
+  {re:/geladeira|fridge|frigobar|freezer/i, k:'fridge'},
+  {re:/eletrodom/i, k:'appliances'},
+  {re:/eletr[oô]nic/i, k:'electronics'},
+  {re:/ferramenta/i, k:'tools'},
+  {re:/limpeza/i, k:'cleaning'},
+  {re:/c[ôo]modo|ambiente/i, k:'rooms'},
+  {re:/c[ãa]es|cachorr|matilha/i, k:'dogs'},
+];
+const EMOJI_SECTION={'🥫':'pantry','🥬':'fridge','🧊':'fridge','❄️':'fridge','🔌':'appliances','🎮':'electronics','🕹️':'electronics','🧰':'tools','🧼':'cleaning','🧴':'cleaning','🏠':'rooms','🛋️':'rooms','🐾':'dogs','🐶':'dogs','🐕':'dogs'};
+const SKIP_SECTION=/prioridade|consumo|desperd|observa/i;
+function isBullet(line){ return /^\s*([*•\-–·]|\d+[.)])\s+/.test(line); }
+function cleanBulletItem(line){ return line.replace(/^\s*([*•\-–·]|\d+[.)])\s+/,'').replace(/\s*⚠️.*$/,'').trim(); }
+function detectSection(line){ const t=line.trim();
+  for(const em in EMOJI_SECTION){ if(t.startsWith(em)) return EMOJI_SECTION[em]; }
+  for(const s of SECTION_MATCH){ if(s.re.test(t)) return s.k; } return null; }
+function parseBulk(text){ const acc={}; let cur=null, skip=false;
+  text.split(/\r?\n/).forEach(raw=>{ const line=raw.replace(/\t/g,' '); if(!line.trim()) return;
+    if(!isBullet(line)){ const sec=detectSection(line);
+      if(sec){ cur=sec; skip=false; return; }               // título de seção reconhecido
+      if(SKIP_SECTION.test(line)){ skip=true; cur=null; return; } // "prioridade de consumo" etc → ignora
+      return;                                                 // sub-título → ignora
+    }
+    if(skip||!cur) return; const it=cleanBulletItem(line);    // linha com marcador = item
+    if(it) (acc[cur]||(acc[cur]=[])).push(it);
+  });
+  return acc; }
+
 /* matilha do Emerson pré-preenchida (decisão: manter os 20 com emoji único) */
 const DOG_NAMES=['Nina','Hector','Sansa','Nymeria','Lua','Max','Marie','Sky','Lady','Hércules','Margot','Tisha','Dobby','Peppe','Penélope','Jake','Canela','Agostinho','Vhaghar','Princesa'];
 const DOG_EMOJIS=['🐕','🐶','🐩','🦮','🐕‍🦺','🐺','🦊','🐾','🐻','🐨','🐼','🦝','🐯','🦁','🐰','🐹','🐭','🐱','🐮','🐷'];
@@ -79,7 +111,7 @@ const stepDefs={
         <button class="modecard" data-mode="guided"><span class="mi">📝</span><b>Passo a passo</b>
           <span class="ms">Responda perguntas rápidas — casa, eletro, ferramentas, limpeza, alimentos e a matilha. Catálogos grandes, é só tocar no que você tem.</span></button>
         <button class="modecard" data-mode="paste"><span class="mi">📋</span><b>Colar listas</b>
-          <span class="ms">Já tem tudo anotado? Cole suas listas (um item por linha) e eu organizo em cômodos, inventário e despensa.</span></button>
+          <span class="ms">Já tem tudo anotado? Cole a lista inteira de uma vez (com títulos 🥫 Despensa, 🥬 Geladeira…) que eu separo sozinho — ou preencha campo a campo. Ideal pra mandar por voz e colar.</span></button>
       </div>
       <p class="lead2">Leva ~2 minutos. Dá pra ajustar tudo depois na Home e no 🗺️ Mapa.</p>` },
 
@@ -124,7 +156,15 @@ function chips(setKey,list){ const s=A[setKey];
 function pasteBody(){
   const f=(k,label,ph)=>`<div class="fgrp"><div class="glabel">${label}</div>
     <textarea class="pta" data-pta="${k}" placeholder="${ph}">${(A.pasteRaw[k]||'').replace(/</g,'&lt;')}</textarea></div>`;
-  return f('rooms','🏠 Cômodos (um por linha)','Quarto\nQuarto 2\nBanheiro\nCozinha\nSala\nÁrea dos cães')
+  return `<div class="fgrp bulkwrap">
+      <div class="glabel">✨ Colar TUDO de uma vez</div>
+      <p class="lead2" style="margin:0 0 8px">Cole a lista inteira com títulos de seção (🥫 Despensa, 🥬 Geladeira, 🔌 Eletrodomésticos, 🎮 Eletrônicos, 🧰 Ferramentas, 🧼 Limpeza, 🏠 Cômodos, 🐾 Cães). Eu separo automaticamente — pode ter sub-títulos e quantidades.</p>
+      <textarea class="pta" id="bulkAll" placeholder="🥫 Despensa&#10;* Arroz (2 kg)&#10;* Feijão&#10;&#10;🥬 Geladeira&#10;* Ovos&#10;* Leite"></textarea>
+      <button class="bulkbtn" id="bulkBtn" type="button">✨ Separar automaticamente</button>
+      <div class="bulkmsg" id="bulkMsg"></div>
+    </div>
+    <div class="orsep">— ou preencha campo a campo abaixo —</div>`
+    + f('rooms','🏠 Cômodos (um por linha)','Quarto\nQuarto 2\nBanheiro\nCozinha\nSala\nÁrea dos cães')
     + f('appliances','🔌 Eletrodomésticos','Geladeira\nFogão\nMicro-ondas\nAir fryer')
     + f('electronics','🎮 Eletrônicos','TV\nCelular\nNotebook')
     + f('tools','🧰 Ferramentas','Furadeira\nMartelo\nChave de fenda')
@@ -169,6 +209,15 @@ function bind(){
     const items=await askItems('Adicionar item(s)','Cole aqui — um item por linha (pode ser texto grande, ex.: transcrição de voz).\nEx.:\nBatedeira\nGrill');
     if(items.length){ items.forEach(nm=>A[k].add(nm)); render(); } });
   el.querySelectorAll('[data-pta]').forEach(t=>t.oninput=()=>{ A.pasteRaw[t.dataset.pta]=t.value; });
+  const bulkBtn=document.getElementById('bulkBtn');
+  if(bulkBtn) bulkBtn.onclick=()=>{ const txt=document.getElementById('bulkAll').value;
+    const acc=parseBulk(txt); const keys=Object.keys(acc);
+    if(!keys.length){ const m=document.getElementById('bulkMsg'); if(m) m.textContent='Não achei títulos de seção (ex.: 🥫 Despensa, 🥬 Geladeira). Confira e tente de novo, ou use os campos abaixo.'; return; }
+    const LBL={rooms:'Cômodos',appliances:'Eletrodomésticos',electronics:'Eletrônicos',tools:'Ferramentas',cleaning:'Limpeza',fridge:'Geladeira',pantry:'Despensa',dogs:'Cães'};
+    let total=0; keys.forEach(k=>{ const cur=splitLines(A.pasteRaw[k]); const merged=cur.concat(acc[k]); A.pasteRaw[k]=Array.from(new Set(merged)).join('\n'); total+=acc[k].length; });
+    render();
+    const m=document.getElementById('bulkMsg'); if(m) m.textContent=`✅ Separei ${total} item(ns): `+keys.map(k=>`${acc[k].length} em ${LBL[k]||k}`).join(' · ')+'. Revise abaixo e toque em Próximo.';
+  };
   const pets=document.getElementById('pets');
   if(pets){ pets.querySelectorAll('input[data-pi]').forEach(inp=>inp.oninput=()=>{ A.dogs[+inp.dataset.pi].nm=inp.value; });
     pets.querySelectorAll('[data-prm]').forEach(b=>b.onclick=()=>{ A.dogs.splice(+b.dataset.prm,1); render(); });
@@ -201,8 +250,11 @@ function parsePaste(){
 
 /* ---------------- build & save ---------------- */
 function iconFor(nm, catalog, def){ const low=String(nm).trim().toLowerCase();
-  for(const [ic,n] of catalog) if(n.toLowerCase()===low) return ic;
-  for(const [ic,n] of ALL_ITEMS) if(n.toLowerCase()===low) return ic;
+  for(const [ic,n] of catalog) if(n.toLowerCase()===low) return ic;    // exato na própria categoria
+  for(const [ic,n] of ALL_ITEMS) if(n.toLowerCase()===low) return ic;  // exato global
+  // parcial: item contém o nome de um item do catálogo (ex.: "Arroz comum (2 kg)" → 🍚 Arroz)
+  for(const [ic,n] of catalog){ const k=n.toLowerCase(); if(k.length>=3 && low.includes(k)) return ic; }
+  for(const [ic,n] of ALL_ITEMS){ const k=n.toLowerCase(); if(k.length>=4 && low.includes(k)) return ic; }
   return def||'📦'; }
 function roomDefs(){
   if(mode==='paste') return A.customRooms||[];
