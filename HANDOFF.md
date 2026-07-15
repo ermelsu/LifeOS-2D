@@ -33,8 +33,11 @@ Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **man
   `lifeos_inv` {appliances, electronics}, `lifeos_tools`, `lifeos_cleaning`, `lifeos_fridge`, `lifeos_pantry`, `lifeos_dogs`,
   `lifeos_onboarded='yes'`. Gate no topo do `painel.js`: 1ª utilização→setup; quem já tem zones é migrado (grandfather).
   Pets pré-preenchidos c/ os 20 cães (emoji único), editável. **Falta:** painel LER essas chaves (F4/F5).
-- **F4:** Inventário separar **Eletrônicos** × **Eletrodomésticos** (hoje o painel "Eletrônicos" mistura fogão/geladeira).
-- **F5:** Geladeira/Despensa/Estoque **vazios** (marco zero) + botão **"Recomeçar do zero"** limpando tudo.
+- **F4 ✅ (feito):** painel lê do localStorage (`lsGet`, com fallback grandfather). Inventário separado em painéis
+  **Eletrônicos** e **Eletrodomésticos** + **Ferramentas** + **Produtos de limpeza** (do onboarding). Removido o grid
+  "Inventário" genérico e o painel "Eletrônicos" que misturava fogão/geladeira. Geladeira/Despensa/matilha também via localStorage.
+- **F5 (próx):** botão **"Recomeçar do zero"** (limpa lifeos_mapa/inv/tools/cleaning/fridge/pantry/dogs/onboarded → volta pro setup).
+  Geladeira/Despensa já começam vazias pra quem passou pelo onboarding (feito na F4).
 Anexos do Emerson em `scratchpad/zips/` (screenshots + modulo-financeiro). ZIP financeiro é tema claro → re-tematizar.
 
 ## 🚀 v1.0 — marco zero

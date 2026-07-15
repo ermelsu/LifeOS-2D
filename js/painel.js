@@ -70,6 +70,22 @@ const MOODS=['😫','😕','😐','🙂','😄'];
 const moodEmoji=v=>MOODS[Math.max(0,Math.min(4,Math.round((v-1)/2.25)))];
 
 /* ============================================================
+   Inventário / materiais / alimentos — do onboarding (localStorage),
+   com fallback pros dados do Emerson (grandfather).
+   ============================================================ */
+function lsGet(k,def){ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?def:v; }catch(e){ return def; } }
+const DEFAULT_INV={
+  appliances:[{ic:'🍳',nm:'Fogão',ok:true},{ic:'🧊',nm:'Geladeira',ok:true},{ic:'📟',nm:'Micro-ondas',ok:true}],
+  electronics:[{ic:'🎮',nm:'Nintendo Switch'},{ic:'🖥️',nm:'PC'},{ic:'📺',nm:'TV'},{ic:'🕹️',nm:'Consoles'},{ic:'💻',nm:'Notebook'},{ic:'📱',nm:'Celular'}]
+};
+const INV=lsGet('lifeos_inv',DEFAULT_INV);
+const TOOLS_L=lsGet('lifeos_tools',[{ic:'🔌',nm:'Furadeira'},{ic:'🔨',nm:'Martelo'},{ic:'🧰',nm:'Caixa de ferramentas'}]);
+const CLEAN_L=lsGet('lifeos_cleaning',[{ic:'🧴',nm:'Detergente'},{ic:'🧹',nm:'Vassoura'},{ic:'🚽',nm:'Desinfetante'}]);
+const FRIDGE_L=lsGet('lifeos_fridge',STATE.fridge);
+const PANTRY_L=lsGet('lifeos_pantry',STATE.pantry);
+const DOGS_L=lsGet('lifeos_dogs',STATE.dogs);
+
+/* ============================================================
    Zonas da casa — do Mapa (localStorage) com fallback no repo.
    ============================================================ */
 const MAPA_KEY='lifeos_mapa';
@@ -80,6 +96,7 @@ let ZONES=readZones();
 // Sem áreas locais? Carrega as zonas oficiais do repo (planta padrão) e guarda pra edição.
 async function ensureZones(){
   if(ZONES.length) return;
+  if(localStorage.getItem('lifeos_onboarded')==='yes') return;   // marco zero: casa vem do onboarding
   try{ const r=await fetch('assets/casa-zones.json',{cache:'no-store'});
     if(r.ok){ const j=await r.json();
       if(j&&Array.isArray(j.zones)&&j.zones.length){ ZONES=j.zones; saveZones(ZONES); } } }catch(e){}
@@ -151,15 +168,15 @@ const moodBody=`<div class="mtoday"><div class="big" id="moodBig">${MOODS[STATE.
   <div class="mpick" id="moodPick">${MOODS.map((e,i)=>`<button data-m="${i}" class="${i===STATE.mood.today?'on':''}">${e}</button>`).join('')}</div>
   <div class="mweek" style="margin-top:12px">${STATE.mood.week.map(d=>`<div class="mday"><div class="track"><div class="fill" data-h="${d.v*10}%"></div></div><div class="e">${moodEmoji(d.v)}</div><div class="d">${d.d}</div></div>`).join('')}</div>`;
 
-const dogsBody=`<div class="dogsgrid">`+STATE.dogs.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well,'#54d98c')}</div>`).join('')+`</div>`;
+const dogsBody=`<div class="dogsgrid">`+DOGS_L.map(d=>`<div class="dogc"><div class="f">${d.face}</div><div class="n" title="${d.nm}">${d.nm}</div>${bar(d.well!=null?d.well:9,'#54d98c')}</div>`).join('')+`</div>`;
 
-const alliesBody=STATE.allies.map(a=>`<div class="ally"><span class="em">${a.em}</span><div><div class="nm">${a.nm}</div><div class="rl">${a.rl}</div></div></div>`).join('');
-const resBody=STATE.resources.map(r=>`<div class="kv"><span>${r.k}</span><b>${r.v}</b></div>`).join('')+`<div class="sub" style="margin-top:8px">🏦 Anote gastos e entradas no <a href="banco.html" style="color:var(--acc)">Banco</a>.</div>`;
-const listBody=arr=>`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`;
-const applBody=`<div class="list">`+STATE.appliances.map(a=>`<div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span><span class="sdot" style="background:${a.ok?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`;
+const listBody=arr=>arr&&arr.length?`<div class="list">`+arr.map(it=>`<div class="li"><span class="ic">${it.ic}</span><span>${it.nm}</span>${it.q?`<span class="q">${it.q}</span>`:''}</div>`).join('')+`</div>`:`<div class="sub">Vazio. Adicione seus itens. 🧺</div>`;
+const dotList=arr=>arr&&arr.length?`<div class="list">`+arr.map(a=>`<div class="li"><span class="ic">${a.ic}</span><span>${a.nm}</span><span class="sdot" style="background:${a.ok!==false?'var(--hp)':'var(--dmg)'};box-shadow:0 0 8px ${a.ok!==false?'var(--hp)':'var(--dmg)'}"></span></div>`).join('')+`</div>`:`<div class="sub">Nenhum item.</div>`;
+const elecBody=listBody(INV.electronics||[]);
+const applBody=dotList(INV.appliances||[]);
+const toolsBody=listBody(TOOLS_L);
+const cleanBody=listBody(CLEAN_L);
 const shopBody=`<div id="shop">`+STATE.shopping.map((x,i)=>`<div class="quest ${x.done?'done':''}" data-i="${i}"><div class="box">${x.done?'✔':''}</div><div class="txt">${x.t}</div></div>`).join('')+`</div>`;
-let invHtml=''; for(let i=0;i<STATE.invSlots;i++){ const it=STATE.inv[i]; invHtml+= it?`<div class="slot">${it.ic}${it.q?`<span class="q">${it.q}</span>`:''}</div>`:`<div class="slot empty">+</div>`; }
-const invBody=`<div class="inv">${invHtml}</div>`;
 
 grid.innerHTML =
   /* 1º Ficha do Personagem */
@@ -174,12 +191,14 @@ grid.innerHTML =
   panel('col-6','🏋️','Treino de hoje', w.min+' min · casa', workoutBody) +
   panel('col-12','🍽️','Receitas com o que você tem','pra sua meta', recBody) +
   panel('col-4','🌀','Chefão atual','', bossBody) +
-  panel('col-12','🐾','A matilha', STATE.dogs.length+' cães', dogsBody) +
-  panel('col-4','🎒','Inventário','', invBody) +
-  panel('col-3','🧊','Geladeira','', listBody(STATE.fridge)) +
-  panel('col-3','🥫','Despensa','', listBody(STATE.pantry)) +
-  panel('col-3','🔌','Eletrônicos','', applBody) +
-  panel('col-3','🛒','Lista de compras','', shopBody) +
+  panel('col-12','🐾','A matilha', DOGS_L.length+' cães', dogsBody) +
+  panel('col-4','🎮','Eletrônicos',(INV.electronics||[]).length+' itens', elecBody) +
+  panel('col-4','🔌','Eletrodomésticos',(INV.appliances||[]).length+' itens', applBody) +
+  panel('col-4','🧰','Ferramentas',TOOLS_L.length+' itens', toolsBody) +
+  panel('col-4','🧼','Produtos de limpeza',CLEAN_L.length+' itens', cleanBody) +
+  panel('col-4','🧊','Geladeira','', listBody(FRIDGE_L)) +
+  panel('col-4','🥫','Despensa','', listBody(PANTRY_L)) +
+  panel('col-4','🛒','Lista de compras','', shopBody) +
   panel('col-12','⭐','Grande missão de vida','', `<div style="font-size:14px;line-height:1.5">Guiar a matilha bem até o fim, ter uma vida confortável e um <b style="color:var(--acc)">sítio 100×100m</b> com um canil de verdade pra eles. 🐾🏡</div>`);
 
 requestAnimationFrame(()=>requestAnimationFrame(()=>{
