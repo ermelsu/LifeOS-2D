@@ -28,8 +28,11 @@ Entrega **por fases** · financeiro **mantém os dados** do ZIP · matilha **man
 - **F2 ✅ (feito):** Financeiro — `banco.html` reescrito (dark LifeOS, fontes do sistema, topbar de nav) + `js/banco.js`
   (IIFE do `livro-caixa`, intacto). Persistência localStorage `livro-caixa:data`, **dados do seed mantidos** (saldo R$400,16,
   25 lançamentos jul, 6 contas fixas). Abas Lançamentos/Contas Fixas. Chip **🏦 Financeiro** no painel.
-- **F3:** Onboarding `setup.html` "Vamos começar do zero" (wizard: casa→eletrodom.→eletrôn.→ferramentas→limpeza→
-  alimentos→pets) que monta a base e libera a Home só depois. Desligar auto-seed do `casa-zones.json`.
+- **F3 ✅ (feito):** `setup.html`+`js/setup.js` — wizard 9 passos (boas-vindas→casa→eletrodom.→eletrôn.→ferramentas→
+  limpeza→alimentos→pets→fim). Escreve o banco em localStorage: `lifeos_mapa` (zones c/ auto-grid de coords + tarefas),
+  `lifeos_inv` {appliances, electronics}, `lifeos_tools`, `lifeos_cleaning`, `lifeos_fridge`, `lifeos_pantry`, `lifeos_dogs`,
+  `lifeos_onboarded='yes'`. Gate no topo do `painel.js`: 1ª utilização→setup; quem já tem zones é migrado (grandfather).
+  Pets pré-preenchidos c/ os 20 cães (emoji único), editável. **Falta:** painel LER essas chaves (F4/F5).
 - **F4:** Inventário separar **Eletrônicos** × **Eletrodomésticos** (hoje o painel "Eletrônicos" mistura fogão/geladeira).
 - **F5:** Geladeira/Despensa/Estoque **vazios** (marco zero) + botão **"Recomeçar do zero"** limpando tudo.
 Anexos do Emerson em `scratchpad/zips/` (screenshots + modulo-financeiro). ZIP financeiro é tema claro → re-tematizar.

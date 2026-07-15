@@ -1,4 +1,15 @@
 /* ============================================================
+   Gate de onboarding: primeira utilização vai pro "Vamos começar do zero".
+   Usuário que já tem casa montada é migrado (grandfather) sem passar de novo.
+   ============================================================ */
+(function(){ try{
+  if(localStorage.getItem('lifeos_onboarded')==='yes') return;
+  var m=JSON.parse(localStorage.getItem('lifeos_mapa')||'null');
+  if(m && Array.isArray(m.zones) && m.zones.length){ localStorage.setItem('lifeos_onboarded','yes'); return; }
+  location.replace('setup.html');
+}catch(e){} })();
+
+/* ============================================================
    Estado REAL do jogo — dados do Emerson (questionário respondido).
    ============================================================ */
 const DOG_NAMES=['Nina','Hector','Sansa','Nymeria','Lua','Max','Marie','Sky','Lady','Hércules',

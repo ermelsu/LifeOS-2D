@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>LifeOS · Vamos começar do zero</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+<style>
+  :root{ --bg:#0c0e16; --bg2:#12151f; --card:#161a28; --card2:#1b2032; --line:#2a3146;
+    --ink:#e9ecf6; --mut:#8b93aa; --acc:#ffc94d; --acc-ink:#241802; --hp:#54d98c; color-scheme:dark; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:
+      radial-gradient(120% 80% at 15% -10%, #1a2036, transparent 60%),
+      radial-gradient(120% 80% at 100% 0%, #241a2e, transparent 55%), var(--bg);
+    color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; font-size:16px;
+    display:flex; flex-direction:column; align-items:center;
+    padding:calc(16px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom)); }
+  .top{ width:100%; max-width:560px; display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .brand{ font-weight:900; letter-spacing:2px; color:var(--acc); font-size:20px; }
+  .track{ flex:1; height:8px; background:#0e1220; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+  .track > i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--acc),#ffe08a); transition:width .35s ease; }
+  .stepn{ font-family:ui-monospace,monospace; font-size:13px; color:var(--mut); }
+
+  .wcard{ width:100%; max-width:560px; background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:20px; padding:20px 18px; box-shadow:0 20px 50px rgba(0,0,0,.45); }
+  .whead{ display:flex; gap:12px; align-items:center; margin-bottom:16px; }
+  .whead .wic{ font-size:30px; } .whead h2{ font-size:21px; } .wsub{ color:var(--mut); font-size:14px; margin-top:3px; }
+  .wbody{ min-height:200px; }
+  .lead{ font-size:16px; line-height:1.55; } .lead2{ color:var(--mut); font-size:14px; margin-top:12px; }
+
+  .counter{ display:flex; align-items:center; justify-content:space-between; background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+  .counter .cl{ font-size:16px; font-weight:600; display:flex; align-items:center; gap:9px; } .counter .ci{ font-size:20px; }
+  .cbtns{ display:flex; align-items:center; gap:14px; }
+  .cbtns button{ width:42px; height:42px; border-radius:12px; border:1px solid var(--line); background:#0f1320; color:var(--acc); font-size:22px; font-weight:800; cursor:pointer; }
+  .cbtns b{ font-size:19px; min-width:22px; text-align:center; font-family:ui-monospace,monospace; }
+
+  .toglist{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:6px; }
+  .tog{ display:flex; align-items:center; gap:9px; background:#0f1320; border:1.5px solid var(--line); color:var(--ink); border-radius:13px; padding:13px 12px; font:inherit; font-size:15px; font-weight:600; cursor:pointer; text-align:left; }
+  .tog .ci{ font-size:20px; } .tog.on{ border-color:var(--hp); background:rgba(84,217,140,.12); color:var(--hp); }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:9px; }
+  .chip{ display:inline-flex; align-items:center; gap:7px; background:#0f1320; border:1.5px solid var(--line); color:var(--ink); border-radius:20px; padding:11px 15px; font:inherit; font-size:14.5px; cursor:pointer; }
+  .chip .ci{ font-size:18px; } .chip.on{ border-color:var(--acc); background:#2a2617; color:var(--acc); }
+  .chip.add{ border-style:dashed; color:var(--mut); }
+  .fgrp{ margin-bottom:16px; } .glabel{ font-size:13px; color:var(--mut); text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px; }
+
+  .pets{ display:flex; flex-direction:column; gap:8px; max-height:46vh; overflow:auto; padding-right:4px; }
+  .pet{ display:flex; align-items:center; gap:10px; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:8px 10px; }
+  .pet .pf{ font-size:22px; } .pet input{ flex:1; background:#0f1320; border:1px solid var(--line); color:var(--ink); border-radius:9px; padding:10px; font:inherit; font-size:15px; }
+  .pet .prm{ background:none; border:none; color:var(--mut); font-size:16px; cursor:pointer; padding:6px; }
+  .addpet{ margin-top:10px; width:100%; background:#0f1320; border:1px dashed var(--line); color:var(--mut); border-radius:12px; padding:12px; font:inherit; font-weight:700; cursor:pointer; }
+
+  .wnav{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:20px; }
+  .wbtn{ border:none; border-radius:13px; padding:15px 20px; font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
+  .wbtn.primary{ background:var(--acc); color:var(--acc-ink); flex:1; box-shadow:0 8px 22px #ffc94d33; }
+  .wbtn.ghost{ background:transparent; color:var(--mut); border:1px solid var(--line); }
+  .foot{ max-width:560px; width:100%; text-align:center; color:var(--mut); font-size:12px; margin-top:16px; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <span class="brand">LIFEOS</span>
+    <div class="track"><i id="bar"></i></div>
+    <span class="stepn" id="stepn">1/9</span>
+  </div>
+  <div class="wcard" id="wiz"></div>
+  <div class="foot">🐾 Configuração inicial · você pode ajustar tudo depois na Home e no 🗺️ Mapa.</div>
+<script src="js/setup.js"></script>
+</body>
+</html>
